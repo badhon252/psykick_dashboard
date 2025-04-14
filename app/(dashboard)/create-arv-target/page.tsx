@@ -1,7 +1,8 @@
+import CreateARVTargetPage from '@/components/_dashboard/create-arv-target/CreateARVTargetPage'
 import React from 'react'
 
 export default function page() {
   return (
-    <div>page</div>
+    <CreateARVTargetPage/>
   )
 }
