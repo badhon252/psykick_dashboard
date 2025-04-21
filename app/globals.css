@@ -106,7 +106,6 @@
   --chart-5: 0 100% 60%;
 }
 
-
 .bg-gradient {
   background: rgb(143, 55, 255);
   background: -moz-linear-gradient(
@@ -138,4 +137,38 @@
   -webkit-box-shadow: -43px 112px 73px 9px rgba(0, 0, 0, 0.31);
   -moz-box-shadow: -43px 112px 73px 9px rgba(0, 0, 0, 0.31);
   box-shadow: -43px 112px 73px 9px rgba(0, 0, 0, 0.31);
+}
+
+.btn {
+  cursor: pointer;
+  font-family: "system-ui";
+  font-size: 14px;
+  color: rgb(255, 255, 255);
+  padding: 16px 61px;
+  transition: 1262ms;
+  box-shadow: rgb(0, 0, 0) 0px 0px 0px 0px;
+  border-radius: 1px 24px;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 19.2px;
+  background: linear-gradient(
+    90deg,
+    rgb(143, 55, 255) 20%,
+    rgb(45, 23, 255) 100%
+  );
+}
+
+.btn-outline {
+  cursor: pointer;
+  font-family: "system-ui";
+  font-size: 14px;
+  color: rgb(255, 255, 255);
+  padding: 16px 61px;
+  transition: 1262ms;
+  box-shadow: rgb(0, 0, 0) 0px 0px 0px 0px;
+  border-radius: 1px 24px;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 19.2px;
+  border: 1px solid #eee1ff;
 }

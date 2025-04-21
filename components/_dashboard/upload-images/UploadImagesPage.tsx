@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Trash2 } from "lucide-react"
+import Image from "next/image"
 
 export default function UploadImagesPage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -62,7 +63,9 @@ export default function UploadImagesPage() {
               <div className="border-2 border-dashed border-gray-600 rounded-md p-6 flex flex-col items-center justify-center bg-[#170A2C]/30 min-h-[200px]">
                 {previewUrl ? (
                   <div className="relative w-full h-full">
-                    <img
+                    <Image
+                    width={200}
+                    height={200}
                       src={previewUrl || "/placeholder.svg"}
                       alt="Preview"
                       className="max-h-[200px] mx-auto object-contain"
