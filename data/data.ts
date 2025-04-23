@@ -1,10 +1,12 @@
 "use client";
 import { LayoutDashboard, Mail } from "lucide-react";
-import { TbTargetArrow } from "react-icons/tb";
 import { CiImageOn, CiSettings } from "react-icons/ci";
-import { FaFileMedical } from "react-icons/fa";
-import { FaFileAlt, FaChartBar } from "react-icons/fa";
+import { FaChartBar, FaFileAlt, FaFileMedical } from "react-icons/fa";
 import { GrGallery } from "react-icons/gr";
+import { TbTargetArrow } from "react-icons/tb";
+
+export const token =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2UzY2MwNDllNGZjOWEzOWM3NDU3YTQiLCJpYXQiOjE3NDUyOTYyMTAsImV4cCI6MTc0NTkwMTAxMH0.KZ7R_uQBhZ93UdhOzqvw53nQBy_s_1dGDM4KK-KwD5E";
 
 export type NavigationItem = {
   id: string;
