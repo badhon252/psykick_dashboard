@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { token } from "@/data/data";
 import { useQuery } from "@tanstack/react-query";
-import { Clock, LinkIcon, MessageSquare, Target, Users } from "lucide-react";
+import { Clock, Target, Users } from "lucide-react";
 import {
   CartesianGrid,
   Legend,
@@ -50,6 +50,45 @@ export default function Dashboard() {
           },
         }).then((res) => res.json()),
     });
+  const { isLoading: totalAverageLoading, data: totalAverageTImeSpent } =
+    useQuery<ApiProps>({
+      queryKey: ["totalTimeSpent"],
+      queryFn: () =>
+        fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/average-session-duration`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        ).then((res) => res.json()),
+    });
+  const { isLoading: activeUserLoading, data: activeuserRes } =
+    useQuery<ApiProps>({
+      queryKey: ["activeUser"],
+      queryFn: () =>
+        fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/active-users-count`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        ).then((res) => res.json()),
+    });
+  const { isLoading: completedTargetLoading, data: completedTargetRtes } =
+    useQuery<ApiProps>({
+      queryKey: ["activeUser"],
+      queryFn: () =>
+        fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/active-users-count`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        ).then((res) => res.json()),
+    });
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -64,7 +103,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <SkeletonWrapper isLoading={isTotalUserLoading}>
             <StatCard
               title="Total Users"
@@ -73,18 +112,14 @@ export default function Dashboard() {
             />
           </SkeletonWrapper>
           <StatCard title="Average time spent" value="3505" icon={Clock} />
-          <StatCard title="Active users" value="3505" icon={Users} />
+          <SkeletonWrapper isLoading={activeUserLoading}>
+            <StatCard
+              title="Active users"
+              value={activeuserRes?.data ?? 0}
+              icon={Users}
+            />
+          </SkeletonWrapper>
           <StatCard title="Completed Target" value="3505" icon={Target} />
-          <StatCard
-            title="Affiliate Link Clicks"
-            value="3505"
-            icon={LinkIcon}
-          />
-          <StatCard
-            title="Pending Messages"
-            value="3505"
-            icon={MessageSquare}
-          />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
