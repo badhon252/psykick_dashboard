@@ -50,7 +50,7 @@ export default function Dashboard() {
           },
         }).then((res) => res.json()),
     });
-  const { isLoading: totalAverageLoading, data: totalAverageTImeSpent } =
+  const {  } =
     useQuery<ApiProps>({
       queryKey: ["totalTimeSpent"],
       queryFn: () =>
@@ -76,7 +76,7 @@ export default function Dashboard() {
           }
         ).then((res) => res.json()),
     });
-  const { isLoading: completedTargetLoading, data: completedTargetRtes } =
+  const {} =
     useQuery<ApiProps>({
       queryKey: ["activeUser"],
       queryFn: () =>
