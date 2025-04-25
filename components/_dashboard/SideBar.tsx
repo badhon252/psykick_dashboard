@@ -15,6 +15,7 @@ interface Props {
   lists: NavigationItem[];
 }
 
+
 export function Sidebar({ lists }: Props) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
