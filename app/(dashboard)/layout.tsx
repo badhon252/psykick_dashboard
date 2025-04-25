@@ -4,6 +4,7 @@ import { AdminDashboardTabsList } from "@/data/data";
 import AppProvider from "@/provider/AppProvider";
 import type { Metadata } from "next";
 import "../globals.css";
+import { Toaster } from "@/components/ui/sonner";
 // import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 export const metadata: Metadata = {
@@ -26,6 +27,7 @@ export default function RootLayout({
           <main className="">
             <AppProvider>{children}</AppProvider>
           </main>
+          <Toaster />
         </div>
         {/* </ProtectedRoute> */}
       </body>
