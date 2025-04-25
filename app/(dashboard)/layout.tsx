@@ -1,8 +1,9 @@
-import { Sidebar } from "@/components/_dashboard/SideBar";
-import "../globals.css";
-import type { Metadata } from "next";
-import { AdminDashboardTabsList } from "@/data/data";
 import Header from "@/components/_dashboard/dashboard-header";
+import { Sidebar } from "@/components/_dashboard/SideBar";
+import { AdminDashboardTabsList } from "@/data/data";
+import AppProvider from "@/provider/AppProvider";
+import type { Metadata } from "next";
+import "../globals.css";
 // import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 export const metadata: Metadata = {
@@ -19,13 +20,13 @@ export default function RootLayout({
     <html lang="en">
       <body className="bg-[#36007B] text-white dashboard-body">
         {/* <ProtectedRoute> */}
-          <Sidebar lists={AdminDashboardTabsList} />
-          <div className="px-4 md:ml-[272px] backdrop-blur-sm bg-[#371B77]/40 dashboard-shadow">
-            <Header />
-           <main className="">
-             {children}
-            </main>
-          </div>
+        <Sidebar lists={AdminDashboardTabsList} />
+        <div className="px-4 md:ml-[272px] backdrop-blur-sm bg-[#371B77]/40 dashboard-shadow">
+          <Header />
+          <main className="">
+            <AppProvider>{children}</AppProvider>
+          </main>
+        </div>
         {/* </ProtectedRoute> */}
       </body>
     </html>

@@ -1,10 +1,29 @@
-"use client"
+/* eslint-disable @typescript-eslint/no-unused-vars */
+"use client";
 
-import { StatCard } from "@/components/stat-card"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
-import { Users, Clock, Target, LinkIcon, MessageSquare } from "lucide-react"
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts"
+import { StatCard } from "@/components/stat-card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { token } from "@/data/data";
+import { useQuery } from "@tanstack/react-query";
+import { Clock, Target, Users } from "lucide-react";
+import {
+  CartesianGrid,
+  Legend,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import SkeletonWrapper from "../ui/skeleton-wrapper";
+
+interface ApiProps {
+  status: boolean;
+  message: string;
+  data: number;
+}
 
 const chartData = [
   { name: "Jan", tmc: 30, arv: 40 },
@@ -19,33 +38,98 @@ const chartData = [
   { name: "Oct", tmc: 120, arv: 130 },
   { name: "Nov", tmc: 100, arv: 110 },
   { name: "Dec", tmc: 80, arv: 90 },
-]
+];
 
 export default function Dashboard() {
+  const { isLoading: isTotalUserLoading, data: totalUserstats } =
+    useQuery<ApiProps>({
+      queryKey: ["totalUserstats"],
+      queryFn: () =>
+        fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/all-users`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }).then((res) => res.json()),
+    });
+  const { isLoading: totalAverageLoading, data: totalAverageTImeSpent } =
+    useQuery<ApiProps>({
+      queryKey: ["totalTimeSpent"],
+      queryFn: () =>
+        fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/average-session-duration`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        ).then((res) => res.json()),
+    });
+  const { isLoading: activeUserLoading, data: activeuserRes } =
+    useQuery<ApiProps>({
+      queryKey: ["activeUser"],
+      queryFn: () =>
+        fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/active-users-count`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        ).then((res) => res.json()),
+    });
+    
+  const { isLoading: completedTargetLoading, data: completedTargetRtes } =
+    useQuery<ApiProps>({
+      queryKey: ["activeUser"],
+      queryFn: () =>
+        fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/active-users-count`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        ).then((res) => res.json()),
+    });
+
   return (
     <div className="flex flex-col min-h-screen">
       <main className=" p-6 space-y-6">
         <div className="bg-white/5 rounded-lg p-6">
-          <h2 className="text-xl text-white mb-2">Welcome to the Psykick Club</h2>
+          <h2 className="text-xl text-white mb-2">
+            Welcome to the Psykick Club
+          </h2>
           <div className="flex items-center gap-2">
             <Progress value={60} className="h-2 w-[270px] bg-white" />
             <div className="text-xs text-white/70 ">Profile complete 60%</div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <StatCard title="Total Users" value="3505" icon={Users} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <SkeletonWrapper isLoading={isTotalUserLoading}>
+            <StatCard
+              title="Total Users"
+              value={totalUserstats?.data ?? 0}
+              icon={Users}
+            />
+          </SkeletonWrapper>
           <StatCard title="Average time spent" value="3505" icon={Clock} />
-          <StatCard title="Active users" value="3505" icon={Users} />
+          <SkeletonWrapper isLoading={activeUserLoading}>
+            <StatCard
+              title="Active users"
+              value={activeuserRes?.data ?? 0}
+              icon={Users}
+            />
+          </SkeletonWrapper>
           <StatCard title="Completed Target" value="3505" icon={Target} />
-          <StatCard title="Affiliate Link Clicks" value="3505" icon={LinkIcon} />
-          <StatCard title="Pending Messages" value="3505" icon={MessageSquare} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="bg-[#170A2C]/50 border-0">
             <CardHeader className="pb-2">
-              <CardTitle className="text-white">Total Participation of TMC & ARV</CardTitle>
+              <CardTitle className="text-white">
+                Total Participation of TMC & ARV
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="h-[300px]">
@@ -55,12 +139,26 @@ export default function Dashboard() {
                     <XAxis dataKey="name" stroke="#fff" />
                     <YAxis stroke="#fff" />
                     <Tooltip
-                      contentStyle={{ backgroundColor: "#170A2C", borderColor: "#333" }}
+                      contentStyle={{
+                        backgroundColor: "#170A2C",
+                        borderColor: "#333",
+                      }}
                       labelStyle={{ color: "#fff" }}
                     />
                     <Legend />
-                    <Line type="monotone" dataKey="tmc" name="TMC" stroke="#8884d8" activeDot={{ r: 8 }} />
-                    <Line type="monotone" dataKey="arv" name="ARV" stroke="#82ca9d" />
+                    <Line
+                      type="monotone"
+                      dataKey="tmc"
+                      name="TMC"
+                      stroke="#8884d8"
+                      activeDot={{ r: 8 }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="arv"
+                      name="ARV"
+                      stroke="#82ca9d"
+                    />
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -69,7 +167,9 @@ export default function Dashboard() {
 
           <Card className="bg-[#170A2C]/50 border-0">
             <CardHeader className="pb-2">
-              <CardTitle className="text-white">Highest Playing Report</CardTitle>
+              <CardTitle className="text-white">
+                Highest Playing Report
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -82,28 +182,36 @@ export default function Dashboard() {
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-sm text-white">Number of active users</span>
+                    <span className="text-sm text-white">
+                      Number of active users
+                    </span>
                     <span className="text-sm text-white">30%</span>
                   </div>
                   <Progress value={30} className="h-2" />
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-sm text-white">Number of targets completed</span>
+                    <span className="text-sm text-white">
+                      Number of targets completed
+                    </span>
                     <span className="text-sm text-white">60%</span>
                   </div>
                   <Progress value={60} className="h-2" />
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-sm text-white">Average time spent</span>
+                    <span className="text-sm text-white">
+                      Average time spent
+                    </span>
                     <span className="text-sm text-white">40%</span>
                   </div>
                   <Progress value={40} className="h-2" />
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between">
-                    <span className="text-sm text-white">Number of affiliate link clicks</span>
+                    <span className="text-sm text-white">
+                      Number of affiliate link clicks
+                    </span>
                     <span className="text-sm text-white">80%</span>
                   </div>
                   <Progress value={80} className="h-2" />
@@ -121,5 +229,5 @@ export default function Dashboard() {
         </div>
       </main>
     </div>
-  )
+  );
 }
