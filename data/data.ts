@@ -1,7 +1,8 @@
 "use client";
 import { LayoutDashboard, Mail } from "lucide-react";
 import { CiImageOn, CiSettings } from "react-icons/ci";
-import { FaChartBar, FaFileAlt, FaFileMedical } from "react-icons/fa";
+import {  FaFileAlt, FaFileMedical } from "react-icons/fa";
+import { BsChatText } from "react-icons/bs";
 import { GrGallery } from "react-icons/gr";
 import { TbTargetArrow } from "react-icons/tb";
 
@@ -55,7 +56,7 @@ export const AdminDashboardTabsList = [
   {
     id: crypto.randomUUID(),
     path: "/user-results",
-    icon: FaChartBar,
+    icon: BsChatText,
     linkText: "User Results",
     roles: ["admin"],
   },

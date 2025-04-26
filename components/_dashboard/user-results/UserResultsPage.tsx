@@ -1,371 +1,291 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-
-import { useEffect } from "react";
-import { useLeaderboardStore } from "@/store/use-leaderboard";
+import { useQuery } from "@tanstack/react-query";
+import Image from "next/image";
+import vector1 from "@/public/assets/img/Vector1.png";
+import vector2 from "@/public/assets/img/vector2.png";
+import vector3 from "@/public/assets/img/vector3.png";
 
 export default function Leaderboard() {
+  const token =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODBhNGIzYzk2ZDMyMDRmMjJiYjBlMGIiLCJpYXQiOjE3NDU1NzUyMDAsImV4cCI6MTc0NjE4MDAwMH0.4gfZW_rwIzEuzl6IAa6L_v8ptyw9_h0Jdhow0cYrj7I";
+
   const {
-    tmcLeaderboard,
-    arvLeaderboard,
-    combinedLeaderboard,
-    fetchLeaderboardData,
-  } = useLeaderboardStore();
+    data: comdaind,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["combined"],
+    queryFn: async () => {
+      const res = await fetch(
+        `http://localhost:5001/api/v1/leaderboard/get-totalLeaderboard`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-  // Fetch data on initial load
-  useEffect(() => {
-    fetchLeaderboardData();
-  }, [fetchLeaderboardData]);
+      if (!res.ok) {
+        throw new Error("Failed to fetch combined leaderboard");
+      }
 
-  // Function to get row background color based on rank
-  const getRowColor = (rank: string, isCurrentUser: boolean) => {
-    if (isCurrentUser) return "bg-[#2a904c]";
+      return res.json();
+    },
+    enabled: !!token, // ✅ Optional: wait until token is available
+  });
 
-    switch (rank) {
-      case "01":
-        return "bg-[#ec762c]";
-      case "02":
-        return "bg-[#5ec9c0]";
-      case "03":
-        return "bg-[#3a51e9]";
-      default:
-        return "bg-[#4a2c7e]";
-    }
-  };
+  const combinedLeaderboard = comdaind?.data || [];
+
+  const { data: arvData } = useQuery({
+    queryKey: ["combined"],
+    queryFn: async () => {
+      const res = await fetch(
+        `http://localhost:5001/api/v1/leaderboard/get-ARVLeaderboard`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch ARV leaderboard");
+      }
+
+      return res.json();
+    },
+    enabled: !!token,
+  });
+  const ARVLeaderboard = arvData?.data || [];
+
+  const { data: tmcData } = useQuery({
+    queryKey: ["combined"],
+    queryFn: async () => {
+      const res = await fetch(
+        `http://localhost:5001/api/v1/leaderboard/get-TMCLeaderboard`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch TMC leaderboard");
+      }
+
+      return res.json();
+    },
+    enabled: !!token,
+  });
+
+  const TMCLeaderboard = tmcData?.data || [];
+
+  if (isLoading) {
+    return <p>Loading...</p>; // You can show a loader or skeleton here.
+  }
+
+  if (isError) {
+    return (
+      <p>Error: {error instanceof Error ? error.message : "Unknown error"}</p>
+    );
+  }
 
   return (
-    <div className=" mx-auto p-4">
-      {/* Tab buttons */}
-      {/* <div className="flex justify-center space-x-4 mb-8">
-        <button
-          onClick={() => setActiveTab("tmc")}
-          className={`px-6 py-3 rounded-lg transition-colors ${
-            activeTab === "tmc"
-              ? "bg-[#8a2be2] text-white"
-              : "border border-white/30 bg-[#3a1c6e] text-white"
-          }`}
-        >
-          Target Match Challenge
-        </button>
-        <button
-          onClick={() => setActiveTab("arv")}
-          className={`px-6 py-3 rounded-lg transition-colors ${
-            activeTab === "arv"
-              ? "bg-[#8a2be2] text-white"
-              : "border border-white/30 bg-[#3a1c6e] text-white"
-          }`}
-        >
-          ARV Prediction Mode
-        </button>
-        <button
-          onClick={() => setActiveTab("combined")}
-          className={`px-6 py-3 rounded-lg transition-colors ${
-            activeTab === "combined"
-              ? "bg-[#8a2be2] text-white"
-              : "border border-white/30 bg-[#3a1c6e] text-white"
-          }`}
-        >
-          Leaderboards
-        </button>
-      </div> */}
-
+    <div className="mx-auto p-4">
       {/* Combined Leaderboard */}
       <div className="col-span-2">
         <div className="bg-[#8a2be2] rounded-t-lg p-4 flex items-center">
-          <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[#8a2be2] mr-3">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M3 3v18h18" />
-              <path d="m18 9-2-2" />
-              <path d="m8 17-2-2" />
-              <path d="m13 12-2-2" />
-              <path d="m18 14-2-2" />
-            </svg>
+          <div className="w-8 h-8 rounded-full flex items-center justify-center text-[#8a2be2] mr-3">
+            <Image
+              src={vector1}
+              width={100}
+              height={100}
+              alt="logo_iamge"
+              className="w-full h-full"
+            />
           </div>
           <h2 className="text-xl font-semibold text-white">
             Combined Leaderboard
           </h2>
         </div>
 
-        <div className="bg-white rounded-b-lg overflow-hidden">
-          <div className="grid grid-cols-4 text-center py-2 border-b border-gray-200">
-            <div className="text-gray-600 font-medium">Rank</div>
-            <div className="text-gray-600 font-medium text-left pl-4">
-              Profile
+        <div className="bg-[#FFFFFF1A] rounded-b-lg overflow-hidden pb-10">
+          <div className="w-[95%] mx-auto mt-[20px]">
+            <div className="grid grid-cols-4 text-center py-2 border-b border-gray-200 h-[59px] bg-[#F4EBFF] items-center">
+              <div className="text-gray-600 font-medium">Rank</div>
+              <div className="text-gray-600 font-medium text-left pl-4">
+                Profile
+              </div>
+              <div className="text-gray-600 font-medium">RV Tier</div>
+              <div className="text-gray-600 font-medium">Score</div>
             </div>
-            <div className="text-gray-600 font-medium">RV Tier</div>
-            <div className="text-gray-600 font-medium">Score</div>
-          </div>
 
-          <div className="max-h-[500px] overflow-y-auto relative">
-            {combinedLeaderboard
-              .filter((entry) => !entry.isCurrentUser)
-              .map((entry) => (
-                <div
-                  key={entry.id}
-                  className={`grid grid-cols-4 items-center text-center py-3 ${getRowColor(
-                    entry.rank,
-                    entry.isCurrentUser
-                  )}`}
-                >
-                  <div className="font-bold text-white">{entry.rank}</div>
-                  <div className="flex items-center text-left">
-                    <div className="w-8 h-8 rounded-full bg-orange-400 flex items-center justify-center text-white font-bold mr-2">
-                      {entry.name.charAt(0)}
-                    </div>
-                    <div>
-                      <div className="font-medium text-white">{entry.name}</div>
-                      <div className="text-xs text-white/70">
-                        {entry.username}
+            <div className="max-h-[500px] overflow-y-auto relative space-y-4 mt-4">
+              {combinedLeaderboard
+                .filter((entry: any) => !entry.isCurrentUser)
+                .map((entry: any, idx: number) => (
+                  <div
+                    key={entry.id}
+                    className={`grid grid-cols-4 items-center text-center py-3 bg-[#FFFFFF1A] rounded-md border ${
+                      (entry.rank, entry.isCurrentUser)
+                    }`}
+                  >
+                    <div className="font-bold text-white">{idx + 1}</div>
+                    <div className="flex items-center text-left">
+                      <div>
+                        <div className="font-medium text-white">
+                          {entry.user.fullName}
+                        </div>
+                        <div className="text-xs text-white/70">
+                          @{entry.user.screenName}
+                        </div>
                       </div>
                     </div>
+                    <div className="text-white">{entry.tierRank}</div>
+                    <div className="font-bold text-white">
+                      {entry.totalPoints}
+                    </div>
                   </div>
-                  <div className="text-white">{entry.tier}</div>
-                  <div className="font-bold text-white">{entry.score}</div>
-                </div>
-              ))}
-
-            {/* Current user fixed at bottom */}
-            {/* {combinedLeaderboard.find((entry) => entry.isCurrentUser) && (
-              <div
-                className={`grid grid-cols-4 items-center text-center py-3 bg-[#2a904c] sticky bottom-0`}
-              >
-                <div className="font-bold text-white">
-                  {
-                    combinedLeaderboard.find((entry) => entry.isCurrentUser)
-                      ?.rank
-                  }
-                </div>
-                <div className="flex items-center text-left">
-                  <div className="w-8 h-8 rounded-full bg-orange-400 flex items-center justify-center text-white font-bold mr-2">
-                    Y
-                  </div>
-                  <div>
-                    <div className="font-medium text-white">You</div>
-                    <div className="text-xs text-white/70">@monon</div>
-                  </div>
-                </div>
-                <div className="text-white">Novice</div>
-                <div className="font-bold text-white">
-                  {
-                    combinedLeaderboard.find((entry) => entry.isCurrentUser)
-                      ?.score
-                  }
-                </div>
-              </div>
-            )} */}
+                ))}
+            </div>
           </div>
         </div>
       </div>
-      {/* Leaderboard grid */}
+
+
+
+
+
       <div className="grid md:grid-cols-2 gap-8 mt-6">
         {/* TMC Leaderboard */}
-        <div>
+        <div className="rounded-b-lg overflow-hidden">
           <div className="bg-[#e0d0ff] rounded-t-lg p-4 flex items-center">
-            <div className="w-8 h-8 rounded-full bg-[#8a2be2] flex items-center justify-center text-white mr-3">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <circle cx="12" cy="12" r="10" />
-                <circle cx="12" cy="12" r="6" />
-                <circle cx="12" cy="12" r="2" />
-              </svg>
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-white mr-3">
+              <Image
+                src={vector2}
+                width={100}
+                height={100}
+                alt="logo_iamge"
+                className="w-full h-full"
+              />
             </div>
             <h2 className="text-xl font-semibold text-[#3a1c6e]">
               TMC Leaderboard
             </h2>
           </div>
 
-          <div className="bg-white rounded-b-lg overflow-hidden">
-            <div className="grid grid-cols-4 text-center py-2 border-b border-gray-200">
-              <div className="text-gray-600 font-medium">Rank</div>
-              <div className="text-gray-600 font-medium text-left pl-4">
-                Profile
+          <div className="bg-[#FFFFFF1A] rounded-b-lg overflow-hidden pb-6">
+            <div className="w-[90%] mx-auto">
+              <div className="grid grid-cols-4 text-center py-2 border-b border-gray-200 h-[59px] items-center bg-[#ECECEC] mt-[31px]">
+                <div className="text-gray-600 font-medium">Rank</div>
+                <div className="text-gray-600 font-medium text-left pl-4">
+                  Profile
+                </div>
+                <div className="text-gray-600 font-medium">RV Tier</div>
+                <div className="text-gray-600 font-medium">Score</div>
               </div>
-              <div className="text-gray-600 font-medium">RV Tier</div>
-              <div className="text-gray-600 font-medium">Score</div>
-            </div>
 
-            <div className="max-h-[500px] overflow-y-auto relative">
-              {tmcLeaderboard
-                .filter((entry) => !entry.isCurrentUser)
-                .map((entry) => (
+              <div className="max-h-[500px] overflow-y-auto relative space-y-4 mt-4">
+                {TMCLeaderboard.filter(
+                  (entry: any) => !entry.isCurrentUser
+                ).map((entry: any, idx: number) => (
                   <div
                     key={entry.id}
-                    className={`grid grid-cols-4 items-center text-center py-3 ${getRowColor(
-                      entry.rank,
-                      entry.isCurrentUser
-                    )}`}
+                    className={`grid grid-cols-4 items-center text-center py-3 bg-[#FFFFFF1A] rounded-md border ${
+                      (entry.rank, entry.isCurrentUser)
+                    }`}
                   >
-                    <div className="font-bold text-white">{entry.rank}</div>
+                    <div className="font-bold text-white">{idx + 1}</div>
                     <div className="flex items-center text-left">
-                      <div className="w-8 h-8 rounded-full bg-orange-400 flex items-center justify-center text-white font-bold mr-2">
-                        {entry.name.charAt(0)}
-                      </div>
                       <div>
                         <div className="font-medium text-white">
-                          {entry.name}
+                          {entry.user.fullName}
                         </div>
                         <div className="text-xs text-white/70">
-                          {entry.username}
+                          @{entry.user.screenName}
                         </div>
                       </div>
                     </div>
-                    <div className="text-white">{entry.tier}</div>
-                    <div className="font-bold text-white">{entry.score}</div>
+                    <div className="text-white">{entry.tierRank}</div>
+                    <div className="font-bold text-white">
+                      {entry.totalPoints}
+                    </div>
                   </div>
                 ))}
-
-              {/* Current user fixed at bottom */}
-              {/* <div
-                className={`grid grid-cols-4 items-center text-center py-3 bg-[#2a904c] sticky bottom-0`}
-              >
-                <div className="font-bold text-white">
-                  {tmcLeaderboard.find((entry) => entry.isCurrentUser)?.rank}
-                </div>
-                <div className="flex items-center text-left">
-                  <div className="w-8 h-8 rounded-full bg-orange-400 flex items-center justify-center text-white font-bold mr-2">
-                    Y
-                  </div>
-                  <div>
-                    <div className="font-medium text-white">You</div>
-                    <div className="text-xs text-white/70">@monon</div>
-                  </div>
-                </div>
-                <div className="text-white">Novice</div>
-                <div className="font-bold text-white">
-                  {tmcLeaderboard.find((entry) => entry.isCurrentUser)?.score}
-                </div>
-              </div> */}
+              </div>
             </div>
           </div>
         </div>
 
         {/* ARV Leaderboard */}
         <div>
-          <div className="bg-[#e0d0ff] rounded-t-lg p-4 flex items-center">
-            <div className="w-8 h-8 rounded-full bg-[#8a2be2] flex items-center justify-center text-white mr-3">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M12 2v8" />
-                <path d="m16 6-4 4-4-4" />
-                <path d="M8 16H6a2 2 0 0 0-2 2" />
-                <path d="M16 16h2a2 2 0 0 1 2 2" />
-                <path d="M12 22v-8" />
-              </svg>
+          <div className="bg-[#9186FF] rounded-t-lg p-4 flex items-center">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center text-white mr-3">
+              <Image
+                src={vector3}
+                width={100}
+                height={100}
+                alt="logo_iamge"
+                className="w-full h-full"
+              />
             </div>
             <h2 className="text-xl font-semibold text-[#3a1c6e]">
               ARV Leaderboard
             </h2>
           </div>
 
-          <div className="bg-white rounded-b-lg overflow-hidden">
-            <div className="grid grid-cols-4 text-center py-2 border-b border-gray-200">
-              <div className="text-gray-600 font-medium">Rank</div>
-              <div className="text-gray-600 font-medium text-left pl-4">
-                Profile
+          <div className="bg-[#FFFFFF1A] rounded-b-lg overflow-hidden pb-6">
+            <div className="w-[90%] mx-auto">
+              <div className="grid grid-cols-4 text-center py-2 border-b border-gray-200 h-[59px] items-center mt-[31px] bg-[#ECECEC]">
+                <div className="text-gray-600 font-medium">Rank</div>
+                <div className="text-gray-600 font-medium text-left pl-4">
+                  Profile
+                </div>
+                <div className="text-gray-600 font-medium">RV Tier</div>
+                <div className="text-gray-600 font-medium">Score</div>
               </div>
-              <div className="text-gray-600 font-medium">RV Tier</div>
-              <div className="text-gray-600 font-medium">Score</div>
-            </div>
 
-            <div className="max-h-[500px] overflow-y-auto relative">
-              {arvLeaderboard
-                .filter((entry) => !entry.isCurrentUser)
-                .map((entry) => (
+              <div className="max-h-[500px] overflow-y-auto relative space-y-4 mt-4">
+                {ARVLeaderboard.filter(
+                  (entry: any) => !entry.isCurrentUser
+                ).map((entry: any, idx: number) => (
                   <div
                     key={entry.id}
-                    className={`grid grid-cols-4 items-center text-center py-3 ${getRowColor(
-                      entry.rank,
-                      entry.isCurrentUser
-                    )}`}
+                    className={`grid grid-cols-4 items-center text-center py-3 bg-[#FFFFFF1A] rounded-md border ${
+                      (entry.rank, entry.isCurrentUser)
+                    }`}
                   >
-                    <div className="font-bold text-white">{entry.rank}</div>
+                    <div className="font-bold text-white">{idx + 1}</div>
                     <div className="flex items-center text-left">
-                      <div className="w-8 h-8 rounded-full bg-orange-400 flex items-center justify-center text-white font-bold mr-2">
-                        {entry.name.charAt(0)}
-                      </div>
                       <div>
                         <div className="font-medium text-white">
-                          {entry.name}
+                          {entry.user.fullName}
                         </div>
                         <div className="text-xs text-white/70">
-                          {entry.username}
+                          @{entry.user.screenName}
                         </div>
                       </div>
                     </div>
-                    <div className="text-white">{entry.tier}</div>
-                    <div className="font-bold text-white">{entry.score}</div>
+                    <div className="text-white">{entry.tierRank}</div>
+                    <div className="font-bold text-white">
+                      {entry.totalPoints}
+                    </div>
                   </div>
                 ))}
-
-              {/* Current user fixed at bottom */}
-              {/* {arvLeaderboard.find((entry) => entry.isCurrentUser) && (
-                <div
-                  className={`grid grid-cols-4 items-center text-center py-3 bg-[#2a904c] sticky bottom-0`}
-                >
-                  <div className="font-bold text-white">
-                    {arvLeaderboard.find((entry) => entry.isCurrentUser)?.rank}
-                  </div>
-                  <div className="flex items-center text-left">
-                    <div className="w-8 h-8 rounded-full bg-orange-400 flex items-center justify-center text-white font-bold mr-2">
-                      Y
-                    </div>
-                    <div>
-                      <div className="font-medium text-white">You</div>
-                      <div className="text-xs text-white/70">@monon</div>
-                    </div>
-                  </div>
-                  <div className="text-white">Novice</div>
-                  <div className="font-bold text-white">
-                    {arvLeaderboard.find((entry) => entry.isCurrentUser)?.score}
-                  </div>
-                </div>
-              )} */}
+              </div>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Refresh button */}
-      {/* <div className="flex justify-center ">
-        <button
-          onClick={fetchLeaderboardData}
-          className="flex items-center px-4 py-2 bg-[#8a2be2] text-white rounded-lg hover:bg-[#7a1bd2] transition-colors"
-          disabled={isLoading}
-        >
-          <RefreshCw
-            size={18}
-            className={`mr-2 ${isLoading ? "animate-spin" : ""}`}
-          />
-          Refresh Leaderboards
-        </button>
-      </div> */}
     </div>
   );
 }

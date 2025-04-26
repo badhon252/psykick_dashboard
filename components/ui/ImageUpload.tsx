@@ -5,9 +5,10 @@ import Image from "next/image";
 
 type Props = {
   onImageChange: (file: File | null) => void;
+  defaultImageUrl?: string;
 };
 
-const ImageUpload: React.FC<Props> = ({ onImageChange }) => {
+const ImageUpload: React.FC<Props> = ({ onImageChange, defaultImageUrl }) => {
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       onImageChange(acceptedFiles[0]);
@@ -27,10 +28,14 @@ const ImageUpload: React.FC<Props> = ({ onImageChange }) => {
       className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center text-white cursor-pointer hover:border-white transition"
     >
       <input {...getInputProps()} />
-      {acceptedFiles.length > 0 ? (
+      {acceptedFiles.length > 0 || defaultImageUrl ? (
         <div className="flex flex-col items-center gap-2">
           <Image
-            src={URL.createObjectURL(acceptedFiles[0])}
+            src={
+              acceptedFiles.length > 0
+                ? URL.createObjectURL(acceptedFiles[0])
+                : defaultImageUrl!
+            }
             alt="Preview"
             width={200}
             height={200}
