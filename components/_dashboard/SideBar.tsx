@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import Image from "next/image";
@@ -10,34 +9,36 @@ import { useState, useCallback, useMemo } from "react";
 import { NavigationItem } from "@/data/data";
 import { LogOut, Menu } from "lucide-react";
 import logo from "@/public/assets/logo.svg";
+import { useAuth } from "@/context/AuthContext";
 
 interface Props {
   lists: NavigationItem[];
 }
 
-
 export function Sidebar({ lists }: Props) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
-  // Close menu callback for performance optimization
+  const { logout } = useAuth();
+
   const closeMenu = useCallback(() => setIsOpen(false), []);
+
+  const handleLogout = () => {
+    logout();
+    setIsLogoutModalOpen(false);
+  };
 
   const NavigationContent = useMemo(() => {
     return (
-      <nav className="min-w-[272px] flex-1 px-10  ">
+      <nav className="min-w-[272px] flex-1 px-10">
         {lists.map((item) => {
           const Icon = item.icon;
-
-          // Normalize paths by removing trailing slashes
           const normalizedPathname = pathname.replace(/\/$/, "");
           const normalizedItemPath = item.path.replace(/\/$/, "");
-
-          // Ensure the default dashboard route is considered active
           const isActive =
             normalizedPathname === normalizedItemPath ||
-            (item.path === "/dashboard/" &&
-              normalizedPathname === "/dashboard");
+            (item.path === "/dashboard/" && normalizedPathname === "/dashboard");
 
           return (
             <Link
@@ -47,18 +48,13 @@ export function Sidebar({ lists }: Props) {
               aria-current={isActive ? "page" : undefined}
               aria-label={item.linkText}
               className={`group relative my-4 mb-1 flex items-center gap-3 rounded-md px-4 py-3 transition-all backdrop-blur-md
-                          ${isActive ? "bg-gradient text-white border-r-2" : "text-[#F4EBFF] hover:bg-gradient hover:text-white"}
-                        `}
+                ${isActive ? "bg-gradient text-white border-r-2" : "text-[#F4EBFF] hover:bg-gradient hover:text-white"}
+              `}
             >
-              {/* Icon */}
               <Icon className="h-5 w-5 transition-colors group-hover:text-white" />
-
-              {/* Link Text */}
               <span className="font-inter text-sm font-medium leading-[20.3px] transition-colors group-hover:text-white">
                 {item.linkText}
               </span>
-
-              {/* Optional: Small Overlay for Better Hover Feedback */}
               {!isActive && (
                 <span className="absolute inset-0 -z-10 rounded-md bg-gradient opacity-0 transition-opacity group-hover:opacity-100"></span>
               )}
@@ -68,26 +64,6 @@ export function Sidebar({ lists }: Props) {
       </nav>
     );
   }, [lists, pathname, closeMenu]);
-
-  // const UserProfile = useMemo(() => {
-  //   return (
-  //     <div className="border-t border-white/10 p-4">
-  //       <div className="flex items-center gap-3">
-  //         <Avatar>
-  //           <AvatarImage
-  //             src="/placeholder-avatar.jpg"
-  //             alt="User Profile Avatar"
-  //           />
-  //           <AvatarFallback>AE</AvatarFallback>
-  //         </Avatar>
-  //         <div>
-  //           <p className="text-sm font-medium text-white">Alison Eyo</p>
-  //           <p className="text-xs text-gray-400">alison.e@rayna.ui</p>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   );
-  // }, []);
 
   const MobileHeader = useMemo(() => {
     return (
@@ -109,16 +85,10 @@ export function Sidebar({ lists }: Props) {
             <div className="flex h-full flex-col">
               <div className="p-6">
                 <Link href="/" className="flex items-center gap-2">
-                  <Image
-                    src={logo}
-                    alt="psykick.club"
-                    width={120}
-                    height={60}
-                  />
+                  <Image src={logo} alt="psykick.club" width={120} height={60} />
                 </Link>
               </div>
               {NavigationContent}
-              {/* {UserProfile} */}
             </div>
           </SheetContent>
         </Sheet>
@@ -135,8 +105,12 @@ export function Sidebar({ lists }: Props) {
           </Link>
         </div>
         {NavigationContent}
-        <button className="flex items-center  gap-4 m-10">Logout <LogOut className="h-4 w-4"/></button>
-        {/* {UserProfile} */}
+        <button
+          onClick={() => setIsLogoutModalOpen(true)}
+          className="flex items-center gap-4 m-10"
+        >
+          Logout <LogOut className="h-4 w-4" />
+        </button>
       </div>
     );
   }, [NavigationContent]);
@@ -145,6 +119,30 @@ export function Sidebar({ lists }: Props) {
     <>
       {MobileHeader}
       {DesktopSidebar}
+
+      {/* Logout Confirmation Modal */}
+      {isLogoutModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-purple-200 p-6 rounded-2xl shadow-lg text-center space-y-6 w-80">
+            <h2 className="text-lg font-semibold text-gray-800">Are you sure you want to logout?</h2>
+            <div className="flex justify-center gap-4">
+              <Button
+                onClick={handleLogout}
+                className="text-white rounded-xl bg-green-500"
+              >
+                Yes
+              </Button>
+              <Button
+                onClick={() => setIsLogoutModalOpen(false)}
+                variant="outline"
+                className="rounded-xl bg-red-500 hover:bg-red-600"
+              >
+                No
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
