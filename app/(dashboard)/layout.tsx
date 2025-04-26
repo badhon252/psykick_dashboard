@@ -6,6 +6,11 @@ import "../globals.css";
 
 import { Toaster } from "@/components/ui/sonner";
 
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
+
+// import ProtectedRoute from "@/components/auth/ProtectedRoute";
+
 
 export const metadata: Metadata = {
   title: "Psykick Club",
@@ -25,7 +30,8 @@ export default function RootLayout({
           <main className="">
             {children}
           </main>
-          <Toaster />
+          <ToastContainer position="top-right" autoClose={3000} />
+          <Toaster position="top-right"/>
         </div>
         {/* </ProtectedRoute> */}</div>
   );
