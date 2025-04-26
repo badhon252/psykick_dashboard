@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { StatCard } from "@/components/stat-card";
@@ -76,7 +77,8 @@ export default function Dashboard() {
           }
         ).then((res) => res.json()),
     });
-  const {} =
+    
+  const { isLoading: completedTargetLoading, data: completedTargetRtes } =
     useQuery<ApiProps>({
       queryKey: ["activeUser"],
       queryFn: () =>
