@@ -2,7 +2,8 @@
 // all image gallery 
 export interface CategoryImage {
   _id: string;
-  categoryId: string;
+  imageId : string | null | undefined;
+  categoryId: string | null | undefined;
   categoryName: string;
   subcategoryName: string;
   image: string ;
