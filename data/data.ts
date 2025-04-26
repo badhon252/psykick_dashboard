@@ -6,8 +6,7 @@ import { BsChatText } from "react-icons/bs";
 import { GrGallery } from "react-icons/gr";
 import { TbTargetArrow } from "react-icons/tb";
 
-export const token =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2UzY2MwNDllNGZjOWEzOWM3NDU3YTQiLCJpYXQiOjE3NDUyOTYyMTAsImV4cCI6MTc0NTkwMTAxMH0.KZ7R_uQBhZ93UdhOzqvw53nQBy_s_1dGDM4KK-KwD5E";
+export const token ="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2N2UzY2MwNDllNGZjOWEzOWM3NDU3YTQiLCJpYXQiOjE3NDUyOTYyMTAsImV4cCI6MTc0NTkwMTAxMH0.KZ7R_uQBhZ93UdhOzqvw53nQBy_s_1dGDM4KK-KwD5E";
 
 export type NavigationItem = {
   id: string;

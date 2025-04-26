@@ -4,7 +4,6 @@
 import { StatCard } from "@/components/stat-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { token } from "@/data/data";
 import { useQuery } from "@tanstack/react-query";
 import { Clock, Target, Users } from "lucide-react";
 import {
@@ -41,6 +40,8 @@ const chartData = [
 ];
 
 export default function Dashboard() {
+  const token = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODBhNGIzYzk2ZDMyMDRmMjJiYjBlMGIiLCJpYXQiOjE3NDU2NDUxODYsImV4cCI6MTc0NjI0OTk4Nn0.j_Iu2kDrA6EzU-oUmNBQSn6rHV5Q5BhLGrGjUuBZOZg`;
+
   const { isLoading: isTotalUserLoading, data: totalUserstats } =
     useQuery<ApiProps>({
       queryKey: ["totalUserstats"],
@@ -51,19 +52,19 @@ export default function Dashboard() {
           },
         }).then((res) => res.json()),
     });
-  const {  } =
-    useQuery<ApiProps>({
-      queryKey: ["totalTimeSpent"],
-      queryFn: () =>
-        fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/average-session-duration`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        ).then((res) => res.json()),
-    });
+  const {} = useQuery<ApiProps>({
+    queryKey: ["totalTimeSpent"],
+    queryFn: () =>
+      fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/average-session-duration`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      ).then((res) => res.json()),
+  });
+
   const { isLoading: activeUserLoading, data: activeuserRes } =
     useQuery<ApiProps>({
       queryKey: ["activeUser"],
@@ -77,7 +78,7 @@ export default function Dashboard() {
           }
         ).then((res) => res.json()),
     });
-    
+
   const { isLoading: completedTargetLoading, data: completedTargetRtes } =
     useQuery<ApiProps>({
       queryKey: ["activeUser"],
@@ -91,6 +92,8 @@ export default function Dashboard() {
           }
         ).then((res) => res.json()),
     });
+
+  console.log();
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -176,18 +179,18 @@ export default function Dashboard() {
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-sm text-white">Number of users</span>
-                    <span className="text-sm text-white">70%</span>
+                    <span className="text-sm text-white">{totalUserstats?.data}</span>
                   </div>
-                  <Progress value={70} className="h-2" />
+                  <Progress value={totalUserstats?.data} className="h-2" />
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between">
                     <span className="text-sm text-white">
                       Number of active users
                     </span>
-                    <span className="text-sm text-white">30%</span>
+                    <span className="text-sm text-white">{activeuserRes?.data}</span>
                   </div>
-                  <Progress value={30} className="h-2" />
+                  <Progress value={activeuserRes?.data} className="h-2" />
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between">
