@@ -34,4 +34,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+<<<<<<< HEAD
+/.history/
+=======
 .qodo
+>>>>>>> db0199e215a82047d9a4a078e3a6284ffc34ae51

@@ -6,20 +6,17 @@ import { MdOutlineDashboard } from "react-icons/md";
 import { usePathname } from "next/navigation";
 import { AdminDashboardTabsList, type NavigationItem } from "@/data/data";
 import { useMemo } from "react";
+import { useAuth } from "@/context/AuthContext";
 // import profileImg from "../../../.././../public/assets/img/dashboard-profile.png";
 
-interface HeaderProps {
-  // userImage?: string | StaticImageData;
-  userName?: string;
-  userRole?: string;
-}
 
-export default function Header({
-  // userImage = profileImg,
-  userName = "Aliana",
-  userRole = "Admin",
-}: HeaderProps) {
+
+export default function Header() {
   const pathname = usePathname();
+
+const {user } = useAuth()
+// console.log("user DAta", user)
+
 
   // Use useMemo to memoize the routeTitles map and associated icons
   const routeData = useMemo(
@@ -65,8 +62,7 @@ export default function Header({
         {/* <Image src={userImage} alt={userName} fill className="object-cover" /> */}
       </div>
       <div className="flex flex-col items-end">
-        <span className="text-sm font-medium text-white">{userName}</span>
-        <span className="text-left text-xs text-white/60">{userRole}</span>
+        <span className="text-sm font-medium text-white">{user?.screenName}</span>
       </div>
     </div>
   );
