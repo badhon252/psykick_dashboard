@@ -1,10 +1,10 @@
-import ForgotPasswordPage from '@/components/auth/ForgotPassword'
+import VerifyOTPPage from '@/components/auth/VerifyOtp'
 import React from 'react'
 
 const page = () => {
   return (
     <div>
-      <ForgotPasswordPage/>
+   <VerifyOTPPage/>
     </div>
   )
 }
