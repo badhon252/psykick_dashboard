@@ -5,7 +5,6 @@ import { useMutation } from "@tanstack/react-query"
 import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
-import Link from "next/link"
 
 export default function VerifyOTPPage() {
   const [otp, setOtp] = useState<string[]>(Array(6).fill(""))
@@ -151,7 +150,7 @@ export default function VerifyOTPPage() {
               className="text-gray-300 hover:text-white"
               onClick={() => router.push('/forgot-password')}
             >
-              Didn't receive OTP
+              Didn&apos;t receive OTP
             </button>
             <button 
               type="button" 
