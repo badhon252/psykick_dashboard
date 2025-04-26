@@ -1,18 +1,38 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
+import React, { useState } from "react"
 import { Eye, EyeOff } from "lucide-react"
+import { useLogin } from "@/hooks/useLogin"
+import { useAuth } from "@/context/AuthContext"
+import { toast } from "sonner"
+import { useRouter } from "next/navigation"
 
 export default function LoginForm() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
 
+  const router = useRouter()
+  const { mutate, isPending, error } = useLogin()
+  const { login } = useAuth()
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log({ email, password })
+
+    mutate(
+      { email, password },
+      {
+        onSuccess: (data) => {
+          login(data.data, data.accessToken)
+          toast.success("Login successful!")
+          router.push("/") // ✅ Redirect to home page
+        },
+        onError: (error) => {
+          console.error(error)
+          toast.error(error.message || "Login failed") // ✅ Error toast
+        },
+      }
+    )
   }
 
   return (
@@ -20,7 +40,7 @@ export default function LoginForm() {
       <div className="w-full max-w-md rounded-lg bg-slate-800/80 p-8 backdrop-blur-sm">
         <h1 className="mb-2 text-center text-2xl font-bold text-white">Log In</h1>
         <p className="mb-6 text-center text-sm text-gray-300">
-          Continue to register as a customer or vendor, Please provide the information.
+          Continue to register as a customer or vendor.
         </p>
 
         <h2 className="mb-4 text-xl font-semibold text-white">Enter your Personal Information</h2>
@@ -67,10 +87,15 @@ export default function LoginForm() {
 
           <button
             type="submit"
-            className="mb-4 w-full rounded-md bg-purple-600 py-3 font-medium text-white transition-colors hover:bg-purple-700"
+            disabled={isPending}
+            className="mb-4 w-full rounded-md bg-purple-600 py-3 font-medium text-white transition-colors hover:bg-purple-700 disabled:bg-purple-400"
           >
-            Log In
+            {isPending ? "Logging in..." : "Log In"}
           </button>
+
+          {error && (
+            <p className="text-center text-sm text-red-400">Login failed. Try again.</p>
+          )}
         </form>
 
         <div className="text-center">
