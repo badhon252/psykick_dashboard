@@ -25,7 +25,7 @@ const ImageUpload: React.FC<Props> = ({ onImageChange, defaultImageUrl }) => {
   return (
     <div
       {...getRootProps()}
-      className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center text-white cursor-pointer hover:border-white transition"
+      className="border-[1px] border-dashed border-[#919792] rounded-xl p-6 text-center text-white cursor-pointer hover:border-white transition"
     >
       <input {...getInputProps()} />
       {acceptedFiles.length > 0 || defaultImageUrl ? (
