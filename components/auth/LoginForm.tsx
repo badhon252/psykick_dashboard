@@ -99,7 +99,7 @@ export default function LoginForm() {
         </form>
 
         <div className="text-center">
-          <a href="#" className="text-sm text-gray-300 hover:text-white">
+          <a href="/forget-password" className="text-sm text-gray-300 hover:text-white">
             Forget your password?
           </a>
         </div>
