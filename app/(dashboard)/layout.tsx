@@ -1,15 +1,16 @@
 import Header from "@/components/_dashboard/dashboard-header";
 import { Sidebar } from "@/components/_dashboard/SideBar";
 import { AdminDashboardTabsList } from "@/data/data";
-import AppProvider from "@/provider/AppProvider";
 import type { Metadata } from "next";
 import "../globals.css";
+
 import { Toaster } from "@/components/ui/sonner";
 
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 
 // import ProtectedRoute from "@/components/auth/ProtectedRoute";
+
 
 export const metadata: Metadata = {
   title: "Psykick Club",
@@ -22,20 +23,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="bg-[#36007B] text-white dashboard-body">
-        {/* <ProtectedRoute> */}
+        <div>{/* <ProtectedRoute> */}
         <Sidebar lists={AdminDashboardTabsList} />
         <div className="px-4 md:ml-[272px] backdrop-blur-sm bg-[#371B77]/40 dashboard-shadow">
           <Header />
           <main className="">
-            <AppProvider>{children}</AppProvider>
+            {children}
           </main>
           <ToastContainer position="top-right" autoClose={3000} />
           <Toaster position="top-right"/>
         </div>
-        {/* </ProtectedRoute> */}
-      </body>
-    </html>
+        {/* </ProtectedRoute> */}</div>
   );
 }
