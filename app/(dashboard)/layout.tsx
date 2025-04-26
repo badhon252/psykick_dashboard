@@ -5,8 +5,10 @@ import AppProvider from "@/provider/AppProvider";
 import type { Metadata } from "next";
 import "../globals.css";
 import { Toaster } from "@/components/ui/sonner";
+
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
+
 // import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 export const metadata: Metadata = {

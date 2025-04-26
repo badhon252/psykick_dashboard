@@ -51,6 +51,7 @@ export function ImageCard({ data }: { data?: CategoryImage }) {
     }
   };
 
+
   return (
     <div className="overflow-hidden shadow-sm border border-[#C5C5C5] rounded-[12px] p-4">
       <div className="aspect-square">

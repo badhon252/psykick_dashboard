@@ -22,6 +22,7 @@ export function ImageGalleryPage() {
         ).then((res) => res.json()),
     });
 
+
   console.log(data?.data);
 
   let content;
@@ -57,6 +58,7 @@ export function ImageGalleryPage() {
       </div>
     );
   }
+
 
   return (
     <div className="h-full flex flex-col">

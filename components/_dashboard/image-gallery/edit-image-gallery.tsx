@@ -40,6 +40,7 @@ import {
 } from "@/components/types/ImageGallery";
 import { toast } from "react-toastify";
 
+
 const EditImageGallery = ({
   open,
   onOpenChange,
@@ -138,6 +139,7 @@ const EditImageGallery = ({
               <form
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-6 bg-[#170A2C]/20 rounded-[16px] p-6"
+
               >
                 {/* Category Name */}
                 <FormField
