@@ -3,10 +3,53 @@ import { useState } from "react";
 import EditImageGallery from "./edit-image-gallery";
 import { CategoryImage } from "@/components/types/ImageGallery";
 import Image from "next/image";
+import DeleteModal from "@/components/shared/modals/DeleteModal";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
 
 export function ImageCard({ data }: { data?: CategoryImage }) {
-  console.log(data)
+  const token =
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODBhMDkyMDA0MDM1ZTdhOGNjOTc4ZTUiLCJpYXQiOjE3NDU0ODgzNzMsImV4cCI6MTc0NjA5MzE3M30.yifJ6Nn-zzQyFHGBCuXEDsk-vPazqGd55WNNNV7ZcdI";
+  const queryClient = useQueryClient();
+
+  console.log(data);
   const [isOpen, setIsOpen] = useState(false);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null | undefined>(
+    null
+  );
+
+  console.log(data)
+
+
+  const handleDeleteImageGallery = async () => {
+    if (!selectedCategoryId) return;
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/category/delete-category/${selectedCategoryId}/${data?.imageId}/${data?.subcategoryName}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const result = await res.json();
+
+      if (res.ok) {
+        toast.success("Image Gallery deleted successfully!");
+        setDeleteModalOpen(false);
+        queryClient.invalidateQueries({ queryKey: ["all-image-gallery"] });
+      } else {
+        toast.error(result?.message || "Failed to delete image gallery.");
+      }
+    } catch (error) {
+      console.error("Delete error:", error);
+      toast.error("Failed to delete Image Gallery. Please try again.");
+    }
+  };
 
   return (
     <div className="overflow-hidden shadow-sm border border-[#C5C5C5] rounded-[12px] p-4">
@@ -54,7 +97,13 @@ export function ImageCard({ data }: { data?: CategoryImage }) {
           >
             Edit
           </button>
-          <button className="btn-outline rounded-md px-4 py-1 text-xs font-medium flex-1 transition-colors ">
+          <button
+            onClick={() => {
+              setSelectedCategoryId(data?.categoryId);
+              setDeleteModalOpen(true);
+            }}
+            className="btn-outline rounded-md px-4 py-1 text-xs font-medium flex-1 transition-colors "
+          >
             Delete
           </button>
         </div>
@@ -66,6 +115,15 @@ export function ImageCard({ data }: { data?: CategoryImage }) {
           open={isOpen}
           onOpenChange={setIsOpen}
           defaultData={data}
+        />
+      )}
+
+      {/* delete modal gallery  */}
+      {deleteModalOpen && (
+        <DeleteModal
+          isOpen={deleteModalOpen}
+          onClose={() => setDeleteModalOpen(false)}
+          onConfirm={handleDeleteImageGallery}
         />
       )}
     </div>

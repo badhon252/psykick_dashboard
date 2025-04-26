@@ -5,6 +5,8 @@ import AppProvider from "@/provider/AppProvider";
 import type { Metadata } from "next";
 import "../globals.css";
 import { Toaster } from "@/components/ui/sonner";
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
 // import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 export const metadata: Metadata = {
@@ -27,7 +29,8 @@ export default function RootLayout({
           <main className="">
             <AppProvider>{children}</AppProvider>
           </main>
-          <Toaster />
+          <ToastContainer position="top-right" autoClose={3000} />
+          <Toaster position="top-right"/>
         </div>
         {/* </ProtectedRoute> */}
       </body>
