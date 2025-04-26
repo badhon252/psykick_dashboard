@@ -1,32 +1,23 @@
 "use client";
-// import Image from "next/image";
 import { useState } from "react";
 import EditImageGallery from "./edit-image-gallery";
 import { CategoryImage } from "@/components/types/ImageGallery";
-
-// interface ImageCardProps {
-//   image: {
-//     id: number;
-//     src: string;
-//     category: string;
-//     subcategory: string;
-//     name: string;
-//   };
-// }
+import Image from "next/image";
 
 export function ImageCard({ data }: { data?: CategoryImage }) {
-  console.log(data, "dfsdf");
+  console.log(data)
   const [isOpen, setIsOpen] = useState(false);
+
   return (
     <div className="overflow-hidden shadow-sm border border-[#C5C5C5] rounded-[12px] p-4">
       <div className="aspect-square">
-        {/* <Image
+        <Image
           width={304}
           height={270}
-          src={data?.imageUrl}
-          alt={data?.category}
+          src={data?.image || ""}
+          alt="image gallery"
           className="w-full h-full object-cover rounded-[12px]"
-        /> */}
+        />
       </div>
       <div className="p-3 space-y-2">
         <h4 className="text-xl font-semibold leading-[120%] text-[#F4EBFF] text-center">
@@ -40,7 +31,7 @@ export function ImageCard({ data }: { data?: CategoryImage }) {
           </div>
           <div className="text-right">
             <div className="text-base fotn-normal text-[#F4EBFF] leading-[120%]">
-              {data?.category}
+              {data?.categoryName}
             </div>
           </div>
         </div>
@@ -52,7 +43,7 @@ export function ImageCard({ data }: { data?: CategoryImage }) {
           </div>
           <div className="text-right">
             <div className="text-base fotn-normal text-[#F4EBFF] leading-[120%]">
-              Name
+              {data?.subcategoryName}
             </div>
           </div>
         </div>
@@ -70,7 +61,13 @@ export function ImageCard({ data }: { data?: CategoryImage }) {
       </div>
 
       {/* edit image gallery  */}
-      {isOpen && <EditImageGallery open={isOpen} onOpenChange={setIsOpen} />}
+      {isOpen && (
+        <EditImageGallery
+          open={isOpen}
+          onOpenChange={setIsOpen}
+          defaultData={data}
+        />
+      )}
     </div>
   );
 }

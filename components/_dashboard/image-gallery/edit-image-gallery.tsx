@@ -33,39 +33,83 @@ type CategoryFormValues = z.infer<typeof formSchema>;
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import ImageUpload from "@/components/ui/ImageUpload";
 import { Label } from "@/components/ui/label";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  CategoryApiResponse,
+  CategoryImage,
+} from "@/components/types/ImageGallery";
+import { toast } from "sonner";
 
 const EditImageGallery = ({
   open,
   onOpenChange,
+  defaultData,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  defaultData?: CategoryImage;
 }) => {
   const [image, setImage] = useState<File | null>(null);
+  console.log(image);
+
+  console.log("defaultData", defaultData);
 
   const token =
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODBhMDkyMDA0MDM1ZTdhOGNjOTc4ZTUiLCJpYXQiOjE3NDU0ODgzNzMsImV4cCI6MTc0NjA5MzE3M30.yifJ6Nn-zzQyFHGBCuXEDsk-vPazqGd55WNNNV7ZcdI";
 
+    const queryClient = useQueryClient();
+
   const form = useForm<CategoryFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      categoryName: "",
-      subCategoryName: "",
+      categoryName: defaultData?.categoryName || "",
+      subCategoryName: defaultData?.subcategoryName || "",
     },
   });
 
+  // get category and subCategory
+  const { data } = useQuery<CategoryApiResponse>({
+    queryKey: ["all-category-subCategory"],
+    queryFn: () =>
+      fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/category/get-category-and-subcategory-names`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      ).then((res) => res.json()),
+  });
+
+  const categoryData = data?.data || [];
+  const allSubCategories = categoryData.flatMap(
+    (item) => item.subCategoryNames
+  );
+  console.log(defaultData?.categoryId);
+
+  // create image category edit
   const { mutate, isPending } = useMutation({
-    mutationKey: ["create-category"],
-    mutationFn: (formData: FormData) =>
-      fetch(`http://localhost:5001/api/v1/category/upload-category-image`, {
-        method: "POST",
-        headers: {
-        //   "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      }).then((res) => res.json()),
+    mutationKey: ["update-image-gallery"],
+    mutationFn: async (formData: FormData) => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/category/update-category/${defaultData?.categoryId}`,
+        {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${token}`, // Don't include Content-Type for FormData
+          },
+          body: formData,
+        }
+      );
+      return res.json();
+    },
+
+    onSuccess: (data) =>{
+      if(!data?.status){
+        toast.error(data?.message || "Something went wrong");
+        return;
+      }
+      toast.success(data?.message || "Image gallery updated successfully");
+      queryClient.invalidateQueries({ queryKey: ["all-image-gallery"] });
+      onOpenChange(false);
+    }
+    
   });
 
   const onSubmit = (values: CategoryFormValues) => {
@@ -102,8 +146,11 @@ const EditImageGallery = ({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="FLOWER">FLOWER</SelectItem>
-                        <SelectItem value="LMN">LMN</SelectItem>
+                        {categoryData?.map((cat, index) => (
+                          <SelectItem key={index} value={cat.categoryName}>
+                            {cat.categoryName}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -128,8 +175,11 @@ const EditImageGallery = ({
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="Lily">Lily</SelectItem>
-                        <SelectItem value="DEF">DEF</SelectItem>
+                        {allSubCategories?.map((cat, index) => (
+                          <SelectItem key={index} value={cat}>
+                            {cat}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -141,7 +191,10 @@ const EditImageGallery = ({
 
               <div>
                 <Label className="text-white mb-2 block">Category Image</Label>
-                <ImageUpload onImageChange={setImage} />
+                <ImageUpload
+                  onImageChange={setImage}
+                  defaultImageUrl={defaultData?.image}
+                />
               </div>
 
               <Button
