@@ -51,7 +51,7 @@ export default function Dashboard() {
           },
         }).then((res) => res.json()),
     });
-  const { isLoading: totalAverageLoading, data: totalAverageTImeSpent } =
+  const {  } =
     useQuery<ApiProps>({
       queryKey: ["totalTimeSpent"],
       queryFn: () =>
