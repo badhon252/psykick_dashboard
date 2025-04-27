@@ -3,14 +3,16 @@ import ErrorContainer from "@/components/shared/ErrorContainer/ErrorContainer";
 import NotFound from "@/components/shared/NotFound/NotFound";
 import TableSkeleton from "@/components/shared/TableSkeleton/TableSkeleton";
 import { ARVTargetResponse } from "@/components/types/ManageTarget";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import moment from "moment";
 import Link from "next/link";
 import React from "react";
+import { toast } from "react-toastify";
 
 const ArvInactiveTargets = () => {
+  const queryClient = useQueryClient();
   const { data, isLoading, isError, error } = useQuery<ARVTargetResponse>({
-    queryKey: ["all-un-queued-tmc-targets"],
+    queryKey: ["all-un-queued-arv-targets"],
     queryFn: () =>
       fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/get-allUnQueuedARVTargets`
@@ -67,7 +69,10 @@ const ArvInactiveTargets = () => {
               </div>
             </li>
             <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-              <button className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px] bg-[#D74727]">
+              <button
+                onClick={() => handleArvAddToQueue(target?._id)}
+                className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px] bg-[#D74727]"
+              >
                 Add to
               </button>
             </li>
@@ -77,7 +82,29 @@ const ArvInactiveTargets = () => {
     );
   }
 
-  console.log(data?.data);
+  const { mutate } = useMutation({
+    mutationKey: ["add-arv-to-queue"],
+    mutationFn: (id: string) =>
+      fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/update-ARVTarget-addToQueue/${id}`,
+        { method: "PATCH" }
+      ).then((res) => res.json()),
+
+    onSuccess: (data) => {
+      if (!data?.status) {
+        toast.error(data?.message || "Something went wrong");
+        return;
+      }
+      toast.success(data?.message || "Added to queue successfully");
+      queryClient.invalidateQueries({
+        queryKey: ["all-un-queued-arv-targets"],
+      });
+    },
+  });
+
+  const handleArvAddToQueue = (id: string) => {
+    mutate(id);
+  };
   return (
     <div>
       <div className="bg-[#c4a0ff17] p-6 rounded-lg">
