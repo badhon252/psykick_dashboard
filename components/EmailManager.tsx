@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { Dialog, DialogContent, } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
 
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL
 
@@ -19,13 +20,12 @@ export function EmailList() {
   const [emails, setEmails] = useState<Email[]>([])
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [loadingDelete, setLoadingDelete] = useState(false)
 
   const getToken = () => {
-    // Assuming your token is saved as 'token' in localStorage
     return localStorage.getItem("token")
   }
 
-  // Fetch all emails
   useEffect(() => {
     const fetchEmails = async () => {
       const token = getToken()
@@ -54,7 +54,6 @@ export function EmailList() {
     fetchEmails()
   }, [])
 
-  // Fetch single email when clicked
   const handleEmailClick = async (id: string) => {
     const token = getToken()
     if (!token) {
@@ -80,6 +79,39 @@ export function EmailList() {
     }
   }
 
+  const handleDeleteEmail = async () => {
+    if (!selectedEmail) return
+    const token = getToken()
+    if (!token) {
+      console.error("No token found")
+      return
+    }
+
+    try {
+      setLoadingDelete(true)
+      const res = await fetch(`${BASE_URL}/admin/contact-us/${selectedEmail._id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      const data = await res.json()
+
+      if (data.status) {
+        // After delete, remove from emails list
+        setEmails((prev) => prev.filter((email) => email._id !== selectedEmail._id))
+        setIsModalOpen(false)
+        setSelectedEmail(null)
+      } else {
+        console.error("Failed to delete email", data.message)
+      }
+    } catch (error) {
+      console.error("Error deleting email:", error)
+    } finally {
+      setLoadingDelete(false)
+    }
+  }
+
   return (
     <div className="text-white rounded-lg overflow-hidden">
       <div className="p-4 border-b border-purple-800">
@@ -89,7 +121,7 @@ export function EmailList() {
         {emails.map((email) => (
           <div
             key={email._id}
-            className="flex items-center p-4 hover:bg-purple-900 cursor-pointer transition-colors"
+            className="flex items-center p-4 hover:bg-purple-800 cursor-pointer transition-colors"
             onClick={() => handleEmailClick(email._id)}
           >
             <Avatar className="h-10 w-10 mr-4">
@@ -100,11 +132,10 @@ export function EmailList() {
             </Avatar>
             <div className="flex-1">
               <p className="font-medium">{email.name}</p>
-              <p className="font-normal text-gray-500">{email.email}</p>
+              <p className="text-gray-400">{email.email}</p>
             </div>
             <div className="text-sm text-purple-200">
               {new Date(email.createdAt).toLocaleDateString()}
-              
             </div>
           </div>
         ))}
@@ -112,7 +143,8 @@ export function EmailList() {
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-[500px] bg-slate-900">
-     
+        
+
           {selectedEmail && (
             <div>
               <div className="flex items-center gap-4 py-2">
@@ -129,8 +161,19 @@ export function EmailList() {
                   </p>
                 </div>
               </div>
-              <div className="mt-2 whitespace-pre-line"><span className="font-bold">Subject:</span> {selectedEmail.subject}</div> <br />
+              <div className="mt-2 whitespace-pre-line"><span className="font-bold">Sbuject:</span> {selectedEmail?.subject}</div> <br />
               <div className="mt-2 whitespace-pre-line"><span className="font-bold">Body:</span> {selectedEmail.message}</div>
+
+              {/* Delete button */}
+              <div className="mt-4 flex justify-end">
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteEmail}
+                  disabled={loadingDelete}
+                >
+                  {loadingDelete ? "Deleting..." : "Delete"}
+                </Button>
+              </div>
             </div>
           )}
         </DialogContent>
