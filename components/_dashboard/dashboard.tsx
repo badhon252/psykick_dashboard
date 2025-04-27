@@ -18,6 +18,7 @@ import {
   YAxis,
 } from "recharts";
 import SkeletonWrapper from "../ui/skeleton-wrapper";
+import TotalParticippationofTmsc from "./TotalParticippationofTmsc";
 
 interface ApiProps {
   status: boolean;
@@ -41,6 +42,8 @@ const chartData = [
 ];
 
 export default function Dashboard() {
+
+// all user 
   const { isLoading: isTotalUserLoading, data: totalUserstats } =
     useQuery<ApiProps>({
       queryKey: ["totalUserstats"],
@@ -51,6 +54,7 @@ export default function Dashboard() {
           },
         }).then((res) => res.json()),
     });
+// avarage time spent 
   const {  } =
     useQuery<ApiProps>({
       queryKey: ["totalTimeSpent"],
@@ -64,6 +68,8 @@ export default function Dashboard() {
           }
         ).then((res) => res.json()),
     });
+
+    // active user 
   const { isLoading: activeUserLoading, data: activeuserRes } =
     useQuery<ApiProps>({
       queryKey: ["activeUser"],
@@ -92,6 +98,8 @@ export default function Dashboard() {
         ).then((res) => res.json()),
     });
 
+    console.log("totalUserstats", totalUserstats);
+  console.log("activeuserRes", activeuserRes);
   return (
     <div className="flex flex-col min-h-screen">
       <main className=" p-6 space-y-6">
@@ -125,6 +133,8 @@ export default function Dashboard() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+       
+       <TotalParticippationofTmsc/>
           <Card className="bg-[#170A2C]/50 border-0">
             <CardHeader className="pb-2">
               <CardTitle className="text-white">
@@ -165,7 +175,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card className="bg-[#170A2C]/50 border-0">
+          {/* <Card className="bg-[#170A2C]/50 border-0">
             <CardHeader className="pb-2">
               <CardTitle className="text-white">
                 Highest Playing Report
@@ -225,7 +235,7 @@ export default function Dashboard() {
                 </div>
               </div>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
       </main>
     </div>
