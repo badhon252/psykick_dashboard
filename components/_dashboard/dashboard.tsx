@@ -2,21 +2,11 @@
 "use client";
 
 import { StatCard } from "@/components/stat-card";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { token } from "@/data/data";
 import { useQuery } from "@tanstack/react-query";
 import { Clock, Target, Users } from "lucide-react";
-import {
-  CartesianGrid,
-  Legend,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+
 import SkeletonWrapper from "../ui/skeleton-wrapper";
 import TotalParticippationofTmsc from "./TotalParticippationofTmsc";
 
@@ -26,20 +16,7 @@ interface ApiProps {
   data: number;
 }
 
-const chartData = [
-  { name: "Jan", tmc: 30, arv: 40 },
-  { name: "Feb", tmc: 50, arv: 60 },
-  { name: "Mar", tmc: 70, arv: 50 },
-  { name: "Apr", tmc: 90, arv: 70 },
-  { name: "May", tmc: 120, arv: 90 },
-  { name: "Jun", tmc: 150, arv: 120 },
-  { name: "Jul", tmc: 180, arv: 170 },
-  { name: "Aug", tmc: 160, arv: 190 },
-  { name: "Sep", tmc: 140, arv: 170 },
-  { name: "Oct", tmc: 120, arv: 130 },
-  { name: "Nov", tmc: 100, arv: 110 },
-  { name: "Dec", tmc: 80, arv: 90 },
-];
+
 
 export default function Dashboard() {
 
@@ -137,7 +114,7 @@ export default function Dashboard() {
        <TotalParticippationofTmsc/>
 
 
-          
+       
 
           {/* <Card className="bg-[#170A2C]/50 border-0">
             <CardHeader className="pb-2">
