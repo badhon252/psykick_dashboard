@@ -61,22 +61,11 @@ export default function Dashboard() {
         ).then((res) => res.json()),
     });
     
-  const { isLoading: completedTargetLoading, data: completedTargetRtes } =
-    useQuery<ApiProps>({
-      queryKey: ["activeUser"],
-      queryFn: () =>
-        fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/active-users-count`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        ).then((res) => res.json()),
-    });
+ 
 
     console.log("totalUserstats", totalUserstats);
   console.log("activeuserRes", activeuserRes);
+  
   return (
     <div className="flex flex-col min-h-screen">
       <main className=" p-6 space-y-6">
