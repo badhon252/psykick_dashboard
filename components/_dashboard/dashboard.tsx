@@ -132,48 +132,12 @@ export default function Dashboard() {
           <StatCard title="Completed Target" value="3505" icon={Target} />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
        
        <TotalParticippationofTmsc/>
-          <Card className="bg-[#170A2C]/50 border-0">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-white">
-                Total Participation of TMC & ARV
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={chartData}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                    <XAxis dataKey="name" stroke="#fff" />
-                    <YAxis stroke="#fff" />
-                    <Tooltip
-                      contentStyle={{
-                        backgroundColor: "#170A2C",
-                        borderColor: "#333",
-                      }}
-                      labelStyle={{ color: "#fff" }}
-                    />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey="tmc"
-                      name="TMC"
-                      stroke="#8884d8"
-                      activeDot={{ r: 8 }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="arv"
-                      name="ARV"
-                      stroke="#82ca9d"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </CardContent>
-          </Card>
+
+
+          
 
           {/* <Card className="bg-[#170A2C]/50 border-0">
             <CardHeader className="pb-2">
