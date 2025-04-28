@@ -1,93 +1,15 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
-// import React, { useState } from "react";
-
-// const ChangePassword = () => {
-//   const [currentPassword, setCurrentPassword] = useState("");
-//   const [newPassword, setNewPassword] = useState("");
-//   const [confirmNewPassword, setConfirmNewPassword] = useState("");
-
-//   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-//     e.preventDefault();
-
-//     const formData = {
-//       currentPassword,
-//       newPassword,
-//       confirmNewPassword,
-//     };
-
-//     console.log(formData);
-//   };
-
-//   return (
-//     <div className="p-4 w-full">
-//       <div className="flex justify-between items-center mb-6">
-//         <h1 className="text-2xl font-bold text-white">Change Password</h1>
-//         <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded-md">
-//           Edit
-//         </button>
-//       </div>
-
-//       <form onSubmit={handleSubmit} className="bg-purple-800 bg-opacity-50 rounded-lg p-6">
-//         <div className="space-y-4">
-//           <div>
-//             <label className="block text-white mb-1">Current Password</label>
-//             <input
-//               type="password"
-//               value={currentPassword}
-//               onChange={(e) => setCurrentPassword(e.target.value)}
-//               className="w-full p-2 rounded-md bg-purple-700 bg-opacity-50 border border-purple-500 text-white"
-//               placeholder="Enter your new password"
-//             />
-//           </div>
-
-//           <div className="flex gap-4">
-//             <div className="flex-1">
-//               <label className="block text-white mb-1">New Password</label>
-//               <input
-//                 type="password"
-//                 value={newPassword}
-//                 onChange={(e) => setNewPassword(e.target.value)}
-//                 className="w-full p-2 rounded-md bg-purple-700 bg-opacity-50 border border-purple-500 text-white"
-//                 placeholder="Enter your new password"
-//               />
-//             </div>
-//             <div className="flex-1">
-//               <label className="block text-white mb-1">Confirm New Password</label>
-//               <input
-//                 type="password"
-//                 value={confirmNewPassword}
-//                 onChange={(e) => setConfirmNewPassword(e.target.value)}
-//                 className="w-full p-2 rounded-md bg-purple-700 bg-opacity-50 border border-purple-500 text-white"
-//                 placeholder="Enter your confirm new password"
-//               />
-//             </div>
-//           </div>
-
-//           <div>
-//             <button
-//               type="submit"
-//               className="bg-purple-600 hover:bg-purple-500 text-white px-6 py-2 rounded-md"
-//             >
-//               Save Changes
-//             </button>
-//           </div>
-//         </div>
-//       </form>
-//     </div>
-//   );
-// };
-
-// export default ChangePassword;
-
-import React from "react";
+import React, { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "./ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
 
 const ChangePassword = () => {
-  const token =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODBhNGIzYzk2ZDMyMDRmMjJiYjBlMGIiLCJpYXQiOjE3NDU2NDUwNDAsImV4cCI6MTc0NjI0OTg0MH0.zQKFaBLX4gvAL93KpHzSBcgLpNT0EO6y3mYZHknCPqk";
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+
+  const token = localStorage.getItem('token');
 
   const mutation = useMutation({
     mutationFn: async (formData: {
@@ -114,13 +36,12 @@ const ChangePassword = () => {
 
       return response.json();
     },
-    onSuccess: (data) => {
-      console.log("Password changed successfully:", data);
-      alert("Password changed successfully!");
+    onSuccess: () => {
+      toast.success("Password changed successfully!");
     },
-    onError: (error: any) => {
-      console.error("Password change failed:", error);
-      alert(error.message || "Failed to change password");
+    onError: (error: string) => {
+        const errorMessage = (error as { message?: string })?.message || "Password change failed. Please try again.";
+        toast.error(errorMessage);
     },
   });
 
@@ -150,50 +71,71 @@ const ChangePassword = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="rounded-lg">
-        <div>
-        <div className="space-y-8  p-6">
-          <div>
+        <div className="space-y-8 p-6">
+          {/* Current Password */}
+          <div className="relative">
             <label className="block text-white mb-1">Current Password</label>
             <input
-              type="password"
+              type={showCurrentPassword ? "text" : "password"}
               name="currentPassword"
-              className="w-full p-2 rounded-md bg-[#C5C5C5] bg-opacity-10 border border-[#C5C5C5] outline-none text-white"
-              placeholder="Enter your new password"
+              className="w-full p-2 rounded-md bg-[#C5C5C5] bg-opacity-10 border border-[#C5C5C5] outline-none text-white pr-10"
+              placeholder="Enter your current password"
             />
+            <button
+              type="button"
+              onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+              className="absolute right-3 top-9 text-white"
+            >
+              {showCurrentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
           </div>
 
+          {/* New Password & Confirm New Password */}
           <div className="flex gap-4">
-            <div className="flex-1">
+            <div className="flex-1 relative">
               <label className="block text-white mb-1">New Password</label>
               <input
-                type="password"
+                type={showNewPassword ? "text" : "password"}
                 name="newPassword"
-                className="w-full p-2 rounded-md bg-[#C5C5C5] bg-opacity-10 border border-[#C5C5C5] outline-none text-white"
+                className="w-full p-2 rounded-md bg-[#C5C5C5] bg-opacity-10 border border-[#C5C5C5] outline-none text-white pr-10"
                 placeholder="Enter your new password"
               />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                className="absolute right-3 top-9 text-white"
+              >
+                {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
             </div>
-            <div className="flex-1">
-              <label className="block text-white mb-1">
-                Confirm New Password
-              </label>
+
+            <div className="flex-1 relative">
+              <label className="block text-white mb-1">Confirm New Password</label>
               <input
-                type="password"
+                type={showConfirmNewPassword ? "text" : "password"}
                 name="confirmNewPassword"
-                className="w-full p-2 rounded-md bg-[#C5C5C5] bg-opacity-10 border border-[#C5C5C5] outline-none text-white"
+                className="w-full p-2 rounded-md bg-[#C5C5C5] bg-opacity-10 border border-[#C5C5C5] outline-none text-white pr-10"
                 placeholder="Enter your confirm new password"
               />
+              <button
+                type="button"
+                onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
+                className="absolute right-3 top-9 text-white"
+              >
+                {showConfirmNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
             </div>
           </div>
 
+          {/* Save Button */}
           <div>
             <button
               type="submit"
-              className=" text-white px-6 py-2 rounded-md btn"
+              className="text-white px-6 py-2 rounded-md btn"
             >
               Save Changes
             </button>
           </div>
-        </div>
         </div>
       </form>
     </div>
