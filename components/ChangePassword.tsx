@@ -80,14 +80,20 @@
 
 // export default ChangePassword;
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "./ui/button";
 import { ArrowLeft } from "lucide-react";
 
 const ChangePassword = () => {
-  const token =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODBhNGIzYzk2ZDMyMDRmMjJiYjBlMGIiLCJpYXQiOjE3NDU2NDUwNDAsImV4cCI6MTc0NjI0OTg0MH0.zQKFaBLX4gvAL93KpHzSBcgLpNT0EO6y3mYZHknCPqk";
+  const [token, setToken] = useState("")
+  // const token = localStorage.getItem("token");
+  useEffect(() => {
+      const storedToken = localStorage.getItem("token");
+      if (storedToken) {
+        setToken(storedToken);
+      }
+    }, []);
 
   const mutation = useMutation({
     mutationFn: async (formData: {

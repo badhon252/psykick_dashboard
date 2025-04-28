@@ -7,8 +7,6 @@ import TermsConditions from "@/components/TermsConditions";
 import PrivacyPolicy from "@/components/PrivacyPolicy";
 import AboutUs from "@/components/AboutUs"; // Ensure this component exists
 import PersonalInformation from "@/components/PersonalInformation";
-// import Image from "next/image";
-// import vector1 from "@/public/assets/img/Vector1.png";
 
 export default function GamingSettings() {
   const [activeSection, setActiveSection] = useState("settings");
