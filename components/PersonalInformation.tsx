@@ -4,8 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import { useMutation } from "@tanstack/react-query";
 
 const PersonalInformation = () => {
-  const token =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODBhNGIzYzk2ZDMyMDRmMjJiYjBlMGIiLCJpYXQiOjE3NDU2NDUwNDAsImV4cCI6MTc0NjI0OTg0MH0.zQKFaBLX4gvAL93KpHzSBcgLpNT0EO6y3mYZHknCPqk";
+  const token = localStorage.getItem("token");
 
   const mutation = useMutation({
     mutationFn: async (formData: FormData) => {

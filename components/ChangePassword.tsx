@@ -3,14 +3,14 @@ import { useMutation } from "@tanstack/react-query";
 import { Button } from "./ui/button";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
-
+ 
 const ChangePassword = () => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
-
+ 
   const token = localStorage.getItem('token');
-
+ 
   const mutation = useMutation({
     mutationFn: async (formData: {
       currentPassword: string;
@@ -28,12 +28,12 @@ const ChangePassword = () => {
           body: JSON.stringify(formData),
         }
       );
-
+ 
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to change password");
       }
-
+ 
       return response.json();
     },
     onSuccess: () => {
@@ -44,20 +44,20 @@ const ChangePassword = () => {
         toast.error(errorMessage);
     },
   });
-
+ 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
-
+ 
     const formData = {
       currentPassword: form.currentPassword.value,
       newPassword: form.newPassword.value,
       confirmNewPassword: form.confirmNewPassword.value,
     };
-
+ 
     mutation.mutate(formData);
   };
-
+ 
   return (
     <div className="w-full">
       <div className="bg-gradient-to-r from-[#8F37FF] to-[#2D17FF] rounded-t-lg p-4 flex items-center justify-between h-[78px]">
@@ -69,7 +69,7 @@ const ChangePassword = () => {
           </Button>
         </a>
       </div>
-
+ 
       <form onSubmit={handleSubmit} className="rounded-lg">
         <div className="space-y-8 p-6">
           {/* Current Password */}
@@ -89,7 +89,7 @@ const ChangePassword = () => {
               {showCurrentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
-
+ 
           {/* New Password & Confirm New Password */}
           <div className="flex gap-4">
             <div className="flex-1 relative">
@@ -108,7 +108,7 @@ const ChangePassword = () => {
                 {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
-
+ 
             <div className="flex-1 relative">
               <label className="block text-white mb-1">Confirm New Password</label>
               <input
@@ -126,7 +126,7 @@ const ChangePassword = () => {
               </button>
             </div>
           </div>
-
+ 
           {/* Save Button */}
           <div>
             <button
@@ -141,5 +141,5 @@ const ChangePassword = () => {
     </div>
   );
 };
-
+ 
 export default ChangePassword;

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -17,15 +17,28 @@ export default function CreateARVTargetPage() {
   const [outcomeDate, setOutcomeDate] = useState("")
   const [outcomeTime, setOutcomeTime] = useState("")
   const [controlImage, setControlImage] = useState("")
+  const [token, setToken] = useState("")
   const [images, setImages] = useState([
     { id: 1, description: "", url: "" },
     { id: 2, description: "", url: "" },
     { id: 3, description: "", url: "" },
   ])
 
+  // Token load from localStorage
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    if (storedToken) {
+      setToken(storedToken);
+    }
+  }, []);
+
   // Function to handle form submission
   const handleSubmit = async () => {
-    // Format the dates and times
+    if (!token) {
+      alert("User not authenticated! Please log in again.");
+      return;
+    }
+
     const formattedRevealTime = revealDate && revealTime ? `${revealDate}T${revealTime}:00` : "";
     const formattedOutcomeTime = outcomeDate && outcomeTime ? `${outcomeDate}T${outcomeTime}:00` : "";
 
@@ -40,36 +53,31 @@ export default function CreateARVTargetPage() {
       image3: images[2],
     }
 
-    // Log data to console for debugging
     console.log("Submitting form with data:", payload);
 
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODBhNGIzYzk2ZDMyMDRmMjJiYjBlMGIiLCJpYXQiOjE3NDU2NDUxODYsImV4cCI6MTc0NjI0OTk4Nn0.j_Iu2kDrA6EzU-oUmNBQSn6rHV5Q5BhLGrGjUuBZOZg";
-
     try {
-      // Example POST request to your backend
-      const response = await fetch("http://localhost:5001/api/v1/ARVTarget/create-ARVTarget", {
+      const response = await fetch("NEXT_PUBLIC_BACKEND_URL/ARVTarget/create-ARVTarget", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
       console.log("API response:", data);
-      
+
       if (response.ok) {
-        alert("ARV Target created successfully!")
+        alert("ARV Target created successfully!");
       } else {
-        alert(`Error: ${data.message || "Failed to create target"}`)
+        alert(`Error: ${data.message || "Failed to create target"}`);
       }
     } catch (error) {
       console.error("Error submitting form:", error);
       alert("An error occurred while creating the target. Please check the console for details.");
     }
   }
-
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -215,9 +223,9 @@ export default function CreateARVTargetPage() {
             </div>
 
             {/* Submit Button */}
-            <div className="flex justify-center">
+            <div className="flex justify-start">
               <Button
-                className="bg-[#8F37FF] text-white hover:bg-[#8F37FF]/80"
+                className="btn h-[59px]"
                 onClick={handleSubmit}
               >
                 Create Target
