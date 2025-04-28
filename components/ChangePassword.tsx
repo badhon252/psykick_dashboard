@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 // import React, { useState } from "react";
@@ -81,11 +82,16 @@
 // export default ChangePassword;
 
 import React, { useEffect, useState } from "react";
+=======
+import React, { useState } from "react";
+>>>>>>> 5b52204b3862a7918d9cf0bb3b97d8f66fcee18f
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "./ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
 
 const ChangePassword = () => {
+<<<<<<< HEAD
   const [token, setToken] = useState("")
   // const token = localStorage.getItem("token");
   useEffect(() => {
@@ -94,6 +100,13 @@ const ChangePassword = () => {
         setToken(storedToken);
       }
     }, []);
+=======
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+
+  const token = localStorage.getItem('token');
+>>>>>>> 5b52204b3862a7918d9cf0bb3b97d8f66fcee18f
 
   const mutation = useMutation({
     mutationFn: async (formData: {
@@ -120,13 +133,12 @@ const ChangePassword = () => {
 
       return response.json();
     },
-    onSuccess: (data) => {
-      console.log("Password changed successfully:", data);
-      alert("Password changed successfully!");
+    onSuccess: () => {
+      toast.success("Password changed successfully!");
     },
-    onError: (error: any) => {
-      console.error("Password change failed:", error);
-      alert(error.message || "Failed to change password");
+    onError: (error: string) => {
+        const errorMessage = (error as { message?: string })?.message || "Password change failed. Please try again.";
+        toast.error(errorMessage);
     },
   });
 
@@ -156,50 +168,71 @@ const ChangePassword = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="rounded-lg">
-        <div>
-        <div className="space-y-8  p-6">
-          <div>
+        <div className="space-y-8 p-6">
+          {/* Current Password */}
+          <div className="relative">
             <label className="block text-white mb-1">Current Password</label>
             <input
-              type="password"
+              type={showCurrentPassword ? "text" : "password"}
               name="currentPassword"
-              className="w-full p-2 rounded-md bg-[#C5C5C5] bg-opacity-10 border border-[#C5C5C5] outline-none text-white"
-              placeholder="Enter your new password"
+              className="w-full p-2 rounded-md bg-[#C5C5C5] bg-opacity-10 border border-[#C5C5C5] outline-none text-white pr-10"
+              placeholder="Enter your current password"
             />
+            <button
+              type="button"
+              onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+              className="absolute right-3 top-9 text-white"
+            >
+              {showCurrentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
           </div>
 
+          {/* New Password & Confirm New Password */}
           <div className="flex gap-4">
-            <div className="flex-1">
+            <div className="flex-1 relative">
               <label className="block text-white mb-1">New Password</label>
               <input
-                type="password"
+                type={showNewPassword ? "text" : "password"}
                 name="newPassword"
-                className="w-full p-2 rounded-md bg-[#C5C5C5] bg-opacity-10 border border-[#C5C5C5] outline-none text-white"
+                className="w-full p-2 rounded-md bg-[#C5C5C5] bg-opacity-10 border border-[#C5C5C5] outline-none text-white pr-10"
                 placeholder="Enter your new password"
               />
+              <button
+                type="button"
+                onClick={() => setShowNewPassword(!showNewPassword)}
+                className="absolute right-3 top-9 text-white"
+              >
+                {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
             </div>
-            <div className="flex-1">
-              <label className="block text-white mb-1">
-                Confirm New Password
-              </label>
+
+            <div className="flex-1 relative">
+              <label className="block text-white mb-1">Confirm New Password</label>
               <input
-                type="password"
+                type={showConfirmNewPassword ? "text" : "password"}
                 name="confirmNewPassword"
-                className="w-full p-2 rounded-md bg-[#C5C5C5] bg-opacity-10 border border-[#C5C5C5] outline-none text-white"
+                className="w-full p-2 rounded-md bg-[#C5C5C5] bg-opacity-10 border border-[#C5C5C5] outline-none text-white pr-10"
                 placeholder="Enter your confirm new password"
               />
+              <button
+                type="button"
+                onClick={() => setShowConfirmNewPassword(!showConfirmNewPassword)}
+                className="absolute right-3 top-9 text-white"
+              >
+                {showConfirmNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              </button>
             </div>
           </div>
 
+          {/* Save Button */}
           <div>
             <button
               type="submit"
-              className=" text-white px-6 py-2 rounded-md btn"
+              className="text-white px-6 py-2 rounded-md btn"
             >
               Save Changes
             </button>
           </div>
-        </div>
         </div>
       </form>
     </div>

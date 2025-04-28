@@ -6,15 +6,17 @@ import ChangePassword from "@/components/ChangePassword";
 import TermsConditions from "@/components/TermsConditions";
 import PrivacyPolicy from "@/components/PrivacyPolicy";
 import AboutUs from "@/components/AboutUs"; // Ensure this component exists
-import PersonalInformation from "@/components/PersonalInformation";
+// import PersonalInformation from "@/components/PersonalInformation";
+// import Image from "next/image";
+// import vector1 from "@/public/assets/img/Vector1.png";
 
 export default function GamingSettings() {
   const [activeSection, setActiveSection] = useState("settings");
 
   const renderContent = () => {
     switch (activeSection) {
-      case "personal":
-        return <PersonalInformation />;
+      // case "personal":
+      //   return <PersonalInformation />;
       case "password":
         return <ChangePassword />;
       case "terms":
@@ -46,15 +48,14 @@ function SettingsMenu({
   return (
     <div className="w-full">
       <div className="bg-gradient-to-r from-[#8F37FF] to-[#2D17FF] rounded-t-lg p-4 flex items-center h-[78px]">
-        
         <h2 className="text-xl font-semibold text-white">Settings</h2>
       </div>
 
       <div className="space-y-[36px] w-[95%] mx-auto mt-[24px] h-[650px]">
-        <MenuButton
+        {/* <MenuButton
           label="Personal Information"
           onClick={() => setActiveSection("personal")}
-        />
+        /> */}
         <MenuButton
           label="Change Password"
           onClick={() => setActiveSection("password")}
@@ -93,5 +94,4 @@ function MenuButton({
       <ChevronRight className="h-5 w-5" />
     </button>
   );
-
 }
