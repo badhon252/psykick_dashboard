@@ -58,11 +58,10 @@ const {user } = useAuth()
   // User profile JSX
   const userProfile = (
     <div className="flex items-center gap-2 cursor-pointer">
-      <div className="relative h-10 w-10 overflow-hidden rounded-full border-2 border-white/20 bg-white/10">
-        {/* <Image src={userImage} alt={userName} fill className="object-cover" /> */}
-      </div>
-      <div className="flex flex-col items-end">
-        <span className="text-sm font-medium text-white">{user?.screenName}</span>
+  
+      <div className="flex flex-col items-end  p-5">
+        <span className="text-sm font-medium text-white uppercase"> {user?.screenName}</span>
+        <p className="text-sm text-gray-600">admin</p>
       </div>
     </div>
   );
