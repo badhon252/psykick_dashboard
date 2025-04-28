@@ -1,113 +1,16 @@
-<<<<<<< HEAD
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
-// import React, { useState } from "react";
-
-// const ChangePassword = () => {
-//   const [currentPassword, setCurrentPassword] = useState("");
-//   const [newPassword, setNewPassword] = useState("");
-//   const [confirmNewPassword, setConfirmNewPassword] = useState("");
-
-//   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-//     e.preventDefault();
-
-//     const formData = {
-//       currentPassword,
-//       newPassword,
-//       confirmNewPassword,
-//     };
-
-//     console.log(formData);
-//   };
-
-//   return (
-//     <div className="p-4 w-full">
-//       <div className="flex justify-between items-center mb-6">
-//         <h1 className="text-2xl font-bold text-white">Change Password</h1>
-//         <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded-md">
-//           Edit
-//         </button>
-//       </div>
-
-//       <form onSubmit={handleSubmit} className="bg-purple-800 bg-opacity-50 rounded-lg p-6">
-//         <div className="space-y-4">
-//           <div>
-//             <label className="block text-white mb-1">Current Password</label>
-//             <input
-//               type="password"
-//               value={currentPassword}
-//               onChange={(e) => setCurrentPassword(e.target.value)}
-//               className="w-full p-2 rounded-md bg-purple-700 bg-opacity-50 border border-purple-500 text-white"
-//               placeholder="Enter your new password"
-//             />
-//           </div>
-
-//           <div className="flex gap-4">
-//             <div className="flex-1">
-//               <label className="block text-white mb-1">New Password</label>
-//               <input
-//                 type="password"
-//                 value={newPassword}
-//                 onChange={(e) => setNewPassword(e.target.value)}
-//                 className="w-full p-2 rounded-md bg-purple-700 bg-opacity-50 border border-purple-500 text-white"
-//                 placeholder="Enter your new password"
-//               />
-//             </div>
-//             <div className="flex-1">
-//               <label className="block text-white mb-1">Confirm New Password</label>
-//               <input
-//                 type="password"
-//                 value={confirmNewPassword}
-//                 onChange={(e) => setConfirmNewPassword(e.target.value)}
-//                 className="w-full p-2 rounded-md bg-purple-700 bg-opacity-50 border border-purple-500 text-white"
-//                 placeholder="Enter your confirm new password"
-//               />
-//             </div>
-//           </div>
-
-//           <div>
-//             <button
-//               type="submit"
-//               className="bg-purple-600 hover:bg-purple-500 text-white px-6 py-2 rounded-md"
-//             >
-//               Save Changes
-//             </button>
-//           </div>
-//         </div>
-//       </form>
-//     </div>
-//   );
-// };
-
-// export default ChangePassword;
-
-import React, { useEffect, useState } from "react";
-=======
 import React, { useState } from "react";
->>>>>>> 5b52204b3862a7918d9cf0bb3b97d8f66fcee18f
 import { useMutation } from "@tanstack/react-query";
 import { Button } from "./ui/button";
 import { ArrowLeft, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
-
+ 
 const ChangePassword = () => {
-<<<<<<< HEAD
-  const [token, setToken] = useState("")
-  // const token = localStorage.getItem("token");
-  useEffect(() => {
-      const storedToken = localStorage.getItem("token");
-      if (storedToken) {
-        setToken(storedToken);
-      }
-    }, []);
-=======
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
-
+ 
   const token = localStorage.getItem('token');
->>>>>>> 5b52204b3862a7918d9cf0bb3b97d8f66fcee18f
-
+ 
   const mutation = useMutation({
     mutationFn: async (formData: {
       currentPassword: string;
@@ -125,12 +28,12 @@ const ChangePassword = () => {
           body: JSON.stringify(formData),
         }
       );
-
+ 
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to change password");
       }
-
+ 
       return response.json();
     },
     onSuccess: () => {
@@ -141,20 +44,20 @@ const ChangePassword = () => {
         toast.error(errorMessage);
     },
   });
-
+ 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
-
+ 
     const formData = {
       currentPassword: form.currentPassword.value,
       newPassword: form.newPassword.value,
       confirmNewPassword: form.confirmNewPassword.value,
     };
-
+ 
     mutation.mutate(formData);
   };
-
+ 
   return (
     <div className="w-full">
       <div className="bg-gradient-to-r from-[#8F37FF] to-[#2D17FF] rounded-t-lg p-4 flex items-center justify-between h-[78px]">
@@ -166,7 +69,7 @@ const ChangePassword = () => {
           </Button>
         </a>
       </div>
-
+ 
       <form onSubmit={handleSubmit} className="rounded-lg">
         <div className="space-y-8 p-6">
           {/* Current Password */}
@@ -186,7 +89,7 @@ const ChangePassword = () => {
               {showCurrentPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
-
+ 
           {/* New Password & Confirm New Password */}
           <div className="flex gap-4">
             <div className="flex-1 relative">
@@ -205,7 +108,7 @@ const ChangePassword = () => {
                 {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
-
+ 
             <div className="flex-1 relative">
               <label className="block text-white mb-1">Confirm New Password</label>
               <input
@@ -223,7 +126,7 @@ const ChangePassword = () => {
               </button>
             </div>
           </div>
-
+ 
           {/* Save Button */}
           <div>
             <button
@@ -238,5 +141,5 @@ const ChangePassword = () => {
     </div>
   );
 };
-
+ 
 export default ChangePassword;
