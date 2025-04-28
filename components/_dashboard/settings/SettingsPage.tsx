@@ -48,7 +48,6 @@ function SettingsMenu({
   return (
     <div className="w-full">
       <div className="bg-gradient-to-r from-[#8F37FF] to-[#2D17FF] rounded-t-lg p-4 flex items-center h-[78px]">
-        
         <h2 className="text-xl font-semibold text-white">Settings</h2>
       </div>
 
@@ -95,5 +94,4 @@ function MenuButton({
       <ChevronRight className="h-5 w-5" />
     </button>
   );
-
 }

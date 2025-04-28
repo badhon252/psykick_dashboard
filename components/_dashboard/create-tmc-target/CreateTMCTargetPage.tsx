@@ -16,8 +16,12 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner"; // If you want toast notification
 
 export default function CreateTMCTargetPage() {
-  const [selectedTargetImage, setSelectedTargetImage] = useState<string | null>(null);
-  const [selectedControlImages, setSelectedControlImages] = useState<string[]>([]);
+  const [selectedTargetImage, setSelectedTargetImage] = useState<string | null>(
+    null
+  );
+  const [selectedControlImages, setSelectedControlImages] = useState<string[]>(
+    []
+  );
   const [showMoreTargets, setShowMoreTargets] = useState(false);
   const [showMoreControls, setShowMoreControls] = useState(false);
   const [token, setToken] = useState<string | null>(null);
@@ -51,7 +55,13 @@ export default function CreateTMCTargetPage() {
   });
 
   const createTMCTargetMutation = useMutation({
-    mutationFn: async (payload: { targetImage: string; controlImages: string[]; revealTime: string; bufferTime: string; gameTime: string }) => {
+    mutationFn: async (payload: {
+      targetImage: string;
+      controlImages: string[];
+      revealTime: string;
+      bufferTime: string;
+      gameTime: string;
+    }) => {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/TMCTarget/create-TMCTarget`,
         {
@@ -112,8 +122,12 @@ export default function CreateTMCTargetPage() {
       )
     ) || [];
 
-  const visibleTargetImages = showMoreTargets ? allImages : allImages.slice(0, 15);
-  const visibleControlImages = showMoreControls ? allImages : allImages.slice(0, 15);
+  const visibleTargetImages = showMoreTargets
+    ? allImages
+    : allImages.slice(0, 15);
+  const visibleControlImages = showMoreControls
+    ? allImages
+    : allImages.slice(0, 15);
 
   const handleSelectTargetImage = (id: string) => {
     setSelectedTargetImage(id);
@@ -140,14 +154,16 @@ export default function CreateTMCTargetPage() {
     const revealTime = new Date(now);
     const bufferTime = new Date(now);
 
-    gameTime.setMinutes(gameTime.getMinutes() + selectedMinutes);  
+    gameTime.setMinutes(gameTime.getMinutes() + selectedMinutes);
     gameTime.setHours(gameTime.getHours() + selectedHours);
     gameTime.setDate(gameTime.getDate() + selectedDays);
 
     revealTime.setTime(gameTime.getTime() + 2 * 60 * 60 * 1000); // Example: Reveal after 2 hours
     bufferTime.setTime(gameTime.getTime() + 3 * 60 * 60 * 1000); // Example: Buffer after 3 hours
 
-    const targetImage = allImages.find((img) => img.id === selectedTargetImage)?.src;
+    const targetImage = allImages.find(
+      (img) => img.id === selectedTargetImage
+    )?.src;
     const controlImages = selectedControlImages
       .map((id) => allImages.find((img) => img.id === id)?.src)
       .filter((src): src is string => !!src); // Filter out undefined values
@@ -173,10 +189,11 @@ export default function CreateTMCTargetPage() {
       <main className="flex-1 p-6 space-y-6">
         <Card className="bg-[#170A2C]/50 border-0">
           <CardContent className="space-y-6">
-
             {/* Target Images */}
             <div className="space-y-4">
-              <h3 className="text-white text-lg">Select Target Image (only 1):</h3>
+              <h3 className="text-white text-lg">
+                Select Target Image (only 1):
+              </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 {visibleTargetImages.map((image) => (
                   <div
@@ -215,14 +232,17 @@ export default function CreateTMCTargetPage() {
 
             {/* Control Images */}
             <div className="space-y-4">
-              <h3 className="text-white text-lg">Select Control Images (max 5):</h3>
+              <h3 className="text-white text-lg">
+                Select Control Images (max 5):
+              </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 {visibleControlImages.map((image) => (
                   <div
                     key={image.id}
                     className={cn(
                       "relative rounded-md overflow-hidden cursor-pointer border-2 border-transparent",
-                      selectedControlImages.includes(image.id) && "border-[#8F37FF]"
+                      selectedControlImages.includes(image.id) &&
+                        "border-[#8F37FF]"
                     )}
                     onClick={() => handleSelectControlImage(image.id)}
                   >
@@ -270,7 +290,8 @@ export default function CreateTMCTargetPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {Array.from({
-                        length: label === "Days" ? 31 : label === "Hours" ? 24 : 60,
+                        length:
+                          label === "Days" ? 31 : label === "Hours" ? 24 : 60,
                       }).map((_, i) => (
                         <SelectItem
                           key={i}
@@ -300,12 +321,14 @@ export default function CreateTMCTargetPage() {
         {/* Selected Target Preview */}
         {selectedTargetImage && (
           <div className="mt-8">
-            <h2 className="text-white text-2xl text-center mb-4">Selected Target Preview</h2>
+            <h2 className="text-white text-2xl text-center mb-4">
+              Selected Target Preview
+            </h2>
             <div className="border-4 border-red-500 rounded-lg overflow-hidden max-w-2xl mx-auto">
               <Image
                 src={
-                  allImages.find((img) => img.id === selectedTargetImage)?.src ||
-                  "/placeholder.svg"
+                  allImages.find((img) => img.id === selectedTargetImage)
+                    ?.src || "/placeholder.svg"
                 }
                 alt="Selected target"
                 width={600}
