@@ -8,6 +8,7 @@ import { Toaster } from "@/components/ui/sonner";
 
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
+import ProtectedRoute from "@/components/common/ProtectedRouts";
 
 // import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
@@ -22,6 +23,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    <ProtectedRoute>
     <div className="flex h-screen overflow-hidden">
       {/* Sidebar fixed on the left */}
       <div className="fixed inset-y-0 left-0 w-[272px]  z-50">
@@ -38,5 +40,6 @@ export default function RootLayout({
         <Toaster position="top-right" />
       </div>
     </div>
+    </ProtectedRoute>
   );
 }

@@ -27,6 +27,7 @@ interface AverageTimeResponse {
 export default function Dashboard() {
 
 const token = localStorage.getItem('token'); // get token from localStorage
+
   // Fetch total users
   const { isLoading: isTotalUserLoading, data: totalUserStats } = useQuery<ApiProps>({
     queryKey: ["totalUserStats"],
