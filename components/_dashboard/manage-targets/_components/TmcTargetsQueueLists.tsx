@@ -3,18 +3,22 @@ import ErrorContainer from "@/components/shared/ErrorContainer/ErrorContainer";
 import NotFound from "@/components/shared/NotFound/NotFound";
 import TableSkeleton from "@/components/shared/TableSkeleton/TableSkeleton";
 import { TMCTargetsListResponse } from "@/components/types/TargetsQueueLists";
-import { useQuery } from "@tanstack/react-query";
+import FivosPagination from "@/components/ui/FivosPagination";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
 import moment from "moment";
 import Link from "next/link";
 import React from "react";
+import { toast } from "react-toastify";
 
 const TmcTargetsQueueLists = () => {
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const queryClient = useQueryClient();
   const { data, isLoading, isError, error } = useQuery<TMCTargetsListResponse>({
-    queryKey: ["all-queued-tmc-targets"],
+    queryKey: ["all-queued-tmc-targets", currentPage],
     queryFn: () =>
       fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/TMCTarget/get-allQueuedTMCTargets`
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/TMCTarget/get-allQueuedTMCTargets?page=${currentPage}&limit=5`
       ).then((res) => res.json()),
   });
 
@@ -44,7 +48,7 @@ const TmcTargetsQueueLists = () => {
     );
   } else if (data && data?.data && data?.data?.length > 0) {
     content = (
-      <div className="h-screen">
+      <div className="">
         {data?.data?.map((target, index) => (
           <ul
             key={index}
@@ -71,7 +75,10 @@ const TmcTargetsQueueLists = () => {
               </button>
             </li>
             <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-              <button className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[10px] rounded-[4px] bg-[#D74727]">
+              <button
+                onClick={() => handleTmcRemoveFromQueue(target?._id)}
+                className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[10px] rounded-[4px] bg-[#D74727]"
+              >
                 Remove from queue
               </button>
             </li>
@@ -80,6 +87,30 @@ const TmcTargetsQueueLists = () => {
       </div>
     );
   }
+
+  // Remove from queue TMC
+
+  const { mutate } = useMutation({
+    mutationKey: ["remove-from-queue-tmc"],
+    mutationFn: (id: string) =>
+      fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/TMCTarget/update-TMCTarget-removeFromQueue/${id}`,
+        {
+          method: "PATCH",
+        }
+      ).then((res) => res.json()),
+    onSuccess: (data) => {
+      if (!data?.status) {
+        toast.error(data?.message || "Something went wrong");
+        return;
+      }
+      toast.success(data?.message || "Removed from queue successfully");
+      queryClient.invalidateQueries({ queryKey: ["all-queued-tmc-targets"] });
+    },
+  });
+  const handleTmcRemoveFromQueue = (id: string) => {
+    mutate(id);
+  };
   return (
     <div>
       <div className="bg-[#c4a0ff17] p-6 rounded-lg">
@@ -118,6 +149,24 @@ const TmcTargetsQueueLists = () => {
         </div>
 
         <div>{content}</div>
+        {/* pagination  */}
+        <div>
+          {data && data?.pagination && data?.pagination?.totalPages > 1 && (
+            <div className="w-full flex items-center justify-between pt-10 pb-2">
+              <p className="font-normal text-[16px] leading-[20px] text-white">
+                Showing {currentPage} to {data?.pagination?.totalPages} in first
+                entries
+              </p>
+              <div>
+                <FivosPagination
+                  totalPages={data?.pagination?.totalPages}
+                  currentPage={currentPage}
+                  onPageChange={(page) => setCurrentPage(page)}
+                />
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
