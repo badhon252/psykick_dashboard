@@ -6,7 +6,7 @@ import ChangePassword from "@/components/ChangePassword";
 import TermsConditions from "@/components/TermsConditions";
 import PrivacyPolicy from "@/components/PrivacyPolicy";
 import AboutUs from "@/components/AboutUs"; // Ensure this component exists
-import PersonalInformation from "@/components/PersonalInformation";
+// import PersonalInformation from "@/components/PersonalInformation";
 // import Image from "next/image";
 // import vector1 from "@/public/assets/img/Vector1.png";
 
@@ -15,8 +15,8 @@ export default function GamingSettings() {
 
   const renderContent = () => {
     switch (activeSection) {
-      case "personal":
-        return <PersonalInformation />;
+      // case "personal":
+      //   return <PersonalInformation />;
       case "password":
         return <ChangePassword />;
       case "terms":
@@ -52,10 +52,10 @@ function SettingsMenu({
       </div>
 
       <div className="space-y-[36px] w-[95%] mx-auto mt-[24px] h-[650px]">
-        <MenuButton
+        {/* <MenuButton
           label="Personal Information"
           onClick={() => setActiveSection("personal")}
-        />
+        /> */}
         <MenuButton
           label="Change Password"
           onClick={() => setActiveSection("password")}

@@ -8,9 +8,9 @@ import { Toaster } from "@/components/ui/sonner";
 
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
+import ProtectedRoute from "@/components/common/ProtectedRouts";
 
 // import ProtectedRoute from "@/components/auth/ProtectedRoute";
-
 
 export const metadata: Metadata = {
   title: "Psykick Club",
@@ -23,16 +23,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-        <div>{/* <ProtectedRoute> */}
+    <ProtectedRoute>
+    <div className="flex h-screen overflow-hidden">
+      {/* Sidebar fixed on the left */}
+      <div className="fixed inset-y-0 left-0 w-[272px]  z-50">
         <Sidebar lists={AdminDashboardTabsList} />
-        <div className="px-4 md:ml-[272px] backdrop-blur-sm bg-[#371B77]/40 dashboard-shadow">
-          <Header />
-          <main className="">
-            {children}
-          </main>
-          <ToastContainer position="top-right" autoClose={3000} />
-          <Toaster position="top-right"/>
-        </div>
-        {/* </ProtectedRoute> */}</div>
+      </div>
+
+      {/* Main content area */}
+      <div className="flex-1 ml-[272px] flex flex-col backdrop-blur-sm bg-[#371B77]/40 dashboard-shadow overflow-y-auto">
+        <Header />
+        <main className="flex-1 p-4">
+          {children}
+        </main>
+        <ToastContainer position="top-right" autoClose={3000} />
+        <Toaster position="top-right" />
+      </div>
+    </div>
+    </ProtectedRoute>
   );
 }
