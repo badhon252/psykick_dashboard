@@ -3,22 +3,26 @@ import ErrorContainer from "@/components/shared/ErrorContainer/ErrorContainer";
 import NotFound from "@/components/shared/NotFound/NotFound";
 import TableSkeleton from "@/components/shared/TableSkeleton/TableSkeleton";
 import { TMCTargetsResponse } from "@/components/types/ManageTarget";
+import FivosPagination from "@/components/ui/FivosPagination";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import moment from "moment";
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
 import { toast } from "react-toastify";
 
 const TmcInactiveTargets = () => {
+  const [currentPage, setCurrentPage] = useState(1);
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError, error } = useQuery<TMCTargetsResponse>({
-    queryKey: ["all-un-queued-tmc-targets"],
+    queryKey: ["all-un-queued-tmc-targets", currentPage],
     queryFn: () =>
       fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/TMCTarget/get-allUnQueuedTMCTargets`
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/TMCTarget/get-allUnQueuedTMCTargets?page=${currentPage}&limit=5`
       ).then((res) => res.json()),
   });
+
+  console.log(data?.pagination);
 
   let content;
   if (isLoading) {
@@ -139,6 +143,25 @@ const TmcInactiveTargets = () => {
         </div>
 
         <div>{content}</div>
+
+        {/* pagination  */}
+        <div>
+          {data && data?.pagination && data?.pagination?.totalPages > 1 && (
+            <div className="w-full flex items-center justify-between pt-10 pb-2">
+              <p className="font-normal text-[16px] leading-[20px] text-white">
+                Showing {currentPage} to {data?.pagination?.totalPages} in first
+                entries
+              </p>
+              <div>
+                <FivosPagination
+                  totalPages={data?.pagination?.totalPages}
+                  currentPage={currentPage}
+                  onPageChange={(page) => setCurrentPage(page)}
+                />
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
