@@ -1,28 +1,34 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ChevronDown } from "lucide-react"
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ChevronDown } from "lucide-react";
 
 export default function CreateARVTargetPage() {
-  const [showTimePicker, setShowTimePicker] = useState(false)
-  const [eventName, setEventName] = useState("")
-  const [eventDescription, setEventDescription] = useState("")
-  const [revealDate, setRevealDate] = useState("")
-  const [revealTime, setRevealTime] = useState("")
-  const [outcomeDate, setOutcomeDate] = useState("")
-  const [outcomeTime, setOutcomeTime] = useState("")
-  const [controlImage, setControlImage] = useState("")
-  const [token, setToken] = useState("")
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [eventName, setEventName] = useState("");
+  const [eventDescription, setEventDescription] = useState("");
+  const [revealDate, setRevealDate] = useState("");
+  const [revealTime, setRevealTime] = useState("");
+  const [outcomeDate, setOutcomeDate] = useState("");
+  const [outcomeTime, setOutcomeTime] = useState("");
+  const [controlImage, setControlImage] = useState("");
+  const [token, setToken] = useState("");
   const [images, setImages] = useState([
     { id: 1, description: "", url: "" },
     { id: 2, description: "", url: "" },
     { id: 3, description: "", url: "" },
-  ])
+  ]);
 
   // Token load from localStorage
   useEffect(() => {
@@ -39,8 +45,10 @@ export default function CreateARVTargetPage() {
       return;
     }
 
-    const formattedRevealTime = revealDate && revealTime ? `${revealDate}T${revealTime}:00` : "";
-    const formattedOutcomeTime = outcomeDate && outcomeTime ? `${outcomeDate}T${outcomeTime}:00` : "";
+    const formattedRevealTime =
+      revealDate && revealTime ? `${revealDate}T${revealTime}:00` : "";
+    const formattedOutcomeTime =
+      outcomeDate && outcomeTime ? `${outcomeDate}T${outcomeTime}:00` : "";
 
     const payload = {
       eventName,
@@ -51,19 +59,22 @@ export default function CreateARVTargetPage() {
       image1: images[0],
       image2: images[1],
       image3: images[2],
-    }
+    };
 
     console.log("Submitting form with data:", payload);
 
     try {
-      const response = await fetch("NEXT_PUBLIC_BACKEND_URL/ARVTarget/create-ARVTarget", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        "NEXT_PUBLIC_BACKEND_URL/ARVTarget/create-ARVTarget",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       const data = await response.json();
       console.log("API response:", data);
@@ -75,9 +86,11 @@ export default function CreateARVTargetPage() {
       }
     } catch (error) {
       console.error("Error submitting form:", error);
-      alert("An error occurred while creating the target. Please check the console for details.");
+      alert(
+        "An error occurred while creating the target. Please check the console for details."
+      );
     }
-  }
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -117,7 +130,11 @@ export default function CreateARVTargetPage() {
                 onClick={() => setShowTimePicker(!showTimePicker)}
               >
                 <span>Set Time</span>
-                <ChevronDown className={`h-4 w-4 transition-transform ${showTimePicker ? "rotate-180" : ""}`} />
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform ${
+                    showTimePicker ? "rotate-180" : ""
+                  }`}
+                />
               </Button>
 
               {showTimePicker && (
@@ -174,9 +191,9 @@ export default function CreateARVTargetPage() {
                 <div className="space-y-2">
                   <Select
                     onValueChange={(value) => {
-                      const updatedImages = [...images]
-                      updatedImages[index].url = value
-                      setImages(updatedImages)
+                      const updatedImages = [...images];
+                      updatedImages[index].url = value;
+                      setImages(updatedImages);
                     }}
                   >
                     <SelectTrigger className="bg-[#170A2C] border-gray-700 text-white">
@@ -196,9 +213,9 @@ export default function CreateARVTargetPage() {
                     className="bg-[#170A2C] border-gray-700 text-white"
                     value={image.description}
                     onChange={(e) => {
-                      const newImages = [...images]
-                      newImages[index].description = e.target.value
-                      setImages(newImages)
+                      const newImages = [...images];
+                      newImages[index].description = e.target.value;
+                      setImages(newImages);
                     }}
                   />
                 </div>
@@ -224,10 +241,7 @@ export default function CreateARVTargetPage() {
 
             {/* Submit Button */}
             <div className="flex justify-start">
-              <Button
-                className="btn h-[59px]"
-                onClick={handleSubmit}
-              >
+              <Button className="btn h-[59px]" onClick={handleSubmit}>
                 Create Target
               </Button>
             </div>
@@ -235,5 +249,5 @@ export default function CreateARVTargetPage() {
         </Card>
       </main>
     </div>
-  )
+  );
 }
