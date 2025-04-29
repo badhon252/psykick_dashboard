@@ -125,7 +125,7 @@ export default function VerifyOTPPage() {
         </p>
         
         <form onSubmit={handleSubmit}>
-          <div className="flex justify-between mb-4">
+          <div className="flex justify-between mb-4 border">
             {otp.map((digit, index) => (
               <input
                 key={index}

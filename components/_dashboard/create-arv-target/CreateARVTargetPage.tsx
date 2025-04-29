@@ -1,3 +1,4 @@
+// @typescript-eslint/no-explicit-any
 "use client";
 
 import { useEffect, useState } from "react";
@@ -13,6 +14,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ChevronDown } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+
+// ✅ Define proper type instead of using `any`
+type ImageOption = {
+  imageId: string;
+  image: string;
+  categoryName: string;
+  subcategoryName: string;
+};
 
 export default function CreateARVTargetPage() {
   const [showTimePicker, setShowTimePicker] = useState(false);
@@ -30,42 +40,28 @@ export default function CreateARVTargetPage() {
     { id: 3, description: "", url: "" },
   ]);
 
-  // Token load from localStorage
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
-    if (storedToken) {
-      setToken(storedToken);
-    }
+    if (storedToken) setToken(storedToken);
   }, []);
 
-  // Function to handle form submission
   const handleSubmit = async () => {
-    if (!token) {
-      alert("User not authenticated! Please log in again.");
-      return;
-    }
-
-    const formattedRevealTime =
-      revealDate && revealTime ? `${revealDate}T${revealTime}:00` : "";
-    const formattedOutcomeTime =
-      outcomeDate && outcomeTime ? `${outcomeDate}T${outcomeTime}:00` : "";
+    if (!token) return alert("User not authenticated! Please log in again.");
 
     const payload = {
       eventName,
       eventDescription,
-      revealTime: formattedRevealTime,
-      outcomeTime: formattedOutcomeTime,
+      revealTime: `${revealDate}T${revealTime}:00`,
+      outcomeTime: `${outcomeDate}T${outcomeTime}:00`,
       controlImage,
       image1: images[0],
       image2: images[1],
       image3: images[2],
     };
 
-    console.log("Submitting form with data:", payload);
-
     try {
-      const response = await fetch(
-        "NEXT_PUBLIC_BACKEND_URL/ARVTarget/create-ARVTarget",
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/create-ARVTarget`,
         {
           method: "POST",
           headers: {
@@ -75,22 +71,34 @@ export default function CreateARVTargetPage() {
           body: JSON.stringify(payload),
         }
       );
-
-      const data = await response.json();
-      console.log("API response:", data);
-
-      if (response.ok) {
-        alert("ARV Target created successfully!");
-      } else {
-        alert(`Error: ${data.message || "Failed to create target"}`);
-      }
+      const data = await res.json();
+      alert(res.ok ? "ARV Target created successfully!" : `Error: ${data.message || "Failed"}`);
     } catch (error) {
       console.error("Error submitting form:", error);
-      alert(
-        "An error occurred while creating the target. Please check the console for details."
-      );
+      alert("An error occurred. Check console for details.");
     }
   };
+
+  const { data: imageAll, isLoading, isError } = useQuery({
+    queryKey: ["imageAll"],
+    queryFn: async () => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/category/get-all-images`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (!res.ok) throw new Error("Failed to fetch images");
+      return res.json();
+    },
+    enabled: !!token,
+  });
+
+  const allImageHere: ImageOption[] = imageAll?.data || [];
+  const selectedUrls = images.map((img) => img.url);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -135,11 +143,13 @@ export default function CreateARVTargetPage() {
                     showTimePicker ? "rotate-180" : ""
                   }`}
                 />
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform ${showTimePicker ? "rotate-180" : ""}`}
+                />
               </Button>
 
               {showTimePicker && (
                 <div className="space-y-4 mt-4">
-                  {/* Reveal Date and Time */}
                   <div className="space-y-2">
                     <label className="text-sm text-white">Reveal Date:</label>
                     <Input
@@ -158,8 +168,6 @@ export default function CreateARVTargetPage() {
                       onChange={(e) => setRevealTime(e.target.value)}
                     />
                   </div>
-
-                  {/* Outcome Date and Time */}
                   <div className="space-y-2">
                     <label className="text-sm text-white">Outcome Date:</label>
                     <Input
@@ -185,27 +193,46 @@ export default function CreateARVTargetPage() {
             {/* Images Section */}
             {images.map((image, index) => (
               <div key={image.id} className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <h3 className="text-white">Image-{index + 1}</h3>
-                </div>
+                <h3 className="text-white">Image-{index + 1}</h3>
+
                 <div className="space-y-2">
                   <Select
                     onValueChange={(value) => {
-                      const updatedImages = [...images];
-                      updatedImages[index].url = value;
-                      setImages(updatedImages);
+                      const updated = [...images];
+                      updated[index].url = value;
+                      setImages(updated);
                     }}
                   >
                     <SelectTrigger className="bg-[#170A2C] border-gray-700 text-white">
                       <SelectValue placeholder="Choose Image" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="image1">Image 1</SelectItem>
-                      <SelectItem value="image2">Image 2</SelectItem>
-                      <SelectItem value="image3">Image 3</SelectItem>
+                      {isLoading ? (
+                        <SelectItem value="loading">Loading images...</SelectItem>
+                      ) : isError ? (
+                        <SelectItem value="error">Error loading images</SelectItem>
+                      ) : allImageHere.length === 0 ? (
+                        <SelectItem value="empty">No images available</SelectItem>
+                      ) : (
+                        allImageHere.map((img: ImageOption) => {
+                          const usedElsewhere = images.some(
+                            (other, i) => i !== index && other.url === img.image
+                          );
+                          return (
+                            <SelectItem
+                              key={img.imageId}
+                              value={img.image}
+                              disabled={usedElsewhere}
+                            >
+                              {img.categoryName} - {img.subcategoryName}
+                            </SelectItem>
+                          );
+                        })
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
+
                 <div className="space-y-2">
                   <label className="text-sm text-white">Description</label>
                   <Textarea
@@ -213,9 +240,9 @@ export default function CreateARVTargetPage() {
                     className="bg-[#170A2C] border-gray-700 text-white"
                     value={image.description}
                     onChange={(e) => {
-                      const newImages = [...images];
-                      newImages[index].description = e.target.value;
-                      setImages(newImages);
+                      const updated = [...images];
+                      updated[index].description = e.target.value;
+                      setImages(updated);
                     }}
                   />
                 </div>
@@ -225,18 +252,30 @@ export default function CreateARVTargetPage() {
             {/* Control Image */}
             <div className="space-y-4">
               <h3 className="text-white">Control Image</h3>
-              <div className="space-y-2">
-                <Select onValueChange={(value) => setControlImage(value)}>
-                  <SelectTrigger className="bg-[#170A2C] border-gray-700 text-white">
-                    <SelectValue placeholder="Choose Image" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="control1">Control Image 1</SelectItem>
-                    <SelectItem value="control2">Control Image 2</SelectItem>
-                    <SelectItem value="control3">Control Image 3</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <Select onValueChange={setControlImage}>
+                <SelectTrigger className="bg-[#170A2C] border-gray-700 text-white">
+                  <SelectValue placeholder="Choose Image" />
+                </SelectTrigger>
+                <SelectContent>
+                  {isLoading ? (
+                    <SelectItem value="loading">Loading images...</SelectItem>
+                  ) : isError ? (
+                    <SelectItem value="error">Error loading images</SelectItem>
+                  ) : allImageHere.length === 0 ? (
+                    <SelectItem value="empty">No images available</SelectItem>
+                  ) : (
+                    allImageHere.map((img: ImageOption) => (
+                      <SelectItem
+                        key={img.imageId}
+                        value={img.image}
+                        disabled={selectedUrls.includes(img.image)}
+                      >
+                        {img.categoryName} - {img.subcategoryName}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Submit Button */}
