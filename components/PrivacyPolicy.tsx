@@ -164,7 +164,7 @@ const PrivacyPolicy = () => {
         )}
       </div>
 
-      <div className="bg-purple-800 bg-opacity-80 rounded-lg p-6 shadow-lg">
+      <div className="bg-purple-600 rounded-lg p-6 shadow-lg">
         {isEditing ? (
           <div className="quill-editor-container privacy-policy-quill">
             <ReactQuill
@@ -183,7 +183,7 @@ const PrivacyPolicy = () => {
                 Cancel
               </button>
               <button
-                className="bg-purple-600 hover:bg-purple-500 text-white px-6 py-2 rounded-md transition duration-300"
+                className="bg-green-600 hover:bg-purple-500 text-white px-6 py-2 rounded-md transition duration-300"
                 onClick={handleSaveChanges}
                 disabled={isSaving}
               >
