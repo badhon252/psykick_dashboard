@@ -1,30 +1,35 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Image from "next/image"
-import { cn } from "@/lib/utils"
+import { useState } from "react";
+import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 interface OutcomeImage {
-  id: string
-  src: string
-  alt: string
-  description: string
+  id: string;
+  src: string;
+  alt: string;
+  description: string;
 }
 
 interface OutcomeImageSelectorProps {
-  images: OutcomeImage[]
-  onSelect: (imageId: string) => void
+  images: OutcomeImage[];
+  onSelect: (imageId: string) => void;
 }
 
-export function OutcomeImageSelector({ images, onSelect }: OutcomeImageSelectorProps) {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null)
+export function OutcomeImageSelector({
+  images,
+  onSelect,
+}: OutcomeImageSelectorProps) {
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const handleSelect = (id: string) => {
-    setSelectedImage(id)
-    onSelect(id)
-  }
+    setSelectedImage(id);
+    onSelect(id);
+  };
 
-  const selectedImageData = selectedImage ? images.find((img) => img.id === selectedImage) : null
+  const selectedImageData = selectedImage
+    ? images.find((img) => img.id === selectedImage)
+    : null;
 
   return (
     <div className="space-y-6">
@@ -35,7 +40,7 @@ export function OutcomeImageSelector({ images, onSelect }: OutcomeImageSelectorP
             <div
               className={cn(
                 "relative rounded-md overflow-hidden cursor-pointer border-2 border-transparent",
-                selectedImage === image.id && "border-[#8F37FF]",
+                selectedImage === image.id && "border-[#8F37FF]"
               )}
               onClick={() => handleSelect(image.id)}
             >
@@ -61,7 +66,9 @@ export function OutcomeImageSelector({ images, onSelect }: OutcomeImageSelectorP
 
       {selectedImageData && (
         <div className="mt-8">
-          <h2 className="text-white text-2xl text-center mb-4">Code: ABC-25G</h2>
+          <h2 className="text-white text-2xl text-center mb-4">
+            Code: ABC-25G
+          </h2>
           <div className="border-4 border-red-500 rounded-lg overflow-hidden max-w-2xl mx-auto">
             <Image
               src={selectedImageData.src || "/placeholder.svg"}
@@ -74,5 +81,5 @@ export function OutcomeImageSelector({ images, onSelect }: OutcomeImageSelectorP
         </div>
       )}
     </div>
-  )
+  );
 }
