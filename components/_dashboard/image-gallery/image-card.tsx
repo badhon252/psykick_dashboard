@@ -15,12 +15,11 @@ export function ImageCard({ data }: { data?: CategoryImage }) {
   console.log(data);
   const [isOpen, setIsOpen] = useState(false);
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null | undefined>(
-    null
-  );
+  const [selectedCategoryId, setSelectedCategoryId] = useState<
+    string | null | undefined
+  >(null);
 
-  console.log(data)
-
+  console.log(data);
 
   const handleDeleteImageGallery = async () => {
     if (!selectedCategoryId) return;
@@ -50,7 +49,6 @@ export function ImageCard({ data }: { data?: CategoryImage }) {
       toast.error("Failed to delete Image Gallery. Please try again.");
     }
   };
-
 
   return (
     <div className="overflow-hidden shadow-sm border border-[#C5C5C5] rounded-[12px] p-4">

@@ -180,6 +180,8 @@ const ArvActiveTarget = () => {
                         <Image
                           src={data.data.image2.url}
                           alt={data.data.image2.description}
+                          width={100}
+                          height={100}
                           className="w-full h-32 object-cover rounded"
                         />
                         <p className="text-sm text-[#C5C5C5] mt-1">
@@ -200,6 +202,8 @@ const ArvActiveTarget = () => {
                           src={data.data.image3.url}
                           alt={data.data.image3.description}
                           className="w-full h-32 object-cover rounded"
+                          width={100}
+                          height={100}
                         />
                         <p className="text-sm text-[#C5C5C5] mt-1">
                           {data.data.image3.description}
