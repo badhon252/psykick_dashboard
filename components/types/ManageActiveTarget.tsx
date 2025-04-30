@@ -1,7 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ReactNode } from "react";
 
 // TMC Active target
 export type TMCActiveTarget = {
+  outcomeTime(outcomeTime: any): unknown;
+  resultImage: any;
+  image1: any;
+  image2: any;
+  image3: any;
   eventName: ReactNode;
   _id: string;
   code: string;
@@ -35,7 +41,7 @@ export interface ARVActiveTargetResponse {
 export interface ARVActiveTarget {
   _id: string;
   code: string;
-  eventName: string ;
+  eventName: string;
   eventDescription: string;
   revealTime: string; // ISO date string
   outcomeTime: string; // ISO date string

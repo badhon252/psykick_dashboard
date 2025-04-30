@@ -1,4 +1,3 @@
-// @typescript-eslint/no-explicit-any
 "use client";
 
 import { useEffect, useState } from "react";
@@ -16,7 +15,7 @@ import {
 import { ChevronDown } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
-// ✅ Define proper type instead of using `any`
+// Define proper type instead of using `any`
 type ImageOption = {
   imageId: string;
   image: string;
@@ -32,6 +31,8 @@ export default function CreateARVTargetPage() {
   const [revealTime, setRevealTime] = useState("");
   const [outcomeDate, setOutcomeDate] = useState("");
   const [outcomeTime, setOutcomeTime] = useState("");
+  const [gameDate, setGameDate] = useState("");
+  const [gameTime, setGameTime] = useState("");
   const [controlImage, setControlImage] = useState("");
   const [token, setToken] = useState("");
   const [images, setImages] = useState([
@@ -53,6 +54,7 @@ export default function CreateARVTargetPage() {
       eventDescription,
       revealTime: `${revealDate}T${revealTime}:00`,
       outcomeTime: `${outcomeDate}T${outcomeTime}:00`,
+      gameTime: `${gameDate}T${gameTime}:00`,
       controlImage,
       image1: images[0],
       image2: images[1],
@@ -72,14 +74,22 @@ export default function CreateARVTargetPage() {
         }
       );
       const data = await res.json();
-      alert(res.ok ? "ARV Target created successfully!" : `Error: ${data.message || "Failed"}`);
+      alert(
+        res.ok
+          ? "ARV Target created successfully!"
+          : `Error: ${data.message || "Failed"}`
+      );
     } catch (error) {
       console.error("Error submitting form:", error);
       alert("An error occurred. Check console for details.");
     }
   };
 
-  const { data: imageAll, isLoading, isError } = useQuery({
+  const {
+    data: imageAll,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["imageAll"],
     queryFn: async () => {
       const res = await fetch(
@@ -139,12 +149,32 @@ export default function CreateARVTargetPage() {
               >
                 <span>Set Time</span>
                 <ChevronDown
-                  className={`h-4 w-4 transition-transform ${showTimePicker ? "rotate-180" : ""}`}
+                  className={`h-4 w-4 transition-transform ${
+                    showTimePicker ? "rotate-180" : ""
+                  }`}
                 />
               </Button>
 
               {showTimePicker && (
                 <div className="space-y-4 mt-4">
+                  <div className="space-y-2">
+                    <label className="text-sm text-white">Game Date:</label>
+                    <Input
+                      type="date"
+                      className="bg-[#170A2C] border-gray-700 text-white"
+                      value={gameDate}
+                      onChange={(e) => setGameDate(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm text-white">Game Time:</label>
+                    <Input
+                      type="time"
+                      className="bg-[#170A2C] border-gray-700 text-white"
+                      value={gameTime}
+                      onChange={(e) => setGameTime(e.target.value)}
+                    />
+                  </div>
                   <div className="space-y-2">
                     <label className="text-sm text-white">Reveal Date:</label>
                     <Input
@@ -203,11 +233,17 @@ export default function CreateARVTargetPage() {
                     </SelectTrigger>
                     <SelectContent>
                       {isLoading ? (
-                        <SelectItem value="loading">Loading images...</SelectItem>
+                        <SelectItem value="loading">
+                          Loading images...
+                        </SelectItem>
                       ) : isError ? (
-                        <SelectItem value="error">Error loading images</SelectItem>
+                        <SelectItem value="error">
+                          Error loading images
+                        </SelectItem>
                       ) : allImageHere.length === 0 ? (
-                        <SelectItem value="empty">No images available</SelectItem>
+                        <SelectItem value="empty">
+                          No images available
+                        </SelectItem>
                       ) : (
                         allImageHere.map((img: ImageOption) => {
                           const usedElsewhere = images.some(
