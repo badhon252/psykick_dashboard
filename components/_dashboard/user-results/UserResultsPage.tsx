@@ -19,7 +19,7 @@ export default function Leaderboard() {
     queryKey: ["combined"],
     queryFn: async () => {
       const res = await fetch(
-        `http://localhost:5001/api/v1/leaderboard/get-totalLeaderboard`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/leaderboard/get-totalLeaderboard`,
         {
           method: "GET",
           headers: {
@@ -44,7 +44,7 @@ export default function Leaderboard() {
     queryKey: ["combined"],
     queryFn: async () => {
       const res = await fetch(
-        `http://localhost:5001/api/v1/leaderboard/get-ARVLeaderboard`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/leaderboard/get-ARVLeaderboard`,
         {
           method: "GET",
           headers: {
@@ -68,7 +68,7 @@ export default function Leaderboard() {
     queryKey: ["combined"],
     queryFn: async () => {
       const res = await fetch(
-        `http://localhost:5001/api/v1/leaderboard/get-TMCLeaderboard`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/leaderboard/get-TMCLeaderboard`,
         {
           method: "GET",
           headers: {
@@ -160,10 +160,6 @@ export default function Leaderboard() {
           </div>
         </div>
       </div>
-
-
-
-
 
       <div className="grid md:grid-cols-2 gap-8 mt-6">
         {/* TMC Leaderboard */}

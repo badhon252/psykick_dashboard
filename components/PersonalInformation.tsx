@@ -9,7 +9,7 @@ const PersonalInformation = () => {
   const mutation = useMutation({
     mutationFn: async (formData: FormData) => {
       const response = await fetch(
-        "http://localhost:5001/api/v1/admin/profile",
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/admin/profile",
         {
           method: "PATCH",
           headers: {
