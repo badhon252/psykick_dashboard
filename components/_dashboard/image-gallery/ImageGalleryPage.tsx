@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ImageCard } from "./image-card";
 import { CategoryImageApiResponse } from "@/components/types/ImageGallery";
 import ErrorContainer from "@/components/shared/ErrorContainer/ErrorContainer";
-import NotFound from "@/components/shared/NotFound/NotFound";
+// import NotFound from "@/components/shared/NotFound/NotFound";
 import TableSkeletonWrapper from "@/components/shared/TableSkeletonWrapper/TableSkeletonWrapper";
 
 export function ImageGalleryPage() {
@@ -21,7 +21,6 @@ export function ImageGalleryPage() {
           }
         ).then((res) => res.json()),
     });
-
 
   console.log(data?.data);
 
@@ -46,7 +45,8 @@ export function ImageGalleryPage() {
   } else if (data && data?.data && data?.data.length === 0) {
     content = (
       <div>
-        <NotFound message="Oops! No data available. Modify your filters or check your internet connection." />
+        No Image available in gallery, please add/Upload image to gallery!
+        {/* <NotFound message="Oops! No data available. Modify your filters or check your internet connection." /> */}
       </div>
     );
   } else if (data && data?.data && data?.data.length > 0) {
@@ -58,7 +58,6 @@ export function ImageGalleryPage() {
       </div>
     );
   }
-
 
   return (
     <div className="h-full flex flex-col">
