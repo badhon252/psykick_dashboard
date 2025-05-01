@@ -1,36 +1,95 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Psykick Club Dashboard Documentation
 
-## Getting Started
+This document outlines the functionality and structure of the **Psykick Club Dashboard** application. The dashboard is a web application used for managing and participating in remote viewing challenges — specifically the **Target Match Challenge (TMC)** and **Associative Remote Viewing (ARV)** challenges.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## I. Overview
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The Psykick Club Dashboard is developed using **Next.js** with **TypeScript**, integrating various modern UI libraries like:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- **Radix UI**
+- **Lucide-React**
+- **React Toastify**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Authentication is handled via a **React Context (AuthContext)** and enforced using **ProtectedRoute** and **PublicRoute** components. User data and authentication tokens are stored in `localStorage`.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## II. Admin Features
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 1. Target Creation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Admins can create new targets for both TMC and ARV challenges.
 
-## Deploy on Vercel
+### 2. Target Management
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **List All Targets**  
+  `GET /TMCTarget/get-allTMCTargets`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Queue/Unqueue Targets**  
+  `PATCH /TMCTarget/update-TMCTarget-addToQueue/:id`
+
+- **Monitor Active Targets**  
+  `GET /TMCTarget/get-activeTMCTarget`
+
+- **Set Reveal/Game Timings**  
+  (Inferred from code and documentation)
+
+### 3. Image and Category Management
+
+- Upload and manage images for targets and controls.
+- Add and manage categories using forms like `UploadImageForm` and `AddCategoryForm`.
+
+### 4. User Management
+
+- Authentication system suggests admin can manage users (e.g., roles, permissions, etc.)
+
+### 5. Result Monitoring
+
+- Admin likely has access to user submissions and challenge results (TMC & ARV).
+
+---
+
+## III. User Features
+
+### 1. Challenge Participation (TMC)
+
+- View active TMC challenges.
+- Receive target codes and time limits.
+- Submit impressions (likely via a canvas UI).
+- Select target images from a set (target + controls).
+
+### 2. Challenge Participation (ARV)
+
+- Similar to TMC but handled via components like `ArvActiveTarget` and `ArvInactiveTargets`.
+
+### 3. Results & Scoring
+
+- **View TMC Results**
+
+  - `GET /userSubmission/get-TMCResult/:TMCTargetId`
+  - `GET /userSubmission/get-previousTMCResults`
+
+- **View ARV Results**
+  - Handled in `arv-reveal.tsx`
+  - Points are updated via `updateARVPoints`.
+
+### 4. Profile Management
+
+- Users can view their completed targets, success rate, and visual progress (graphs/charts).
+
+---
+
+## IV. Technical Details
+
+- **Framework**: Next.js
+- **Language**: TypeScript
+- **UI Libraries**: Radix UI, Lucide-React, React Toastify
+- **State Management**: React Context API (e.g., `AuthContext`, `AppProvider`), React Query (`useQuery`, `useMutation`)
+- **Authentication**: JWT token stored in `localStorage`
+- **API Base URL**: `process.env.NEXT_PUBLIC_BACKEND_URL`
+- **Routing**: Client-side routing using `useRouter`, `usePathname`
+- **Error Handling**: Basic support via `ErrorContainer.tsx`
+
+---

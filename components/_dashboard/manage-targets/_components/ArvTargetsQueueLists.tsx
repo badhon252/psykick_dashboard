@@ -1,6 +1,6 @@
 "use client";
 import ErrorContainer from "@/components/shared/ErrorContainer/ErrorContainer";
-import NotFound from "@/components/shared/NotFound/NotFound";
+// import NotFound from "@/components/shared/NotFound/NotFound";
 import TableSkeleton from "@/components/shared/TableSkeleton/TableSkeleton";
 import { ARVTargetsResponse } from "@/components/types/TargetsQueueLists";
 import FivosPagination from "@/components/ui/FivosPagination";
@@ -42,8 +42,9 @@ const ArvTargetsQueueLists = () => {
     );
   } else if (data && data?.data && data?.data?.length === 0) {
     content = (
-      <div>
-        <NotFound message="Oops! No data available. Modify your filters or check your internet connection." />
+      <div className="w-full flex gap-2 items-center justify-center py-10 font-bold text-[20px] text-[#b2b2b2]">
+        No ARV Target available in queue, please add ARV Target to queue!
+        {/* <NotFound message="Oops! No data available. Modify your filters or check your internet connection." /> */}
       </div>
     );
   } else if (data && data?.data && data?.data?.length > 0) {
