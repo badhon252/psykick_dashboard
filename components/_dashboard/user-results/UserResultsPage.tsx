@@ -42,7 +42,7 @@ export default function Leaderboard() {
   const combinedLeaderboard = comdaind?.data || [];
 
   const { data: arvData } = useQuery({
-    queryKey: ["combined"],
+    queryKey: ["arvResult"],
     queryFn: async () => {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/leaderboard/get-ARVLeaderboard`,
@@ -66,7 +66,7 @@ export default function Leaderboard() {
   const ARVLeaderboard = arvData?.data || [];
 
   const { data: tmcData } = useQuery({
-    queryKey: ["combined"],
+    queryKey: ["tmcResult"],
     queryFn: async () => {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/leaderboard/get-TMCLeaderboard`,
@@ -214,7 +214,7 @@ export default function Leaderboard() {
                     </div>
                     <div className="text-white">{entry.tierRank}</div>
                     <div className="font-bold text-white">
-                      {entry.totalPoints}
+                      {entry.totalTMCPoints}
                     </div>
                   </div>
                 ))}
@@ -274,7 +274,7 @@ export default function Leaderboard() {
                     </div>
                     <div className="text-white">{entry.tierRank}</div>
                     <div className="font-bold text-white">
-                      {entry.totalPoints}
+                      {entry.totalARVPoints}
                     </div>
                   </div>
                 ))}
