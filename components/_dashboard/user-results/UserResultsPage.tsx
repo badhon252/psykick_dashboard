@@ -7,8 +7,9 @@ import vector2 from "@/public/assets/img/vector2.png";
 import vector3 from "@/public/assets/img/vector3.png";
 
 export default function Leaderboard() {
-  const token =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODBhNGIzYzk2ZDMyMDRmMjJiYjBlMGIiLCJpYXQiOjE3NDU1NzUyMDAsImV4cCI6MTc0NjE4MDAwMH0.4gfZW_rwIzEuzl6IAa6L_v8ptyw9_h0Jdhow0cYrj7I";
+  const token = localStorage.getItem("token");
+  // const token =
+  //   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODBhNGIzYzk2ZDMyMDRmMjJiYjBlMGIiLCJpYXQiOjE3NDU1NzUyMDAsImV4cCI6MTc0NjE4MDAwMH0.4gfZW_rwIzEuzl6IAa6L_v8ptyw9_h0Jdhow0cYrj7I";
 
   const {
     data: comdaind,
@@ -19,7 +20,7 @@ export default function Leaderboard() {
     queryKey: ["combined"],
     queryFn: async () => {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/leaderboard/get-totalLeaderboard`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/leaderboard/get-totalLeaderboard`,
         {
           method: "GET",
           headers: {
@@ -44,7 +45,7 @@ export default function Leaderboard() {
     queryKey: ["combined"],
     queryFn: async () => {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/leaderboard/get-ARVLeaderboard`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/leaderboard/get-ARVLeaderboard`,
         {
           method: "GET",
           headers: {
@@ -68,7 +69,7 @@ export default function Leaderboard() {
     queryKey: ["combined"],
     queryFn: async () => {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/leaderboard/get-TMCLeaderboard`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/leaderboard/get-TMCLeaderboard`,
         {
           method: "GET",
           headers: {
