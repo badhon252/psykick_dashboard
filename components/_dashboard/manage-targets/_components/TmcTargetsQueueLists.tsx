@@ -22,6 +22,24 @@ const TmcTargetsQueueLists = () => {
       ).then((res) => res.json()),
   });
 
+
+  // Make TMC active
+  const handleTMCMakeActive = () => {
+    // {{baseURL}}/TMCTarget/update-startNextGame
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/TMCTarget/update-startNextGame`, {
+      method: "PATCH",
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!data?.status) {
+          toast.error(data?.message || "Something went wrong");
+          return;
+        }
+        toast.success(data?.message || "TMC Target is active now");
+        queryClient.invalidateQueries({ queryKey: ["all-queued-tmc-targets"] });
+      });
+  }
+
   let content;
   if (isLoading) {
     content = (
@@ -71,7 +89,7 @@ const TmcTargetsQueueLists = () => {
               </div>
             </li>
             <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-              <button className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[29px] rounded-[4px] bg-[#3C9682]">
+              <button className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[29px] rounded-[4px] bg-[#3C9682]" onClick={handleTMCMakeActive}>
                 Active
               </button>
             </li>
