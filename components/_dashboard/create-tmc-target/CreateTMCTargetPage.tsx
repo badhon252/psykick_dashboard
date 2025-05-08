@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -17,6 +17,70 @@ import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 
+// Define proper types for API responses
+type CategoryResponse = {
+  status: boolean;
+  message: string;
+  data: CategoryData[];
+};
+
+type CategoryData = {
+  categoryName: string;
+  subCategoryNames: string[];
+};
+
+type SubcategoryResponse = {
+  status: boolean;
+  message: string;
+  data: string[];
+};
+
+type SubcategoryImagesResponse = {
+  status: boolean;
+  message: string;
+  data: SubcategoryImageData[];
+};
+
+type SubcategoryImageData = {
+  name: string;
+  images: SubcategoryImage[];
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    itemsPerPage: number;
+  };
+};
+
+type SubcategoryImage = {
+  imageUrl: string;
+  isUsed: boolean;
+  _id: string;
+};
+
+interface ImageData {
+  id: string;
+  src: string;
+  alt: string;
+}
+
+interface SubCategory {
+  name: string;
+  images: {
+    _id: string;
+    imageUrl: string;
+  }[];
+}
+
+interface Category {
+  categoryName: string;
+  subCategories: SubCategory[];
+}
+
+interface QueryData {
+  data: Category[];
+}
+
 export default function CreateTMCTargetPage() {
   const [selectedTargetImage, setSelectedTargetImage] = useState<string | null>(
     null
@@ -27,6 +91,12 @@ export default function CreateTMCTargetPage() {
   const [showMoreTargets, setShowMoreTargets] = useState(false);
   const [showMoreControls, setShowMoreControls] = useState(false);
   const [token, setToken] = useState<string | null>(null);
+
+  // Category and subcategory filters
+  const [categories, setCategories] = useState<CategoryData[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>("");
+  const [subcategories, setSubcategories] = useState<string[]>([]);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string>("");
 
   // Game Time settings
   const [selectedDays, setSelectedDays] = useState<number>(0);
@@ -49,7 +119,16 @@ export default function CreateTMCTargetPage() {
     setToken(storedToken);
   }, []);
 
-  const { data } = useQuery({
+  // Reset subcategory when category changes
+  useEffect(() => {
+    if (selectedCategory === "") {
+      setSubcategories([]);
+      setSelectedSubcategory("");
+    }
+  }, [selectedCategory]);
+
+  // Fetch all images
+  const { data: allImagesData, isLoading: isLoadingAllImages } = useQuery({
     queryKey: ["tmsleaderboardData"],
     queryFn: async () => {
       const response = await fetch(
@@ -66,6 +145,97 @@ export default function CreateTMCTargetPage() {
       return response.json();
     },
     enabled: !!token, // Only fetch if token is ready
+  });
+
+  // Fetch categories
+  const {
+    data: categoryData,
+    isLoading: isLoadingCategories,
+    isError: isErrorCategories,
+  } = useQuery<CategoryResponse>({
+    queryKey: ["categories"],
+    queryFn: async () => {
+      if (!token) throw new Error("No authentication token");
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/category/get-category-and-subcategory-names`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (!res.ok) throw new Error("Failed to fetch categories");
+      return res.json();
+    },
+    enabled: !!token,
+  });
+
+  useEffect(() => {
+    if (categoryData?.status && categoryData.data) {
+      setCategories(categoryData.data);
+    }
+  }, [categoryData]);
+
+  // Fetch subcategories when category changes
+  const {
+    data: subcategoryData,
+    isLoading: isLoadingSubcategories,
+    isError: isErrorSubcategories,
+  } = useQuery<SubcategoryResponse>({
+    queryKey: ["subcategories", selectedCategory],
+    queryFn: async () => {
+      if (!token) throw new Error("No authentication token");
+      if (!selectedCategory || selectedCategory === "")
+        return { status: true, message: "", data: [] };
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/category/get-subcategories/${selectedCategory}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (!res.ok) throw new Error("Failed to fetch subcategories");
+      return res.json();
+    },
+    enabled: !!token && !!selectedCategory && selectedCategory !== "",
+  });
+
+  useEffect(() => {
+    if (subcategoryData?.status && subcategoryData.data) {
+      setSubcategories(subcategoryData.data);
+    }
+  }, [subcategoryData]);
+
+  // Fetch subcategory images when subcategory changes
+  const {
+    data: subcategoryImages,
+    isLoading: isLoadingSubcategoryImages,
+    isError: isErrorSubcategoryImages,
+  } = useQuery<SubcategoryImagesResponse>({
+    queryKey: ["subcategoryImages", selectedCategory, selectedSubcategory],
+    queryFn: async () => {
+      if (!token) throw new Error("No authentication token");
+      if (!selectedCategory || !selectedSubcategory)
+        return { status: true, message: "", data: [] };
+
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/category/get-subcategory-images/${selectedCategory}/${selectedSubcategory}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (!res.ok) throw new Error("Failed to fetch subcategory images");
+      return res.json();
+    },
+    enabled: !!token && !!selectedCategory && !!selectedSubcategory,
   });
 
   const createTMCTargetMutation = useMutation({
@@ -102,39 +272,47 @@ export default function CreateTMCTargetPage() {
     },
   });
 
-  interface ImageData {
-    id: string;
-    src: string;
-    alt: string;
-  }
+  // Handle category and subcategory selection
+  const handleCategoryChange = (value: string) => {
+    if (value === "all") {
+      setSelectedCategory("");
+    } else {
+      setSelectedCategory(value);
+    }
+  };
 
-  interface SubCategory {
-    name: string;
-    images: {
-      _id: string;
-      imageUrl: string;
-    }[];
-  }
+  const handleSubcategoryChange = (value: string) => {
+    setSelectedSubcategory(value);
+  };
 
-  interface Category {
-    categoryName: string;
-    subCategories: SubCategory[];
-  }
-
-  interface QueryData {
-    data: Category[];
-  }
-
-  const allImages: ImageData[] =
-    (data as QueryData)?.data?.flatMap((category) =>
-      category.subCategories.flatMap((subCategory) =>
-        subCategory.images.map((image) => ({
-          id: image._id,
-          src: image.imageUrl,
-          alt: `${category.categoryName} - ${subCategory.name}`,
-        }))
-      )
-    ) || [];
+  // Process images based on filters
+  const allImages: ImageData[] = useMemo(() => {
+    if (
+      selectedCategory &&
+      selectedSubcategory &&
+      subcategoryImages?.data?.[0]?.images
+    ) {
+      // Return filtered images by subcategory
+      return subcategoryImages.data[0].images.map((image) => ({
+        id: image._id,
+        src: image.imageUrl,
+        alt: `${selectedCategory} - ${selectedSubcategory}`,
+      }));
+    } else {
+      // Return all images
+      return (
+        (allImagesData as QueryData)?.data?.flatMap((category) =>
+          category.subCategories.flatMap((subCategory) =>
+            subCategory.images.map((image) => ({
+              id: image._id,
+              src: image.imageUrl,
+              alt: `${category.categoryName} - ${subCategory.name}`,
+            }))
+          )
+        ) || []
+      );
+    }
+  }, [allImagesData, selectedCategory, selectedSubcategory, subcategoryImages]);
 
   const visibleTargetImages = showMoreTargets
     ? allImages
@@ -266,46 +444,163 @@ export default function CreateTMCTargetPage() {
     </div>
   );
 
+  // Determine if we're loading images
+  const isLoading =
+    isLoadingAllImages ||
+    (isLoadingSubcategoryImages && selectedCategory && selectedSubcategory);
+
+  // Determine if there's an error loading images
+  const isError =
+    isErrorSubcategoryImages && selectedCategory && selectedSubcategory;
+
   return (
     <div className="flex flex-col min-h-screen">
       <main className="flex-1 p-6 space-y-6">
         <Card className="bg-[#170A2C]/50 border-0">
           <CardContent className="space-y-6 py-6">
+            {/* Category and Subcategory Filters */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div className="space-y-2">
+                <label className="text-sm text-white">Category:</label>
+                <Select
+                  value={selectedCategory || "all"}
+                  onValueChange={handleCategoryChange}
+                >
+                  <SelectTrigger className="bg-[#170A2C] border-gray-700 text-white">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#170A2C] border-gray-700 text-white">
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {categories.map((category) => (
+                      <SelectItem
+                        key={category.categoryName}
+                        value={category.categoryName}
+                      >
+                        {category.categoryName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {isLoadingCategories && (
+                  <p className="text-xs text-gray-400">Loading categories...</p>
+                )}
+                {isErrorCategories && (
+                  <p className="text-xs text-red-400">
+                    Error loading categories
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm text-white">Subcategory:</label>
+                <Select
+                  value={selectedSubcategory}
+                  onValueChange={handleSubcategoryChange}
+                  disabled={
+                    !selectedCategory ||
+                    selectedCategory === "" ||
+                    isLoadingSubcategories
+                  }
+                >
+                  <SelectTrigger className="bg-[#170A2C] border-gray-700 text-white">
+                    <SelectValue
+                      placeholder={
+                        !selectedCategory || selectedCategory === ""
+                          ? "Select a category first"
+                          : isLoadingSubcategories
+                          ? "Loading subcategories..."
+                          : "Select a subcategory"
+                      }
+                    />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#170A2C] border-gray-700 text-white">
+                    {subcategories.length === 0 ? (
+                      <div className="p-2 text-center text-gray-400 text-sm">
+                        No subcategories found
+                      </div>
+                    ) : (
+                      subcategories.map((subcategory) => (
+                        <SelectItem key={subcategory} value={subcategory}>
+                          {subcategory}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+                {isLoadingSubcategories && selectedCategory && (
+                  <p className="text-xs text-gray-400">
+                    Loading subcategories...
+                  </p>
+                )}
+                {isErrorSubcategories && selectedCategory && (
+                  <p className="text-xs text-red-400">
+                    Error loading subcategories
+                  </p>
+                )}
+              </div>
+            </div>
+
             {/* Target Images */}
             <div className="space-y-4">
               <h3 className="text-white text-lg">
                 Select Target Image (only 1):
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                {visibleTargetImages.map((image) => (
-                  <div
-                    key={image.id}
-                    className={cn(
-                      "relative rounded-md overflow-hidden cursor-pointer border-2 border-transparent",
-                      selectedTargetImage === image.id && "border-[#8F37FF]"
-                    )}
-                    onClick={() => handleSelectTargetImage(image.id)}
-                  >
-                    <Image
-                      src={image.src || "/placeholder.svg"}
-                      alt={image.alt}
-                      width={200}
-                      height={150}
-                      className="w-full h-32 object-cover"
-                    />
-                    {selectedTargetImage === image.id && (
-                      <div className="absolute top-2 left-2 bg-[#8F37FF] text-white rounded-full w-6 h-6 flex items-center justify-center">
-                        1
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+              {isLoading ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                  {[...Array(10)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="bg-[#170A2C] rounded-md h-32 animate-pulse"
+                    ></div>
+                  ))}
+                </div>
+              ) : isError ? (
+                <div className="p-4 bg-red-900/20 border border-red-800 rounded-md">
+                  <p className="text-red-400">
+                    Error loading images. Please try again.
+                  </p>
+                </div>
+              ) : allImages.length === 0 ? (
+                <div className="p-4 bg-[#170A2C]/30 border border-gray-700 rounded-md text-center">
+                  <p className="text-gray-400">
+                    {selectedCategory && selectedSubcategory
+                      ? "No images found for this subcategory"
+                      : "No images available"}
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                  {visibleTargetImages.map((image) => (
+                    <div
+                      key={image.id}
+                      className={cn(
+                        "relative rounded-md overflow-hidden cursor-pointer border-2 border-transparent",
+                        selectedTargetImage === image.id && "border-[#8F37FF]"
+                      )}
+                      onClick={() => handleSelectTargetImage(image.id)}
+                    >
+                      <Image
+                        src={image.src || "/placeholder.svg"}
+                        alt={image.alt}
+                        width={200}
+                        height={150}
+                        className="w-full h-32 object-cover"
+                      />
+                      {selectedTargetImage === image.id && (
+                        <div className="absolute top-2 left-2 bg-[#8F37FF] text-white rounded-full w-6 h-6 flex items-center justify-center">
+                          1
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="flex justify-end">
                 <Button
                   variant="outline"
                   className="bg-[#8F37FF] text-white hover:bg-[#8F37FF]/80"
                   onClick={() => setShowMoreTargets(!showMoreTargets)}
+                  disabled={allImages.length <= 15}
                 >
                   {showMoreTargets ? "Show Less" : "See More"}
                 </Button>
@@ -317,37 +612,63 @@ export default function CreateTMCTargetPage() {
               <h3 className="text-white text-lg">
                 Select Control Images (max 5):
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                {visibleControlImages.map((image) => (
-                  <div
-                    key={image.id}
-                    className={cn(
-                      "relative rounded-md overflow-hidden cursor-pointer border-2 border-transparent",
-                      selectedControlImages.includes(image.id) &&
-                        "border-[#8F37FF]"
-                    )}
-                    onClick={() => handleSelectControlImage(image.id)}
-                  >
-                    <Image
-                      src={image.src || "/placeholder.svg"}
-                      alt={image.alt}
-                      width={200}
-                      height={150}
-                      className="w-full h-32 object-cover"
-                    />
-                    {selectedControlImages.includes(image.id) && (
-                      <div className="absolute top-2 left-2 bg-[#8F37FF] text-white rounded-full w-6 h-6 flex items-center justify-center">
-                        {selectedControlImages.indexOf(image.id) + 1}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
+              {isLoading ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                  {[...Array(10)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="bg-[#170A2C] rounded-md h-32 animate-pulse"
+                    ></div>
+                  ))}
+                </div>
+              ) : isError ? (
+                <div className="p-4 bg-red-900/20 border border-red-800 rounded-md">
+                  <p className="text-red-400">
+                    Error loading images. Please try again.
+                  </p>
+                </div>
+              ) : allImages.length === 0 ? (
+                <div className="p-4 bg-[#170A2C]/30 border border-gray-700 rounded-md text-center">
+                  <p className="text-gray-400">
+                    {selectedCategory && selectedSubcategory
+                      ? "No images found for this subcategory"
+                      : "No images available"}
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                  {visibleControlImages.map((image) => (
+                    <div
+                      key={image.id}
+                      className={cn(
+                        "relative rounded-md overflow-hidden cursor-pointer border-2 border-transparent",
+                        selectedControlImages.includes(image.id) &&
+                          "border-[#8F37FF]"
+                      )}
+                      onClick={() => handleSelectControlImage(image.id)}
+                    >
+                      <Image
+                        src={image.src || "/placeholder.svg"}
+                        alt={image.alt}
+                        width={200}
+                        height={150}
+                        className="w-full h-32 object-cover"
+                      />
+                      {selectedControlImages.includes(image.id) && (
+                        <div className="absolute top-2 left-2 bg-[#8F37FF] text-white rounded-full w-6 h-6 flex items-center justify-center">
+                          {selectedControlImages.indexOf(image.id) + 1}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
               <div className="flex justify-end">
                 <Button
                   variant="outline"
                   className="bg-[#8F37FF] text-white hover:bg-[#8F37FF]/80"
                   onClick={() => setShowMoreControls(!showMoreControls)}
+                  disabled={allImages.length <= 15}
                 >
                   {showMoreControls ? "Show Less" : "See More"}
                 </Button>
