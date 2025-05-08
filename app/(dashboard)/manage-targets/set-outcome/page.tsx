@@ -38,8 +38,9 @@ export default function SetOutcomePage() {
   const { data, isLoading } = useQuery<APIResponse>({
     queryKey: ["activeARVTarget"],
     queryFn: () =>
-      fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/get-activeARVTarget`)
-        .then((res) => res.json()),
+      fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/get-activeARVTarget`
+      ).then((res) => res.json()),
   });
 
   // Calculate time left
@@ -123,7 +124,8 @@ export default function SetOutcomePage() {
                 <div>
                   <p className="text-white">Code: {data.data.code}</p>
                   <p className="text-white">
-                    Reveal Time: {moment(data.data.revealTime).format("DD/MM/YYYY")}
+                    Reveal Time:{" "}
+                    {moment(data.data.revealTime).format("DD/MM/YYYY")}
                   </p>
                 </div>
                 <div className="bg-white/10 p-3 rounded-md text-center">
