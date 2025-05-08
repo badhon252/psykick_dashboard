@@ -1,44 +1,33 @@
-"use client";
+"use client"
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import Image from "next/image";
-import { Trash2 } from "lucide-react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "react-toastify";
-import { CategoryApiResponse } from "@/components/types/ImageGallery";
+import type React from "react"
+
+import { useState } from "react"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form"
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
+import { Button } from "@/components/ui/button"
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import Image from "next/image"
+import { Trash2 } from "lucide-react"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { toast } from "react-toastify"
+import type { CategoryApiResponse } from "@/components/types/ImageGallery"
 
 const uploadSchema = z.object({
   categoryName: z.string().min(1, "Category Name is required"),
   subCategoryName: z.string().min(1, "Sub-category Name is required"),
-});
+})
 
 export default function UploadImageForm() {
-  const token =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODBhMDkyMDA0MDM1ZTdhOGNjOTc4ZTUiLCJpYXQiOjE3NDU0ODgzNzMsImV4cCI6MTc0NjA5MzE3M30.yifJ6Nn-zzQyFHGBCuXEDsk-vPazqGd55WNNNV7ZcdI";
-  const queryClient = useQueryClient();
+  const token = typeof window !== "undefined" ? localStorage.getItem("authToken") || "" : ""
+  const queryClient = useQueryClient()
 
-  const [image, setImage] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [image, setImage] = useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<string>("")
 
   const form = useForm<z.infer<typeof uploadSchema>>({
     resolver: zodResolver(uploadSchema),
@@ -46,69 +35,73 @@ export default function UploadImageForm() {
       categoryName: "",
       subCategoryName: "",
     },
-  });
+  })
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      setImage(file);
-      setPreviewUrl(URL.createObjectURL(file));
+      const file = e.target.files[0]
+      setImage(file)
+      setPreviewUrl(URL.createObjectURL(file))
     }
-  };
+  }
 
   // get category and subCategory
   const { data } = useQuery<CategoryApiResponse>({
     queryKey: ["all-category-subCategory"],
     queryFn: () =>
-      fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/category/get-category-and-subcategory-names`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      ).then((res) => res.json()),
-  });
+      fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/category/get-category-and-subcategory-names`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }).then((res) => res.json()),
+  })
 
-  const categoryData = data?.data || [];
-  const allSubCategories = categoryData.flatMap(
-    (item) => item.subCategoryNames
-  );
+  const { data: subCategoryData } = useQuery({
+    queryKey: ["subcategories", selectedCategory],
+    queryFn: () =>
+      fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/category/get-subcategories/${selectedCategory}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      }).then((res) => res.json()),
+    enabled: !!selectedCategory, // Only run query when a category is selected
+  })
+
+  const subCategories = subCategoryData?.data || []
+
+  const categoryData = data?.data || []
 
   const { mutate, isPending } = useMutation({
     mutationKey: ["upload-categoryName-image"],
     mutationFn: (formData: FormData) => {
-      return fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/category/upload-category-image`,
-        {
-          method: "POST",
-          body: formData,
-          headers: {
-            // "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      ).then((res) => res.json());
+      return fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/category/upload-category-image`, {
+        method: "POST",
+        body: formData,
+        headers: {
+          // "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }).then((res) => res.json())
     },
     onSuccess: (data) => {
       if (!data?.status) {
-        toast.error(data?.message || "Category Image added successfully");
-        return;
+        toast.error(data?.message || "Category Image added successfully")
+        return
       } else {
-        form.reset();
-        toast.success(data?.message || "Failed to add Category Image");
-        queryClient.invalidateQueries({ queryKey: ["all-image-gallery"] });
+        form.reset()
+        toast.success(data?.message || "Failed to add Category Image")
+        queryClient.invalidateQueries({ queryKey: ["all-image-gallery"] })
       }
     },
-  });
+  })
 
   const onSubmit = (data: z.infer<typeof uploadSchema>) => {
-    const formData = new FormData();
+    const formData = new FormData()
 
-    formData.append("categoryName", data.categoryName);
-    formData.append("subCategoryName", data.subCategoryName);
+    formData.append("categoryName", data.categoryName)
+    formData.append("subCategoryName", data.subCategoryName)
     if (image) {
-      formData.append("image", image);
+      formData.append("image", image)
     }
-    console.log("Form submitted successfully", formData);
-    mutate(formData);
-  };
+    console.log("Form submitted successfully", formData)
+    mutate(formData)
+  }
 
   return (
     <Card className="bg-[#170A2C]/50 border-0">
@@ -123,8 +116,18 @@ export default function UploadImageForm() {
               name="categoryName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white">Category Name <sup className="text-red-500 text-base">*</sup></FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <FormLabel className="text-white">
+                    Category Name <sup className="text-red-500 text-base">*</sup>
+                  </FormLabel>
+                  <Select
+                    onValueChange={(value) => {
+                      field.onChange(value)
+                      setSelectedCategory(value)
+                      // Reset subcategory when category changes
+                      form.setValue("subCategoryName", "")
+                    }}
+                    value={field.value}
+                  >
                     <FormControl>
                       <SelectTrigger className="bg-[#170A2C] border-gray-700 text-white">
                         <SelectValue placeholder="Select one" />
@@ -148,19 +151,21 @@ export default function UploadImageForm() {
               name="subCategoryName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-white">Sub-category <sup className="text-red-500 text-base">*</sup></FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <FormLabel className="text-white">
+                    Sub-category <sup className="text-red-500 text-base">*</sup>
+                  </FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value} disabled={!selectedCategory}>
                     <FormControl>
                       <SelectTrigger className="bg-[#170A2C] border-gray-700 text-white">
-                        <SelectValue placeholder="Select one" />
+                        <SelectValue placeholder={selectedCategory ? "Select one" : "Select a category first"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {allSubCategories?.map((cat, index) => (
-                        <SelectItem key={index} value={cat}>
-                          {cat}
+                        {subCategories?.map((subCat: string, index: number) => (
+                        <SelectItem key={index} value={subCat}>
+                          {subCat}
                         </SelectItem>
-                      ))}
+                        ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -176,7 +181,7 @@ export default function UploadImageForm() {
                     <Image
                       width={200}
                       height={200}
-                      src={previewUrl}
+                      src={previewUrl || "/placeholder.svg"}
                       alt="Preview"
                       className="max-h-[200px] mx-auto object-contain"
                     />
@@ -185,8 +190,8 @@ export default function UploadImageForm() {
                       size="icon"
                       className="absolute top-2 right-2"
                       onClick={() => {
-                        setImage(null);
-                        setPreviewUrl(null);
+                        setImage(null)
+                        setPreviewUrl(null)
                       }}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -207,24 +212,13 @@ export default function UploadImageForm() {
                         strokeLinejoin="round"
                         className="text-gray-400"
                       >
-                        <rect
-                          width="18"
-                          height="18"
-                          x="3"
-                          y="3"
-                          rx="2"
-                          ry="2"
-                        />
+                        <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
                         <circle cx="9" cy="9" r="2" />
                         <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
                       </svg>
                     </div>
-                    <p className="text-center text-gray-400 mb-4">
-                      Drop your image here, or browse
-                    </p>
-                    <p className="text-center text-gray-500 text-sm">
-                      Jpeg, png are allowed
-                    </p>
+                    <p className="text-center text-gray-400 mb-4">Drop your image here, or browse</p>
+                    <p className="text-center text-gray-500 text-sm">Jpeg, png are allowed</p>
                     <input
                       type="file"
                       className="hidden"
@@ -233,12 +227,10 @@ export default function UploadImageForm() {
                       onChange={handleFileChange}
                     />
                     <Button
-                    type="button"
+                      type="button"
                       variant="outline"
                       className="mt-4 bg-[#8F37FF] text-white hover:bg-[#8F37FF]/80"
-                      onClick={() =>
-                        document.getElementById("image-upload")?.click()
-                      }
+                      onClick={() => document.getElementById("image-upload")?.click()}
                     >
                       Browse
                     </Button>
@@ -248,11 +240,7 @@ export default function UploadImageForm() {
             </div>
 
             <div className="flex justify-end">
-              <Button
-                type="submit"
-                disabled={isPending}
-                className="bg-[#8F37FF] text-white hover:bg-[#8F37FF]/80"
-              >
+              <Button type="submit" disabled={isPending} className="bg-[#8F37FF] text-white hover:bg-[#8F37FF]/80">
                 {isPending ? "Uploading..." : "Upload"}
               </Button>
             </div>
@@ -260,5 +248,5 @@ export default function UploadImageForm() {
         </Form>
       </CardContent>
     </Card>
-  );
+  )
 }
