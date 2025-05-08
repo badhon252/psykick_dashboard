@@ -3,6 +3,8 @@ import dynamic from "next/dynamic";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import "react-quill/dist/quill.snow.css";
+import { Button } from "./ui/button";
+import { ArrowLeft } from "lucide-react";
 
 // Dynamically import ReactQuill (disable SSR)
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
@@ -124,12 +126,24 @@ const TermsConditions = () => {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-white">Terms & Conditions</h1>
         {!isEditing ? (
-          <button
+          
+          <div className="flex items-center gap-4">
+            <a href="/settings">
+              <Button className="bg-white text-[#2D17FF] hover:bg-white/90 px-4 py-2 rounded-md flex items-center gap-2">
+                <ArrowLeft className="w-4 h-4" />
+                Back to Settings
+              </Button>
+            </a>
+            <button
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1 rounded-md"
             onClick={() => setIsEditing(true)}
           >
             Edit
           </button>
+          </div>
+
+
+          
         ) : (
           <button
             className="bg-red-600 hover:bg-red-700 text-white px-4 py-1 rounded-md"

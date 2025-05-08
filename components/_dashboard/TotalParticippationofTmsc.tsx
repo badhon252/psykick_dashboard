@@ -18,7 +18,7 @@ import { useQuery } from '@tanstack/react-query';
 // Fetch function with Authorization header
 const fetchChartData = async () => {
   try {
-    const token = localStorage.getItem('token'); // get token from localStorage
+    const token = localStorage.getItem('token');
 
     if (!token) {
       throw new Error('No token found');
@@ -45,7 +45,7 @@ const fetchChartData = async () => {
   }
 };
 
-const TotalParticippationofTmsc = () => {
+const TotalParticipationOfTmsc = () => {
   const { data, isLoading, isError } = useQuery({
     queryKey: ['game-graph'],
     queryFn: fetchChartData,
@@ -80,7 +80,7 @@ const TotalParticippationofTmsc = () => {
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                <XAxis dataKey="name" stroke="#fff" />
+                <XAxis dataKey="month" stroke="#fff" />
                 <YAxis stroke="#fff" />
                 <Tooltip
                   contentStyle={{
@@ -92,14 +92,14 @@ const TotalParticippationofTmsc = () => {
                 <Legend />
                 <Line
                   type="monotone"
-                  dataKey="tmc"
+                  dataKey="TMC"
                   name="TMC"
                   stroke="#8884d8"
                   activeDot={{ r: 8 }}
                 />
                 <Line
                   type="monotone"
-                  dataKey="arv"
+                  dataKey="ARV"
                   name="ARV"
                   stroke="#82ca9d"
                 />
@@ -112,4 +112,4 @@ const TotalParticippationofTmsc = () => {
   );
 };
 
-export default TotalParticippationofTmsc;
+export default TotalParticipationOfTmsc;
