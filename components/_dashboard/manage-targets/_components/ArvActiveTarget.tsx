@@ -39,10 +39,10 @@ const ArvActiveTarget = () => {
       const duration = moment.duration(gameTarget.diff(now));
       const isOutcomeTime = now.isSameOrAfter(outcomeTarget);
 
-      console.log("Now:", now.toISOString());
-      console.log("Game Target:", gameTarget.toISOString());
-      console.log("Outcome Target:", outcomeTarget.toISOString());
-      console.log("isOutcomeTime:", isOutcomeTime);
+      // console.log("Now:", now.toISOString());
+      // console.log("Game Target:", gameTarget.toISOString());
+      // console.log("Outcome Target:", outcomeTarget.toISOString());
+      // console.log("isOutcomeTime:", isOutcomeTime);
 
       if (duration.asMilliseconds() <= 0) {
         clearInterval(interval);

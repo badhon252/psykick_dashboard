@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 import ErrorContainer from "@/components/shared/ErrorContainer/ErrorContainer";
 import TableSkeleton from "@/components/shared/TableSkeleton/TableSkeleton";
@@ -72,6 +73,8 @@ const ArvTargetsQueueLists = () => {
     return () => clearInterval(interval);
   }, [arvActiveTarget?.data?.bufferTime, arvActiveTarget?.data?._id]);
 
+  
+
   // update arv target make in active api
   const { mutate: updateArvTargetMakeInActive } = useMutation({
     mutationKey: ["update-ARVTarget-makeInactive"],
@@ -103,6 +106,7 @@ const ArvTargetsQueueLists = () => {
       if (now.isSameOrAfter(bufferTime)) {
         clearInterval(interval);
         updateArvTargetMakeInActive();
+        handleARVMakeActive();
       }
     }, 5000);
 
