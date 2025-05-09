@@ -60,9 +60,9 @@ const PrivacyPolicy = () => {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/privacy-policy/create-privacy-policy/${id}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/privacy-policy/update-privacy-policy/${id}`,
         {
-          method: "POST",
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
