@@ -66,7 +66,7 @@ const ArvActiveTarget = () => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [data?.data?.gameTime, data?.data?.outcomeTime]);
+  }, [data?.data?.gameTime, data?.data?.outcomeTime, isOutcomeTimeReached]);
 
   if (isLoading) {
     return <p className="text-white">Loading...</p>;

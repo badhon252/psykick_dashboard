@@ -1,6 +1,5 @@
 "use client";
 import ErrorContainer from "@/components/shared/ErrorContainer/ErrorContainer";
-// import NotFound from "@/components/shared/NotFound/NotFound";
 import TableSkeleton from "@/components/shared/TableSkeleton/TableSkeleton";
 import { ARVActiveTargetResponse } from "@/components/types/ManageActiveTarget";
 import { ARVTargetsResponse } from "@/components/types/TargetsQueueLists";
@@ -9,12 +8,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
 import moment from "moment";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
 const ArvTargetsQueueLists = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const queryClient = useQueryClient();
+
+  // all-queued-arv-targets api
   const { data, isLoading, isError, error } = useQuery<ARVTargetsResponse>({
     queryKey: ["all-queued-arv-targets", currentPage],
     queryFn: () =>
@@ -23,21 +24,18 @@ const ArvTargetsQueueLists = () => {
       ).then((res) => res.json()),
   });
 
-  // ARV Active target
-  const { data:arvActiveTarget } = useQuery<ARVActiveTargetResponse>(
-    {
-      queryKey: ["arvActiveTargets"],
-      queryFn: () =>
-        fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/get-activeARVTarget`
-        ).then((res) => res.json()),
-    }
-  );
+  // arv Active Targets api
+  const { data: arvActiveTarget } = useQuery<ARVActiveTargetResponse>({
+    queryKey: ["arvActiveTargets"],
+    queryFn: () =>
+      fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/get-activeARVTarget`
+      ).then((res) => res.json()),
+  });
 
-  console.log(arvActiveTarget?.data?._id)
+  console.log(arvActiveTarget?.data?._id);
 
-  // update-ARVTarget-makeComplete
-
+  // update-ARVTarget-makeComplete api
   const { mutate: arvMakeComplete } = useMutation({
     mutationKey: ["update-ARVTarget-makeComplete"],
     mutationFn: () =>
@@ -52,24 +50,69 @@ const ArvTargetsQueueLists = () => {
       }
       toast.success(data?.message);
       queryClient.invalidateQueries({ queryKey: ["all-queued-arv-targets"] });
+      queryClient.invalidateQueries({ queryKey: ["arvActiveTargets"] });
     },
   });
 
-  console.log(arvActiveTarget?.data?.bufferTime)
-  if(arvActiveTarget?.data?.bufferTime == "00:00:00"){
-    arvMakeComplete();
-    
-  }
-  
+  // 🔁 Check bufferTime every 5 seconds and trigger makeComplete
+  useEffect(() => {
+    if (!arvActiveTarget?.data?.bufferTime || !arvActiveTarget?.data?._id)
+      return;
 
-  // ARV Next Game active
+    const bufferTime = moment(arvActiveTarget.data.bufferTime);
+    console.log("Buffer Time:", bufferTime.toISOString());
+    const interval = setInterval(() => {
+      const now = moment();
+      if (now.isSameOrAfter(bufferTime)) {
+        clearInterval(interval);
+        arvMakeComplete();
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [arvActiveTarget?.data?.bufferTime, arvActiveTarget?.data?._id]);
+
+  // update arv target make in active api
+  const { mutate: updateArvTargetMakeInActive } = useMutation({
+    mutationKey: ["update-ARVTarget-makeInactive"],
+    mutationFn: () =>
+      fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/update-ARVTarget-makeInactive/${arvActiveTarget?.data?._id}`,
+        { method: "PATCH" }
+      ).then((res) => res.json()),
+    onSuccess: (data) => {
+      if (!data?.status) {
+        toast.error(data?.message || "Something went wrong");
+        return;
+      }
+      toast.success(data?.message);
+      queryClient.invalidateQueries({ queryKey: ["all-queued-arv-targets"] });
+      queryClient.invalidateQueries({ queryKey: ["arvActiveTargets"] });
+    },
+  });
+
+  // 🔁 Check bufferTime every 5 seconds and trigger makeComplete
+  useEffect(() => {
+    if (!arvActiveTarget?.data?.bufferTime || !arvActiveTarget?.data?._id)
+      return;
+
+    const bufferTime = moment(arvActiveTarget.data.bufferTime);
+    console.log("Buffer Time:", bufferTime.toISOString());
+    const interval = setInterval(() => {
+      const now = moment();
+      if (now.isSameOrAfter(bufferTime)) {
+        clearInterval(interval);
+        updateArvTargetMakeInActive();
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [arvActiveTarget?.data?.bufferTime, arvActiveTarget?.data?._id]);
+
   const handleARVMakeActive = () => {
-    // {{baseURL}}/TMCTarget/update-startNextGame
     fetch(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/update-startNextGame`,
-      {
-        method: "PATCH",
-      }
+      { method: "PATCH" }
     )
       .then((res) => res.json())
       .then((data) => {
@@ -77,9 +120,32 @@ const ArvTargetsQueueLists = () => {
           toast.error(data?.message || "Something went wrong");
           return;
         }
-        toast.success(data?.message || "TMC Target is active now");
-        queryClient.invalidateQueries({ queryKey: ["all-queued-tmc-targets"] });
+        toast.success(data?.message || "ARV Target is active now");
+        queryClient.invalidateQueries({ queryKey: ["all-queued-arv-targets"] });
+        queryClient.invalidateQueries({ queryKey: ["arvActiveTargets"] });
       });
+  };
+
+  // remove-arv-from-queue api
+  const { mutate } = useMutation({
+    mutationKey: ["remove-arv-from-queue"],
+    mutationFn: (id: string) =>
+      fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/update-ARVTarget-removeFromQueue/${id}`,
+        { method: "PATCH" }
+      ).then((res) => res.json()),
+    onSuccess: (data) => {
+      if (!data?.status) {
+        toast.error(data?.message || "Something went wrong");
+        return;
+      }
+      toast.success(data?.message || "Removed from queue successfully");
+      queryClient.invalidateQueries({ queryKey: ["all-queued-arv-targets"] });
+    },
+  });
+
+  const handleArvRemoveFromQueue = (id: string) => {
+    mutate(id);
   };
 
   let content;
@@ -104,44 +170,39 @@ const ArvTargetsQueueLists = () => {
     content = (
       <div className="w-full flex gap-2 items-center justify-center py-10 font-bold text-[20px] text-[#b2b2b2]">
         No ARV Target available in queue, please add ARV Target to queue!
-        {/* <NotFound message="Oops! No data available. Modify your filters or check your internet connection." /> */}
       </div>
     );
   } else if (data && data?.data && data?.data?.length > 0) {
     content = (
-      <div className="">
+      <div>
         {data?.data?.map((target, index) => (
           <ul
             key={index}
             className="bg-white/10 shadow-[0px_20px_166.2px_4px_#580EB726] my-4 border border-[#C5C5C5] rounded-[12px] p-5 grid grid-cols-5"
           >
-            <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+            <li className="flex items-center justify-center text-white font-medium">
               {target.code}
             </li>
-            <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-              <div className="w-full flex flex-col items-center justify-center">
-                <span>{moment(target.revealTime).format("YYYY-MM-DD")}</span>
-                <span>{moment(target.revealTime).format("HH:mm:ss")}</span>
-              </div>
+            <li className="flex flex-col items-center justify-center text-white font-medium">
+              <span>{moment(target.revealTime).format("YYYY-MM-DD")}</span>
+              <span>{moment(target.revealTime).format("HH:mm:ss")}</span>
             </li>
-            <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-              <div className="w-full flex flex-col items-center justify-center">
-                <span>{moment(target.gameTime).format("YYYY-MM-DD")}</span>
-                <span>{moment(target.gameTime).format("HH:mm:ss")}</span>
-              </div>
+            <li className="flex flex-col items-center justify-center text-white font-medium">
+              <span>{moment(target.gameTime).format("YYYY-MM-DD")}</span>
+              <span>{moment(target.gameTime).format("HH:mm:ss")}</span>
             </li>
-            <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+            <li className="flex items-center justify-center">
               <button
                 onClick={handleARVMakeActive}
-                className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[29px] rounded-[4px] bg-[#3C9682]"
+                className="text-xs font-semibold text-white py-[6px] px-[29px] rounded-[4px] bg-[#3C9682]"
               >
                 Active
               </button>
             </li>
-            <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+            <li className="flex items-center justify-center">
               <button
                 onClick={() => handleArvRemoveFromQueue(target._id)}
-                className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[10px] rounded-[4px] bg-[#D74727]"
+                className="text-xs font-semibold text-white py-[6px] px-[10px] rounded-[4px] bg-[#D74727]"
               >
                 Remove from queue
               </button>
@@ -152,86 +213,52 @@ const ArvTargetsQueueLists = () => {
     );
   }
 
-  // Remove from queue ARV
-
-  const { mutate } = useMutation({
-    mutationKey: ["remove-arv-from-queue"],
-    mutationFn: (id: string) =>
-      fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/update-ARVTarget-removeFromQueue/${id}`,
-        {
-          method: "PATCH",
-        }
-      ).then((res) => res.json()),
-    onSuccess: (data) => {
-      if (!data?.status) {
-        toast.error(data?.message || "Something went wrong");
-        return;
-      }
-      toast.success(data?.message || "Removed from queue successfully");
-      queryClient.invalidateQueries({ queryKey: ["all-queued-arv-targets"] });
-    },
-  });
-
-  const handleArvRemoveFromQueue = (id: string) => {
-    mutate(id);
-  };
   return (
     <div>
       <div className="bg-[#c4a0ff17] p-6 rounded-lg">
-        {/* header  */}
         <div className="w-full flex items-center justify-end pb-5">
           <Link href="/manage-targets">
-            <button className="flex items-center gap-3 bg-gradient-to-r from-[#8F37FF] to-[#2D17FF] text-base font-semibold text-white leading-[120%] py-[15px] px-[40px] rounded-tr-[24px] rounded-bl-[24px] ">
+            <button className="flex items-center gap-3 bg-gradient-to-r from-[#8F37FF] to-[#2D17FF] text-base font-semibold text-white py-[15px] px-[40px] rounded-tr-[24px] rounded-bl-[24px] ">
               <ChevronLeft /> Manage Targets
             </button>
           </Link>
         </div>
         <div>
-          <h3 className="bg-gradient-to-r from-[#8F37FF] to-[#2D17FF] rounded-t-[20px] text-[24px] lg:text-[28px] text-white font-semibold leading-[120%] p-5 mb-[30px]">
+          <h3 className="bg-gradient-to-r from-[#8F37FF] to-[#2D17FF] rounded-t-[20px] text-[24px] lg:text-[28px] text-white font-semibold p-5 mb-[30px]">
             ARV Targets Queue Lists
           </h3>
         </div>
-        {/* TMC Targets queue lists*/}
-        <div>
-          <ul className="bg-white py-[20px] grid grid-cols-5">
-            <li className="w-full flex items-center justify-center text-base font-medium text-[#444444] leading-[120%]">
-              Code
-            </li>
-            <li className="w-full flex items-center justify-center text-base font-medium text-[#444444] leading-[120%]">
-              Reveal Time
-            </li>
-            <li className="w-full flex items-center justify-center text-base font-medium text-[#444444] leading-[120%]">
-              Game Time
-            </li>
-            <li className="w-full flex items-center justify-center text-base font-medium text-[#444444] leading-[120%]">
-              Make Active
-            </li>
-            <li className="w-full flex items-center justify-center text-base font-medium text-[#444444] leading-[120%]">
-              Remove From Queue
-            </li>
-          </ul>
-        </div>
-
-        <div>{content}</div>
-        {/* pagination  */}
-        <div>
-          {data && data?.pagination && data?.pagination?.totalPages > 1 && (
-            <div className="w-full flex items-center justify-between pt-10 pb-2">
-              <p className="font-normal text-[16px] leading-[20px] text-white">
-                Showing {currentPage} to {data?.pagination?.totalPages} in first
-                entries
-              </p>
-              <div>
-                <FivosPagination
-                  totalPages={data?.pagination?.totalPages}
-                  currentPage={currentPage}
-                  onPageChange={(page) => setCurrentPage(page)}
-                />
-              </div>
-            </div>
-          )}
-        </div>
+        <ul className="bg-white py-[20px] grid grid-cols-5">
+          <li className="flex justify-center text-[#444444] font-medium">
+            Code
+          </li>
+          <li className="flex justify-center text-[#444444] font-medium">
+            Reveal Time
+          </li>
+          <li className="flex justify-center text-[#444444] font-medium">
+            Game Time
+          </li>
+          <li className="flex justify-center text-[#444444] font-medium">
+            Make Active
+          </li>
+          <li className="flex justify-center text-[#444444] font-medium">
+            Remove From Queue
+          </li>
+        </ul>
+        {content}
+        {data && data?.pagination?.totalPages > 1 && (
+          <div className="w-full flex items-center justify-between pt-10 pb-2">
+            <p className="text-white text-[16px]">
+              Showing {currentPage} to {data?.pagination?.totalPages} in first
+              entries
+            </p>
+            <FivosPagination
+              totalPages={data?.pagination?.totalPages}
+              currentPage={currentPage}
+              onPageChange={(page) => setCurrentPage(page)}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
