@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 import ErrorContainer from "@/components/shared/ErrorContainer/ErrorContainer";
 import TableSkeleton from "@/components/shared/TableSkeleton/TableSkeleton";
@@ -103,6 +104,7 @@ const ArvTargetsQueueLists = () => {
       if (now.isSameOrAfter(bufferTime)) {
         clearInterval(interval);
         updateArvTargetMakeInActive();
+        handleARVMakeActive();
       }
     }, 5000);
 
