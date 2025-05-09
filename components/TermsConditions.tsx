@@ -33,7 +33,6 @@ const formats = [
 
 const TermsConditions = () => {
   const [isEditing, setIsEditing] = useState(false);
-  const token = localStorage.getItem("token");
   const [content, setContent] = useState<string>(``);
 
   // Fetch data from the backend for the Terms and Conditions
@@ -46,7 +45,6 @@ const TermsConditions = () => {
           {
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
             },
           }
         );
@@ -60,33 +58,32 @@ const TermsConditions = () => {
         console.log(error);
       }
     },
-    // onError: (error: any) => {
-    //   console.error("Error fetching terms and conditions:", error);
-    // },
+
   });
 
-  // Update the content state with fetched data when available
+console.log()
+
   useEffect(() => {
     if (data) {
       setContent(data?.data[0].content || ""); // Assuming 'content' is the field in the response
     }
   }, [data]);
 
+  
+
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/terms-and-condition/create-terms-and-condition/${data?.data[0]._id}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/terms-and-condition/update-terms-and-condition/${data?.data[0]._id}`,
         {
-          method: "POST",
+          method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ content }),
         }
       );
 
-      console.log("content", content);
 
       if (!response.ok) {
         throw new Error("Failed to save Terms & Conditions");
@@ -110,7 +107,7 @@ const TermsConditions = () => {
     mutate();
   };
 
-  console.log(data?.data);
+
 
   if (isLoading) {
     return <div>Loading Terms & Conditions...</div>;
