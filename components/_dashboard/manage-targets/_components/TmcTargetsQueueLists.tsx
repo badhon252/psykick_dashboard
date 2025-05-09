@@ -2,13 +2,14 @@
 import ErrorContainer from "@/components/shared/ErrorContainer/ErrorContainer";
 // import NotFound from "@/components/shared/NotFound/NotFound";
 import TableSkeleton from "@/components/shared/TableSkeleton/TableSkeleton";
+import { TMCActiveTargetResponse } from "@/components/types/ManageActiveTarget";
 import { TMCTargetsListResponse } from "@/components/types/TargetsQueueLists";
 import FivosPagination from "@/components/ui/FivosPagination";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronLeft } from "lucide-react";
 import moment from "moment";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect } from "react";
 import { toast } from "react-toastify";
 
 const TmcTargetsQueueLists = () => {
@@ -22,13 +23,102 @@ const TmcTargetsQueueLists = () => {
       ).then((res) => res.json()),
   });
 
+  // tmc active target api
+  const { data: tmcActiveTarget } = useQuery<TMCActiveTargetResponse>({
+    queryKey: ["tmcActiveTargets"],
+    queryFn: () =>
+      fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/TMCTarget/get-activeTMCTarget`
+      ).then((res) => res.json()),
+  });
 
-  // Make TMC active
+  // console.log("tmcActiveTarget", tmcActiveTarget?.data?.bufferTime);
+
+  // update-TMC Target-make Complete api
+  const { mutate: tmcMakeComplete } = useMutation({
+    mutationKey: ["update-TMCTarget-makeComplete"],
+    mutationFn: () =>
+      fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/TMCTarget/update-TMCTarget-makeComplete/${tmcActiveTarget?.data?._id}`,
+        { method: "PATCH" }
+      ).then((res) => res.json()),
+    onSuccess: (data) => {
+      if (!data?.status) {
+        toast.error(data?.message || "Something went wrong");
+        return;
+      }
+      toast.success(data?.message);
+      queryClient.invalidateQueries({ queryKey: ["all-queued-tmc-targets"] });
+      queryClient.invalidateQueries({ queryKey: ["tmcActiveTargets"] });
+    },
+  });
+
+  // 🔁 Check bufferTime every 5 seconds and trigger makeComplete
+  useEffect(() => {
+    if (!tmcActiveTarget?.data?.bufferTime || !tmcActiveTarget?.data?._id)
+      return;
+
+    const bufferTime = moment(tmcActiveTarget.data.bufferTime);
+    console.log("Buffer Time:", bufferTime.toISOString());
+    const interval = setInterval(() => {
+      const now = moment();
+      if (now.isSameOrAfter(bufferTime)) {
+        clearInterval(interval);
+        tmcMakeComplete();
+        // handleTMCMakeActive();
+        handleTMCMakeActive();
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [tmcActiveTarget?.data?.bufferTime, tmcActiveTarget?.data?._id]);
+
+  // update tmc target make in active api
+  const { mutate: updateTmcTargetMakeInActive } = useMutation({
+    mutationKey: ["update-TMCTarget-makeInactive"],
+    mutationFn: () =>
+      fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/TMCTarget/update-TMCTarget-makeInactive/${tmcActiveTarget?.data?._id}`,
+        { method: "PATCH" }
+      ).then((res) => res.json()),
+    onSuccess: (data) => {
+      if (!data?.status) {
+        toast.error(data?.message || "Something went wrong");
+        return;
+      }
+      toast.success(data?.message);
+      queryClient.invalidateQueries({ queryKey: ["all-queued-tmc-targets"] });
+      queryClient.invalidateQueries({ queryKey: ["tmcActiveTargets"] });
+    },
+  });
+
+  // 🔁 Check bufferTime every 5 seconds and trigger makeComplete
+  useEffect(() => {
+    if (!tmcActiveTarget?.data?.bufferTime || !tmcActiveTarget?.data?._id)
+      return;
+
+    const bufferTime = moment(tmcActiveTarget.data.bufferTime);
+    console.log("Buffer Time:", bufferTime.toISOString());
+    const interval = setInterval(() => {
+      const now = moment();
+      if (now.isSameOrAfter(bufferTime)) {
+        clearInterval(interval);
+        updateTmcTargetMakeInActive();
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
+  }, [tmcActiveTarget?.data?.bufferTime, tmcActiveTarget?.data?._id]);
+
+  // update TMC Start Next Game
   const handleTMCMakeActive = () => {
     // {{baseURL}}/TMCTarget/update-startNextGame
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/TMCTarget/update-startNextGame`, {
-      method: "PATCH",
-    })
+    fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/TMCTarget/update-startNextGame`,
+      {
+        method: "PATCH",
+      }
+    )
       .then((res) => res.json())
       .then((data) => {
         if (!data?.status) {
@@ -37,8 +127,9 @@ const TmcTargetsQueueLists = () => {
         }
         toast.success(data?.message || "TMC Target is active now");
         queryClient.invalidateQueries({ queryKey: ["all-queued-tmc-targets"] });
+        queryClient.invalidateQueries({ queryKey: ["tmcActiveTargets"] });
       });
-  }
+  };
 
   let content;
   if (isLoading) {
@@ -89,7 +180,10 @@ const TmcTargetsQueueLists = () => {
               </div>
             </li>
             <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-              <button className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[29px] rounded-[4px] bg-[#3C9682]" onClick={handleTMCMakeActive}>
+              <button
+                className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[29px] rounded-[4px] bg-[#3C9682]"
+                // onClick={handleTMCMakeActive}
+              >
                 Active
               </button>
             </li>

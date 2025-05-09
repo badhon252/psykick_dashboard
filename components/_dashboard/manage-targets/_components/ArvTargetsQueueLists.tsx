@@ -72,6 +72,8 @@ const ArvTargetsQueueLists = () => {
     return () => clearInterval(interval);
   }, [arvActiveTarget?.data?.bufferTime, arvActiveTarget?.data?._id]);
 
+  
+
   // update arv target make in active api
   const { mutate: updateArvTargetMakeInActive } = useMutation({
     mutationKey: ["update-ARVTarget-makeInactive"],
