@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 import ErrorContainer from "@/components/shared/ErrorContainer/ErrorContainer";
 // import NotFound from "@/components/shared/NotFound/NotFound";
