@@ -2,6 +2,7 @@
 import ErrorContainer from "@/components/shared/ErrorContainer/ErrorContainer";
 // import NotFound from "@/components/shared/NotFound/NotFound";
 import TableSkeleton from "@/components/shared/TableSkeleton/TableSkeleton";
+import { ARVActiveTargetResponse } from "@/components/types/ManageActiveTarget";
 import { ARVTargetsResponse } from "@/components/types/TargetsQueueLists";
 import FivosPagination from "@/components/ui/FivosPagination";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -22,8 +23,47 @@ const ArvTargetsQueueLists = () => {
       ).then((res) => res.json()),
   });
 
-  // Make TMC active
-  const handleTMCMakeActive = () => {
+  // ARV Active target
+  const { data:arvActiveTarget } = useQuery<ARVActiveTargetResponse>(
+    {
+      queryKey: ["arvActiveTargets"],
+      queryFn: () =>
+        fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/get-activeARVTarget`
+        ).then((res) => res.json()),
+    }
+  );
+
+  console.log(arvActiveTarget?.data?._id)
+
+  // update-ARVTarget-makeComplete
+
+  const { mutate: arvMakeComplete } = useMutation({
+    mutationKey: ["update-ARVTarget-makeComplete"],
+    mutationFn: () =>
+      fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/update-ARVTarget-makeComplete/${arvActiveTarget?.data?._id}`,
+        { method: "PATCH" }
+      ).then((res) => res.json()),
+    onSuccess: (data) => {
+      if (!data?.status) {
+        toast.error(data?.message || "Something went wrong");
+        return;
+      }
+      toast.success(data?.message);
+      queryClient.invalidateQueries({ queryKey: ["all-queued-arv-targets"] });
+    },
+  });
+
+  console.log(arvActiveTarget?.data?.bufferTime)
+  if(arvActiveTarget?.data?.bufferTime == "00:00:00"){
+    arvMakeComplete();
+    
+  }
+  
+
+  // ARV Next Game active
+  const handleARVMakeActive = () => {
     // {{baseURL}}/TMCTarget/update-startNextGame
     fetch(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/update-startNextGame`,
@@ -92,7 +132,7 @@ const ArvTargetsQueueLists = () => {
             </li>
             <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
               <button
-                onClick={handleTMCMakeActive}
+                onClick={handleARVMakeActive}
                 className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[29px] rounded-[4px] bg-[#3C9682]"
               >
                 Active
