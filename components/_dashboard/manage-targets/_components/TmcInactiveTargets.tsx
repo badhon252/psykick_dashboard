@@ -11,6 +11,50 @@ import React, { useState } from "react";
 import { toast } from "react-toastify";
 
 const TmcInactiveTargets = () => {
+  type TargetStatus = {
+    text: string;
+    bgColor: string;
+  };
+
+  const getTargetStatus = (target: {
+    isCompleted: boolean;
+    isQueued: boolean;
+    revealTime: string | null;
+  }): TargetStatus => {
+    const now = moment();
+    const revealTime = target.revealTime ? moment(target.revealTime) : null;
+
+    // Expired - Targets that have been revealed, and the outcome has been set
+    if (target.isCompleted && revealTime && revealTime.isBefore(now)) {
+      return {
+        text: "Expired",
+        bgColor: "#666666", // Gray
+      };
+    }
+
+    // Revealed - Targets that have been revealed but the outcome has not been set
+    if (!target.isCompleted && revealTime && revealTime.isBefore(now)) {
+      return {
+        text: "Revealed",
+        bgColor: "#E6B32A", // Yellow/Orange
+      };
+    }
+
+    // Queued - Targets that are created and have been added to the queue
+    if (target.isQueued) {
+      return {
+        text: "Queued",
+        bgColor: "#2A6C2D", // Green
+      };
+    }
+
+    // Pending – Targets that are created but not yet used or queued
+    return {
+      text: "Pending",
+      bgColor: "#D74727", // Red
+    };
+  };
+
   const [currentPage, setCurrentPage] = useState(1);
   const queryClient = useQueryClient();
 
@@ -56,39 +100,81 @@ const TmcInactiveTargets = () => {
       </div>
     );
   } else if (data && data?.data && data?.data?.length > 0) {
-    content = (
-      <div>
-        {data?.data?.map((target, index) => (
-          <ul
-            key={index}
-            className="bg-white/10 shadow-[0px_20px_166.2px_4px_#580EB726] my-4 border border-[#C5C5C5] rounded-[12px] p-5 grid grid-cols-4"
+    // const currentTime = moment();
+    // const activeTargets = data.data.filter((target) =>
+    //   moment(target.gameTime).isAfter(currentTime)
+    // );
+    // const inactiveTargets = data.data.filter((target) =>
+    //   moment(target.gameTime).isBefore(currentTime)
+    // );
+    // console.log(data.data);
+
+    // Set it false inten to show the inactive targets
+    if (false) {
+      content = (
+        <div className="w-full flex gap-2 items-center justify-center py-10 font-bold text-[20px] text-[#b2b2b2]">
+          No active TMC Targets available, please{" "}
+          <Link
+            href={"/create-tmc-target"}
+            className="underline hover:text-[#8F37FF]"
           >
-            <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-              {target.code}
-            </li>
-            <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-              <button className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px] bg-[#2A6C2D]">
-                Pending
-              </button>
-            </li>
-            <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-              <div className="w-full flex flex-col items-center justify-center">
-                <span>{moment(target.revealTime).format("YYYY-MM-DD")}</span>
-                <span>{moment(target.revealTime).format("HH:mm:ss")}</span>
-              </div>
-            </li>
-            <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-              <button
-                onClick={() => handleTmcAddToQueue(target._id)}
-                className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px] bg-[#D74727]"
-              >
-                Add to
-              </button>
-            </li>
-          </ul>
-        ))}
-      </div>
-    );
+            Add TMC Target!
+          </Link>{" "}
+        </div>
+      );
+    } else {
+      content = (
+        <div>
+          {data.data.map((target, index) => (
+            <ul
+              key={index}
+              className="bg-white/10 shadow-[0px_20px_166.2px_4px_#580EB726] my-4 border border-[#C5C5C5] rounded-[12px] p-5 grid grid-cols-4"
+            >
+              <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+                {target.code}
+              </li>
+              <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+                {(() => {
+                  const status = getTargetStatus(target);
+                  return (
+                    <button
+                      className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px]"
+                      style={{ backgroundColor: status.bgColor }}
+                    >
+                      {status.text}
+                    </button>
+                  );
+                })()}
+              </li>
+              <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+                <div className="w-full flex flex-col items-center justify-center">
+                  <span>
+                    {target.revealTime
+                      ? moment(target.revealTime).format("YYYY-MM-DD")
+                      : "N/A"}
+                  </span>
+                  <span>
+                    {target.revealTime
+                      ? moment(target.revealTime).format("HH:mm:ss")
+                      : ""}
+                  </span>
+                </div>
+              </li>
+              <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+                {getTargetStatus(target).text === "Pending" && (
+                  <button
+                    onClick={() => handleTmcAddToQueue(target._id)}
+                    className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px] bg-[#8F37FF] hover:bg-[#9333EA]"
+                  >
+                    Add to Queue
+                  </button>
+                )}
+              </li>
+            </ul>
+          ))}
+        </div>
+      );
+    }
   }
 
   // update part tmc quote

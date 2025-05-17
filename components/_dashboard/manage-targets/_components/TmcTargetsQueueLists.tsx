@@ -54,6 +54,26 @@ const TmcTargetsQueueLists = () => {
     },
   });
 
+  // Check for exceeded buffer times when component loads
+  useEffect(() => {
+    if (tmcActiveTarget?.data) {
+      const bufferTime = moment(tmcActiveTarget.data.bufferTime);
+      const now = moment();
+
+      if (now.isSameOrAfter(bufferTime)) {
+        console.log(
+          "Found active TMC game with exceeded buffer time, processing..."
+        );
+        // 1. Mark current target as complete
+        tmcMakeComplete();
+        // 2. Mark current target as inactive
+        updateTmcTargetMakeInActive();
+        // 3. Start the next game if available
+        handleTMCMakeActive();
+      }
+    }
+  }, [tmcActiveTarget?.data]);
+
   // 🔁 Check bufferTime every 5 seconds and trigger makeComplete
   useEffect(() => {
     if (!tmcActiveTarget?.data?.bufferTime || !tmcActiveTarget?.data?._id)
@@ -65,8 +85,11 @@ const TmcTargetsQueueLists = () => {
       const now = moment();
       if (now.isSameOrAfter(bufferTime)) {
         clearInterval(interval);
+        // First mark the target as complete
         tmcMakeComplete();
-        // handleTMCMakeActive();
+        // Then mark it as inactive
+        updateTmcTargetMakeInActive();
+        // Finally start the next game if available
         handleTMCMakeActive();
       }
     }, 5000);
@@ -109,7 +132,7 @@ const TmcTargetsQueueLists = () => {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [tmcActiveTarget?.data?.bufferTime, tmcActiveTarget?.data?._id]);
+  }, [5000]);
 
   // update TMC Start Next Game
   const handleTMCMakeActive = () => {
@@ -158,48 +181,61 @@ const TmcTargetsQueueLists = () => {
       </div>
     );
   } else if (data && data?.data && data?.data?.length > 0) {
-    content = (
-      <div className="">
-        {data?.data?.map((target, index) => (
-          <ul
-            key={index}
-            className="bg-white/10 shadow-[0px_20px_166.2px_4px_#580EB726] my-4 border border-[#C5C5C5] rounded-[12px] p-5 grid grid-cols-5"
-          >
-            <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-              {target.code}
-            </li>
-            <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-              <div className="w-full flex flex-col items-center justify-center">
-                <span>{moment(target.revealTime).format("YYYY-MM-DD")}</span>
-                <span>{moment(target.revealTime).format("HH:mm:ss")}</span>
-              </div>
-            </li>
-            <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-              <div className="w-full flex flex-col items-center justify-center">
-                <span>{moment(target.gameTime).format("YYYY-MM-DD")}</span>
-                <span>{moment(target.gameTime).format("HH:mm:ss")}</span>
-              </div>
-            </li>
-            <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-              <button
-                className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[29px] rounded-[4px] bg-[#3C9682]"
-                // onClick={handleTMCMakeActive}
-              >
-                Active
-              </button>
-            </li>
-            <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-              <button
-                onClick={() => handleTmcRemoveFromQueue(target?._id)}
-                className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[10px] rounded-[4px] bg-[#D74727]"
-              >
-                Remove from queue
-              </button>
-            </li>
-          </ul>
-        ))}
-      </div>
+    const currentTime = moment();
+    const activeTargets = data.data.filter((target) =>
+      moment(target.gameTime).isAfter(currentTime)
     );
+
+    if (activeTargets.length === 0) {
+      content = (
+        <div className="w-full flex gap-2 items-center justify-center py-10 font-bold text-[20px] text-[#b2b2b2]">
+          No active TMC Targets available in queue!
+        </div>
+      );
+    } else {
+      content = (
+        <div className="">
+          {activeTargets.map((target, index) => (
+            <ul
+              key={index}
+              className="bg-white/10 shadow-[0px_20px_166.2px_4px_#580EB726] my-4 border border-[#C5C5C5] rounded-[12px] p-5 grid grid-cols-5"
+            >
+              <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+                {target.code}
+              </li>
+              <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+                <div className="w-full flex flex-col items-center justify-center">
+                  <span>{moment(target.revealTime).format("YYYY-MM-DD")}</span>
+                  <span>{moment(target.revealTime).format("HH:mm:ss")}</span>
+                </div>
+              </li>
+              <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+                <div className="w-full flex flex-col items-center justify-center">
+                  <span>{moment(target.gameTime).format("YYYY-MM-DD")}</span>
+                  <span>{moment(target.gameTime).format("HH:mm:ss")}</span>
+                </div>
+              </li>
+              <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+                <button
+                  className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[29px] rounded-[4px] bg-[#3C9682]"
+                  // onClick={handleTMCMakeActive}
+                >
+                  Active
+                </button>
+              </li>
+              <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+                <button
+                  onClick={() => handleTmcRemoveFromQueue(target?._id)}
+                  className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[10px] rounded-[4px] bg-[#D74727]"
+                >
+                  Remove from queue
+                </button>
+              </li>
+            </ul>
+          ))}
+        </div>
+      );
+    }
   }
 
   // Remove from queue TMC

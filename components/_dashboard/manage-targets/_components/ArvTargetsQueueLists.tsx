@@ -55,24 +55,6 @@ const ArvTargetsQueueLists = () => {
     },
   });
 
-  // 🔁 Check bufferTime every 5 seconds and trigger makeComplete
-  useEffect(() => {
-    if (!arvActiveTarget?.data?.bufferTime || !arvActiveTarget?.data?._id)
-      return;
-
-    const bufferTime = moment(arvActiveTarget.data.bufferTime);
-    console.log("Buffer Time:", bufferTime.toISOString());
-    const interval = setInterval(() => {
-      const now = moment();
-      if (now.isSameOrAfter(bufferTime)) {
-        clearInterval(interval);
-        arvMakeComplete();
-      }
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [arvActiveTarget?.data?.bufferTime, arvActiveTarget?.data?._id]);
-
   // update arv target make in active api
   const { mutate: updateArvTargetMakeInActive } = useMutation({
     mutationKey: ["update-ARVTarget-makeInactive"],
@@ -92,7 +74,27 @@ const ArvTargetsQueueLists = () => {
     },
   });
 
-  // 🔁 Check bufferTime every 5 seconds and trigger makeComplete
+  // Check for exceeded buffer times when component loads
+  useEffect(() => {
+    if (arvActiveTarget?.data) {
+      const bufferTime = moment(arvActiveTarget.data.bufferTime);
+      const now = moment();
+
+      if (now.isSameOrAfter(bufferTime)) {
+        console.log(
+          "Found active game with exceeded buffer time, processing..."
+        );
+        // 1. Mark current target as complete
+        arvMakeComplete();
+        // 2. Mark current target as inactive
+        updateArvTargetMakeInActive();
+        // 3. Start the next game if available
+        handleARVMakeActive();
+      }
+    }
+  }, [arvActiveTarget?.data]);
+
+  // 🔁 Check bufferTime every 5 seconds and handle game completion sequence
   useEffect(() => {
     if (!arvActiveTarget?.data?.bufferTime || !arvActiveTarget?.data?._id)
       return;
@@ -103,7 +105,11 @@ const ArvTargetsQueueLists = () => {
       const now = moment();
       if (now.isSameOrAfter(bufferTime)) {
         clearInterval(interval);
+        // 1. Mark current target as complete
+        arvMakeComplete();
+        // 2. Mark current target as inactive
         updateArvTargetMakeInActive();
+        // 3. Start the next game if available
         handleARVMakeActive();
       }
     }, 5000);
@@ -175,41 +181,55 @@ const ArvTargetsQueueLists = () => {
       </div>
     );
   } else if (data && data?.data && data?.data?.length > 0) {
-    content = (
-      <div>
-        {data?.data?.map((target, index) => (
-          <ul
-            key={index}
-            className="bg-white/10 shadow-[0px_20px_166.2px_4px_#580EB726] my-4 border border-[#C5C5C5] rounded-[12px] p-5 grid grid-cols-5"
-          >
-            <li className="flex items-center justify-center text-white font-medium">
-              {target.code}
-            </li>
-            <li className="flex flex-col items-center justify-center text-white font-medium">
-              <span>{moment(target.revealTime).format("YYYY-MM-DD")}</span>
-              <span>{moment(target.revealTime).format("HH:mm:ss")}</span>
-            </li>
-            <li className="flex flex-col items-center justify-center text-white font-medium">
-              <span>{moment(target.gameTime).format("YYYY-MM-DD")}</span>
-              <span>{moment(target.gameTime).format("HH:mm:ss")}</span>
-            </li>
-            <li className="flex items-center justify-center">
-              <button className="text-xs font-semibold text-white py-[6px] px-[29px] rounded-[4px] bg-[#3C9682]">
-                Active
-              </button>
-            </li>
-            <li className="flex items-center justify-center">
-              <button
-                onClick={() => handleArvRemoveFromQueue(target._id)}
-                className="text-xs font-semibold text-white py-[6px] px-[10px] rounded-[4px] bg-[#D74727]"
-              >
-                Remove from queue
-              </button>
-            </li>
-          </ul>
-        ))}
-      </div>
-    );
+    // const currentTime = moment();
+    // const activeTargets = data.data.filter((target) =>
+    //   moment(target.gameTime).isAfter(currentTime)
+    // );
+
+    // Set it false to show inactive targets
+    if (false) {
+      content = (
+        <div className="w-full flex gap-2 items-center justify-center py-10 font-bold text-[20px] text-[#b2b2b2]">
+          No active ARV Targets available in queue!
+        </div>
+      );
+    } else {
+      content = (
+        <div>
+          {data.data.map((target, index) => (
+            <ul
+              key={index}
+              className="bg-white/10 shadow-[0px_20px_166.2px_4px_#580EB726] my-4 border border-[#C5C5C5] rounded-[12px] p-5 grid grid-cols-5"
+            >
+              <li className="flex items-center justify-center text-white font-medium">
+                {target.code}
+              </li>
+              <li className="flex flex-col items-center justify-center text-white font-medium">
+                <span>{moment(target.revealTime).format("YYYY-MM-DD")}</span>
+                <span>{moment(target.revealTime).format("HH:mm:ss")}</span>
+              </li>
+              <li className="flex flex-col items-center justify-center text-white font-medium">
+                <span>{moment(target.gameTime).format("YYYY-MM-DD")}</span>
+                <span>{moment(target.gameTime).format("HH:mm:ss")}</span>
+              </li>
+              <li className="flex items-center justify-center">
+                <button className="text-xs font-semibold text-white py-[6px] px-[29px] rounded-[4px] bg-[#3C9682]">
+                  Active
+                </button>
+              </li>
+              <li className="flex items-center justify-center">
+                <button
+                  onClick={() => handleArvRemoveFromQueue(target._id)}
+                  className="text-xs font-semibold text-white py-[6px] px-[10px] rounded-[4px] bg-[#D74727]"
+                >
+                  Remove from queue
+                </button>
+              </li>
+            </ul>
+          ))}
+        </div>
+      );
+    }
   }
 
   return (
