@@ -199,10 +199,15 @@ const ArvTargetsQueueLists = () => {
           {data.data.map((target, index) => (
             <ul
               key={index}
-              className="bg-white/10 shadow-[0px_20px_166.2px_4px_#580EB726] my-4 border border-[#C5C5C5] rounded-[12px] p-5 grid grid-cols-5"
+              className="bg-white/10 shadow-[0px_20px_166.2px_4px_#580EB726] my-4 border border-[#C5C5C5] rounded-[12px] p-5 grid grid-cols-6"
             >
               <li className="flex items-center justify-center text-white font-medium">
                 {target.code}
+              </li>
+              <li className="flex items-center justify-center text-white font-medium">
+                <p className="text-center text-sm">
+                  {target.eventDescription || "No description available"}
+                </p>
               </li>
               <li className="flex flex-col items-center justify-center text-white font-medium">
                 <span>{moment(target.revealTime).format("YYYY-MM-DD")}</span>
@@ -212,8 +217,12 @@ const ArvTargetsQueueLists = () => {
                 <span>{moment(target.gameTime).format("YYYY-MM-DD")}</span>
                 <span>{moment(target.gameTime).format("HH:mm:ss")}</span>
               </li>
+
               <li className="flex items-center justify-center">
-                <button className="text-xs font-semibold text-white py-[6px] px-[29px] rounded-[4px] bg-[#3C9682]">
+                <button
+                  onClick={() => handleARVMakeActive()}
+                  className="text-xs font-semibold text-white py-[6px] px-[29px] rounded-[4px] bg-[#3C9682]"
+                >
                   Active
                 </button>
               </li>
@@ -247,9 +256,12 @@ const ArvTargetsQueueLists = () => {
             ARV Targets Queue Lists
           </h3>
         </div>
-        <ul className="bg-white py-[20px] grid grid-cols-5">
+        <ul className="bg-white py-[20px] grid grid-cols-6">
           <li className="flex justify-center text-[#444444] font-medium">
             Code
+          </li>
+          <li className="flex justify-center text-[#444444] font-medium">
+            Description
           </li>
           <li className="flex justify-center text-[#444444] font-medium">
             Reveal Time

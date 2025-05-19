@@ -5,56 +5,12 @@ import TableSkeleton from "@/components/shared/TableSkeleton/TableSkeleton";
 import { TMCTargetsResponse } from "@/components/types/ManageTarget";
 import FivosPagination from "@/components/ui/FivosPagination";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import moment from "moment";
 import Link from "next/link";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
+import { CountdownTimer } from "@/components/countdown-timer";
 
 const TmcInactiveTargets = () => {
-  type TargetStatus = {
-    text: string;
-    bgColor: string;
-  };
-
-  const getTargetStatus = (target: {
-    isCompleted: boolean;
-    isQueued: boolean;
-    revealTime: string | null;
-  }): TargetStatus => {
-    const now = moment();
-    const revealTime = target.revealTime ? moment(target.revealTime) : null;
-
-    // Expired - Targets that have been revealed, and the outcome has been set
-    if (target.isCompleted && revealTime && revealTime.isBefore(now)) {
-      return {
-        text: "Expired",
-        bgColor: "#666666", // Gray
-      };
-    }
-
-    // Revealed - Targets that have been revealed but the outcome has not been set
-    if (!target.isCompleted && revealTime && revealTime.isBefore(now)) {
-      return {
-        text: "Revealed",
-        bgColor: "#E6B32A", // Yellow/Orange
-      };
-    }
-
-    // Queued - Targets that are created and have been added to the queue
-    if (target.isQueued) {
-      return {
-        text: "Queued",
-        bgColor: "#2A6C2D", // Green
-      };
-    }
-
-    // Pending – Targets that are created but not yet used or queued
-    return {
-      text: "Pending",
-      bgColor: "#D74727", // Red
-    };
-  };
-
   const [currentPage, setCurrentPage] = useState(1);
   const queryClient = useQueryClient();
 
@@ -66,7 +22,7 @@ const TmcInactiveTargets = () => {
       ).then((res) => res.json()),
   });
 
-  console.log(data?.pagination);
+  // console.log(data?.pagination);
 
   let content;
   if (isLoading) {
@@ -134,41 +90,30 @@ const TmcInactiveTargets = () => {
                 {target.code}
               </li>
               <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-                {(() => {
-                  const status = getTargetStatus(target);
-                  return (
-                    <button
-                      className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px]"
-                      style={{ backgroundColor: status.bgColor }}
-                    >
-                      {status.text}
-                    </button>
-                  );
-                })()}
+                <button className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px] bg-[#2A6C2D]">
+                  Pending
+                </button>
               </li>
               <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+                {" "}
                 <div className="w-full flex flex-col items-center justify-center">
-                  <span>
-                    {target.revealTime
-                      ? moment(target.revealTime).format("YYYY-MM-DD")
-                      : "N/A"}
-                  </span>
-                  <span>
-                    {target.revealTime
-                      ? moment(target.revealTime).format("HH:mm:ss")
-                      : ""}
-                  </span>
+                  <CountdownTimer
+                    endTime={new Date(target.revealTime)}
+                    onComplete={() => {
+                      queryClient.invalidateQueries({
+                        queryKey: ["all-un-queued-tmc-targets"],
+                      });
+                    }}
+                  />
                 </div>
               </li>
               <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-                {getTargetStatus(target).text === "Pending" && (
-                  <button
-                    onClick={() => handleTmcAddToQueue(target._id)}
-                    className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px] bg-[#8F37FF] hover:bg-[#9333EA]"
-                  >
-                    Add to Queue
-                  </button>
-                )}
+                <button
+                  onClick={() => handleTmcAddToQueue(target._id)}
+                  className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px] bg-[#D74727]"
+                >
+                  Add to
+                </button>
               </li>
             </ul>
           ))}
