@@ -72,7 +72,10 @@ const TmcTargetsQueueLists = () => {
         handleTMCMakeActive();
       }
     }
-  }, [tmcActiveTarget?.data]);
+  }, [tmcActiveTarget?.data?.bufferTime]);
+
+  const now = moment();
+  const isBufferTime = now.isSameOrAfter(tmcActiveTarget?.data?.bufferTime);
 
   // 🔁 Check bufferTime every 5 seconds and trigger makeComplete
   useEffect(() => {
@@ -95,7 +98,7 @@ const TmcTargetsQueueLists = () => {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [tmcActiveTarget?.data?.bufferTime, tmcActiveTarget?.data?._id]);
+  }, [isBufferTime, tmcActiveTarget?.data?._id]);
 
   // update tmc target make in active api
   const { mutate: updateTmcTargetMakeInActive } = useMutation({
@@ -155,6 +158,7 @@ const TmcTargetsQueueLists = () => {
       });
   };
 
+ 
   let content;
   if (isLoading) {
     content = (
@@ -218,7 +222,7 @@ const TmcTargetsQueueLists = () => {
               <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
                 <button
                   className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[29px] rounded-[4px] bg-[#3C9682]"
-                  // onClick={handleTMCMakeActive}
+                  onClick={() => handleTMCMakeActive()}
                 >
                   Active
                 </button>

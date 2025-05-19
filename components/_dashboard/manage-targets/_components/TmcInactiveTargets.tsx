@@ -7,8 +7,9 @@ import FivosPagination from "@/components/ui/FivosPagination";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import React, { useState } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import { CountdownTimer } from "@/components/countdown-timer";
+// import moment from "moment";
 
 const TmcInactiveTargets = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -21,6 +22,16 @@ const TmcInactiveTargets = () => {
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/TMCTarget/get-allUnQueuedTMCTargets?page=${currentPage}&limit=5`
       ).then((res) => res.json()),
   });
+
+  // const now = moment();
+  // const isBufferTime = now.isSameOrAfter(data?.data?.bufferTime);
+
+  // if (!isBufferTime) {
+  //   console.log("Buffer time exceeded, making next target active...");
+  //   handleTMCMakeActive();
+  // } else {
+  //   updateTmcTargetMakeInActive();
+  // }
 
   // console.log(data?.pagination);
 

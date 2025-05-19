@@ -34,7 +34,7 @@ const ArvActiveTarget = () => {
       const now = moment();
       const gameTarget = moment(data.data.gameTime);
 
-      const outcomeTarget = moment(String(data?.data?.outcomeTime));
+      const outcomeTarget = moment(String(data?.data?.revealTime));
 
       const duration = moment.duration(gameTarget.diff(now));
       const isOutcomeTime = now.isSameOrAfter(outcomeTarget);
@@ -66,7 +66,10 @@ const ArvActiveTarget = () => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [data?.data?.gameTime, data?.data?.outcomeTime, isOutcomeTimeReached]);
+  }, [data?.data?.gameTime, data?.data?.outcomeTime, data?.data?.revealTime, isOutcomeTimeReached]);
+
+  const now = moment();
+  const isBufferTime = now.isSameOrAfter(data?.data?.revealTime);
 
   if (isLoading) {
     return <p className="text-white">Loading...</p>;
@@ -158,7 +161,7 @@ const ArvActiveTarget = () => {
                   </div>
 
                   <div className="w-full flex items-center justify-end">
-                    {isOutcomeTimeReached && (
+                    {isBufferTime && (
                       <Link href="/manage-targets/set-outcome">
                         <Button className="text-xs font-semibold leading-[120%] bg-[#8F37FF] hover:bg-[#9333EA] text-white mt-4 py-3 px-6 rounded-1">
                           Set Outcome

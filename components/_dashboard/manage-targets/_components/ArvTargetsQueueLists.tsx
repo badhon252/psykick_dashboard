@@ -92,7 +92,10 @@ const ArvTargetsQueueLists = () => {
         handleARVMakeActive();
       }
     }
-  }, [arvActiveTarget?.data]);
+  }, [arvActiveTarget?.data?.bufferTime]);
+
+  const now = moment();
+  const isBufferTime = now.isSameOrAfter(arvActiveTarget?.data?.bufferTime);
 
   // 🔁 Check bufferTime every 5 seconds and handle game completion sequence
   useEffect(() => {
@@ -101,6 +104,7 @@ const ArvTargetsQueueLists = () => {
 
     const bufferTime = moment(arvActiveTarget.data.bufferTime);
     console.log("Buffer Time:", bufferTime.toISOString());
+
     const interval = setInterval(() => {
       const now = moment();
       if (now.isSameOrAfter(bufferTime)) {
@@ -115,7 +119,7 @@ const ArvTargetsQueueLists = () => {
     }, 5000);
 
     return () => clearInterval(interval);
-  }, [arvActiveTarget?.data?.bufferTime, arvActiveTarget?.data?._id]);
+  }, [isBufferTime]);
 
   const handleARVMakeActive = () => {
     fetch(
