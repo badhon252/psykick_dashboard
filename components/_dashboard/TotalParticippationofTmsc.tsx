@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React from "react";
 import {
   CartesianGrid,
   Legend,
@@ -13,41 +13,44 @@ import {
 } from "recharts";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
 
 // Fetch function with Authorization header
 const fetchChartData = async () => {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
 
     if (!token) {
-      throw new Error('No token found');
+      throw new Error("No token found");
     }
 
-    const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/game-graph`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-      },
-    });
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/game-graph`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
 
     if (!response.ok) {
-      console.error('Failed to fetch:', response.status, response.statusText);
+      console.error("Failed to fetch:", response.status, response.statusText);
       throw new Error(`Error ${response.status}: ${response.statusText}`);
     }
 
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Fetch error:', error);
+    console.error("Fetch error:", error);
     throw error;
   }
 };
 
 const TotalParticipationOfTmsc = () => {
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['game-graph'],
+    queryKey: ["game-graph"],
     queryFn: fetchChartData,
   });
 
@@ -76,7 +79,7 @@ const TotalParticipationOfTmsc = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[300px]">
+          <div className="h-[500px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={data}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#444" />

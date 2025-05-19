@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -12,7 +12,9 @@ interface ARVTarget {
   _id: string;
   code: string;
   eventName: string;
+  eventDescription: string;
   revealTime: string;
+  outcomeTime: string;
   gameTime: string;
   image1: { url: string; description: string };
   image2: { url: string; description: string };
@@ -29,11 +31,6 @@ interface APIResponse {
 export default function SetOutcomePage() {
   const router = useRouter();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [timeLeft, setTimeLeft] = useState({
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
 
   const { data, isLoading } = useQuery<APIResponse>({
     queryKey: ["activeARVTarget"],
@@ -43,180 +40,173 @@ export default function SetOutcomePage() {
       ).then((res) => res.json()),
   });
 
-  // Calculate time left
-  useEffect(() => {
-    if (!data?.data?.gameTime) return;
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-2xl text-white">Loading...</div>
+      </div>
+    );
+  }
 
-    const interval = setInterval(() => {
-      const now = moment();
-      const target = moment(data.data.gameTime);
-      const duration = moment.duration(target.diff(now));
+  if (!data?.data) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-2xl text-white">No active target found</div>
+      </div>
+    );
+  }
 
-      if (duration.asMilliseconds() <= 0) {
-        clearInterval(interval);
-        setTimeLeft({ hours: 0, minutes: 0, seconds: 0 });
-      } else {
-        setTimeLeft({
-          hours: duration.hours(),
-          minutes: duration.minutes(),
-          seconds: duration.seconds(),
-        });
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [data?.data?.gameTime]);
-
-  const handleSelectImage = (imageUrl: string) => {
+  const handleSelectOutcome = (imageUrl: string) => {
     setSelectedImage(imageUrl);
   };
 
-  const handleSetOutcome = async () => {
-    if (selectedImage && data?.data?._id) {
-      try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/update-ARVTarget-resultImage/${data.data._id}`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              resultImage: selectedImage,
-            }),
-          }
-        );
+  const handleSubmitOutcome = async () => {
+    if (!selectedImage) {
+      alert("Please select an outcome image first");
+      return;
+    }
 
-        if (response.ok) {
-          router.push("/manage-targets");
-        } else {
-          console.error("Failed to update outcome image");
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/set-outcome/${data.data._id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ resultImage: selectedImage }),
         }
-      } catch (error) {
-        console.error("Error updating outcome image:", error);
+      );
+
+      const result = await response.json();
+
+      if (result.status) {
+        alert("Outcome set successfully");
+        router.push("/manage-targets");
+      } else {
+        alert(result.message || "Failed to set outcome");
       }
+    } catch (error) {
+      alert("An error occurred while setting the outcome");
+      console.error(error);
     }
   };
 
-  if (isLoading || !data) {
-    return <div className="text-white text-center p-8">Loading...</div>;
-  }
-
-  const images = [
-    { url: data.data.image1.url, description: data.data.image1.description },
-    { url: data.data.image2.url, description: data.data.image2.description },
-    { url: data.data.image3.url, description: data.data.image3.description },
-  ];
-
   return (
-    <div className="flex flex-col min-h-screen">
-      <main className="flex-1 p-6 space-y-6">
-        <div className="bg-[#8F37FF] text-white p-3 rounded-md text-[28px] font-medium">
-          Set Outcome
-        </div>
+    <div className="min-h-screen p-8">
+      <div className="max-w-[1200px] mx-auto space-y-8">
+        {/* Header Information */}
+        <div className="bg-white/5 backdrop-blur-sm rounded-lg p-6 space-y-4">
+          <h1 className="text-2xl font-bold text-white mb-6">Set Outcome</h1>
 
-        <div className="bg-white/5 p-6 rounded-md">
-          <div className="bg-white/5 p-6 rounded-md mb-6 w-[577px]">
-            <h2 className="text-white text-xl mb-4">Active Targets</h2>
-
-            <div className="rounded-lg p-4 mb-6">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                  <p className="text-white">Code: {data.data.code}</p>
-                  <p className="text-white">
-                    Reveal Time:{" "}
-                    {moment(data.data.revealTime).format("DD/MM/YYYY")}
-                  </p>
-                </div>
-                <div className="bg-white/10 p-3 rounded-md text-center">
-                  <p className="text-xs text-white mb-1">
-                    Hurry up! Time ends in:
-                  </p>
-                  <div className="flex gap-2 text-white">
-                    <div className="p-1 rounded">
-                      <span className="text-lg">
-                        {String(timeLeft.hours).padStart(2, "0")}
-                      </span>
-                      <span className="text-xs block">Hours</span>
-                    </div>
-                    <span className="text-lg">:</span>
-                    <div className="p-1 rounded">
-                      <span className="text-lg">
-                        {String(timeLeft.minutes).padStart(2, "0")}
-                      </span>
-                      <span className="text-xs block">Mins</span>
-                    </div>
-                    <span className="text-lg">:</span>
-                    <div className="p-1 rounded">
-                      <span className="text-lg">
-                        {String(timeLeft.seconds).padStart(2, "0")}
-                      </span>
-                      <span className="text-xs block">Secs</span>
-                    </div>
-                  </div>
-                </div>
+          <div className="grid grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div>
+                <p className="text-gray-400">Revealed Target Code</p>
+                <p className="text-white text-xl font-semibold">
+                  {data.data.code}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-400">Event Name</p>
+                <p className="text-white text-xl">{data.data.eventName}</p>
+              </div>
+              <div>
+                <p className="text-gray-400">Event Descriptions</p>
+                <p className="text-white text-xl">
+                  {data.data.eventDescription}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-400">Game Time</p>
+                <p className="text-white">
+                  {moment(data.data.gameTime).format("MMMM Do YYYY, h:mm a")}
+                </p>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <p className="text-gray-400">Reveal Time & Date</p>
+                <p className="text-white">
+                  {moment(data.data.revealTime).format("MMMM Do YYYY, h:mm a")}
+                </p>
+              </div>
+              <div>
+                <p className="text-gray-400">Outcome time</p>
+                <p className="text-white">
+                  {moment(data.data.outcomeTime).format("MMMM Do YYYY, h:mm a")}
+                </p>
               </div>
             </div>
           </div>
-          <h3 className="text-white text-xl mb-4">Select an image:</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            {images.map((image, index) => (
-              <div key={index} className="flex flex-col md:flex-row gap-4">
+        </div>
+
+        {/* Target Images */}
+        <div className="bg-white/5 backdrop-blur-sm rounded-lg p-6">
+          <h2 className="text-xl font-semibold text-white mb-6">
+            Target Images
+          </h2>
+          <div className="grid grid-cols-3 gap-6">
+            {[data.data.image1, data.data.image2, data.data.image3].map(
+              (image, index) => (
                 <div
+                  key={index}
                   className={cn(
-                    "relative rounded-md overflow-hidden cursor-pointer border-2 border-transparent",
-                    selectedImage === image.url && "border-[#8F37FF]"
+                    "bg-white/5 backdrop-blur-sm p-4 rounded-lg cursor-pointer transition-all",
+                    selectedImage === image.url
+                      ? "ring-2 ring-[red]"
+                      : "hover:bg-[purple]/50"
                   )}
-                  onClick={() => handleSelectImage(image.url)}
+                  onClick={() => handleSelectOutcome(image.url)}
                 >
-                  <Image
-                    src={image.url}
-                    alt={`Image ${index + 1}`}
-                    width={200}
-                    height={150}
-                    className="w-full h-32 object-cover"
-                  />
-                  {selectedImage === image.url && (
-                    <div className="absolute top-2 left-2 bg-[#8F37FF] text-white rounded-full w-6 h-6 flex items-center justify-center">
-                      1
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1">
+                  <div className="aspect-square relative mb-3">
+                    <Image
+                      src={image.url}
+                      alt={`Target image ${index + 1}`}
+                      fill
+                      className="object-cover rounded-lg"
+                    />
+                  </div>
                   <p className="text-white text-sm">{image.description}</p>
                 </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex justify-end">
-            <Button
-              className="bg-[#8F37FF] text-white hover:bg-[#8F37FF]/80 rounded-md px-8"
-              onClick={handleSetOutcome}
-              disabled={!selectedImage}
-            >
-              Set
-            </Button>
+              )
+            )}
           </div>
         </div>
 
+        {/* Selected Outcome */}
         {selectedImage && (
-          <div className="mt-8">
-            <h2 className="text-white text-2xl text-center mb-4">
-              Code: {data.data.code}
+          <div className="bg-white/5 backdrop-blur-sm rounded-lg p-6">
+            <h2 className="text-2xl font-semibold text-white mb-6">
+              Selected Outcome
             </h2>
-            <div className="border-4 border-red-500 rounded-lg overflow-hidden max-w-2xl mx-auto">
-              <Image
-                src={selectedImage}
-                alt="Selected outcome image"
-                width={600}
-                height={400}
-                className="w-full object-cover"
-              />
+            <div className="max-w-[300px] mx-auto border-4 border-[red] rounded-lg ">
+              <div className="aspect-square relative">
+                <Image
+                  src={selectedImage}
+                  alt="Selected outcome"
+                  fill
+                  className="object-cover rounded-lg"
+                />
+              </div>
             </div>
           </div>
         )}
-      </main>
+
+        {/* Submit Button */}
+        <div className="flex justify-center">
+          <Button
+            onClick={handleSubmitOutcome}
+            disabled={!selectedImage}
+            className={cn(
+              "px-8 py-3 rounded-lg font-semibold text-white",
+              !selectedImage ? "bg-gray-600" : "bg-[#8F37FF] hover:bg-[#7c2ee0]"
+            )}
+          >
+            Set Outcome
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

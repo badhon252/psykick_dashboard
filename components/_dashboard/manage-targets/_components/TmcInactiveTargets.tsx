@@ -5,10 +5,10 @@ import TableSkeleton from "@/components/shared/TableSkeleton/TableSkeleton";
 import { TMCTargetsResponse } from "@/components/types/ManageTarget";
 import FivosPagination from "@/components/ui/FivosPagination";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import moment from "moment";
 import Link from "next/link";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
+import { CountdownTimer } from "@/components/countdown-timer";
 
 const TmcInactiveTargets = () => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -22,7 +22,7 @@ const TmcInactiveTargets = () => {
       ).then((res) => res.json()),
   });
 
-  console.log(data?.pagination);
+  // console.log(data?.pagination);
 
   let content;
   if (isLoading) {
@@ -56,39 +56,70 @@ const TmcInactiveTargets = () => {
       </div>
     );
   } else if (data && data?.data && data?.data?.length > 0) {
-    content = (
-      <div>
-        {data?.data?.map((target, index) => (
-          <ul
-            key={index}
-            className="bg-white/10 shadow-[0px_20px_166.2px_4px_#580EB726] my-4 border border-[#C5C5C5] rounded-[12px] p-5 grid grid-cols-4"
+    // const currentTime = moment();
+    // const activeTargets = data.data.filter((target) =>
+    //   moment(target.gameTime).isAfter(currentTime)
+    // );
+    // const inactiveTargets = data.data.filter((target) =>
+    //   moment(target.gameTime).isBefore(currentTime)
+    // );
+    // console.log(data.data);
+
+    // Set it false inten to show the inactive targets
+    if (false) {
+      content = (
+        <div className="w-full flex gap-2 items-center justify-center py-10 font-bold text-[20px] text-[#b2b2b2]">
+          No active TMC Targets available, please{" "}
+          <Link
+            href={"/create-tmc-target"}
+            className="underline hover:text-[#8F37FF]"
           >
-            <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-              {target.code}
-            </li>
-            <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-              <button className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px] bg-[#2A6C2D]">
-                Pending
-              </button>
-            </li>
-            <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-              <div className="w-full flex flex-col items-center justify-center">
-                <span>{moment(target.revealTime).format("YYYY-MM-DD")}</span>
-                <span>{moment(target.revealTime).format("HH:mm:ss")}</span>
-              </div>
-            </li>
-            <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-              <button
-                onClick={() => handleTmcAddToQueue(target._id)}
-                className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px] bg-[#D74727]"
-              >
-                Add to
-              </button>
-            </li>
-          </ul>
-        ))}
-      </div>
-    );
+            Add TMC Target!
+          </Link>{" "}
+        </div>
+      );
+    } else {
+      content = (
+        <div>
+          {data.data.map((target, index) => (
+            <ul
+              key={index}
+              className="bg-white/10 shadow-[0px_20px_166.2px_4px_#580EB726] my-4 border border-[#C5C5C5] rounded-[12px] p-5 grid grid-cols-4"
+            >
+              <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+                {target.code}
+              </li>
+              <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+                <button className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px] bg-[#2A6C2D]">
+                  Pending
+                </button>
+              </li>
+              <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+                {" "}
+                <div className="w-full flex flex-col items-center justify-center">
+                  <CountdownTimer
+                    endTime={new Date(target.revealTime)}
+                    onComplete={() => {
+                      queryClient.invalidateQueries({
+                        queryKey: ["all-un-queued-tmc-targets"],
+                      });
+                    }}
+                  />
+                </div>
+              </li>
+              <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+                <button
+                  onClick={() => handleTmcAddToQueue(target._id)}
+                  className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px] bg-[#D74727]"
+                >
+                  Add to
+                </button>
+              </li>
+            </ul>
+          ))}
+        </div>
+      );
+    }
   }
 
   // update part tmc quote

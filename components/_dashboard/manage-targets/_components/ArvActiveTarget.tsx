@@ -96,7 +96,9 @@ const ArvActiveTarget = () => {
                   </p>
                   <p className="text-[#ECECEC] text-[20px] 3xl:text-[24px] font-medium leading-[120%] py-4">
                     Reveal Time:{" "}
-                    {moment(data.data.revealTime).format("YYYY / MM / DD")}
+                    {moment(String(data.data.outcomeTime)).format(
+                      "YYYY / MM / DD"
+                    )}
                   </p>
                 </div>
 
