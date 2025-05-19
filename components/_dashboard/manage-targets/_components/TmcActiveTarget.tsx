@@ -2,11 +2,14 @@
 
 import { TMCActiveTargetResponse } from "@/components/types/ManageActiveTarget";
 import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import moment from "moment";
 import React, { useEffect, useState } from "react";
+import { toast } from "sonner";
+// import { queryClient } from '@/lib/react-query';
 
 const TmcActiveTarget = () => {
+  const queryClient = useQueryClient();
   const { data, isLoading, isError, error } = useQuery<TMCActiveTargetResponse>(
     {
       queryKey: ["tmcActiveTargets"],
@@ -16,6 +19,43 @@ const TmcActiveTarget = () => {
         ).then((res) => res.json()),
     }
   );
+
+  // update tmc target make in active api
+  const { mutate: updateTmcTargetMakeInActive } = useMutation({
+    mutationKey: ["update-TMCTarget-makeInactive"],
+    mutationFn: () =>
+      fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/TMCTarget/update-TMCTarget-makeInactive/${data?.data?._id}`,
+        { method: "PATCH" }
+      ).then((res) => res.json()),
+    onSuccess: (data) => {
+      if (!data?.status) {
+        toast.error(data?.message || "Something went wrong");
+        return;
+      }
+      toast.success(data?.message);
+      queryClient.invalidateQueries({ queryKey: ["all-queued-tmc-targets"] });
+      queryClient.invalidateQueries({ queryKey: ["tmcActiveTargets"] });
+    },
+  });
+
+  const now = moment();
+  const isBufferTime = now.isSameOrAfter(data?.data?.bufferTime);
+
+  useEffect(() => {
+    // console.log("hello");
+    if (isBufferTime) {
+      console.log("Buffer time exceeded, making next target active...");
+      updateTmcTargetMakeInActive();
+    } else {
+      console.log("Buffer time not exceeded");
+    }
+  }, [isBufferTime, updateTmcTargetMakeInActive]);
+  console.log("Buffer time exceeded, making next target active...");
+  // if (isBufferTime) {
+  //   updateTmcTargetMakeInActive();
+  // } else {
+  // }
 
   const [timeLeft, setTimeLeft] = useState({
     days: 0,
