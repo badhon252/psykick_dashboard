@@ -92,42 +92,48 @@ const TmcInactiveTargets = () => {
     } else {
       content = (
         <div>
-          {data.data.map((target, index) => (
-            <ul
-              key={index}
-              className="bg-white/10 shadow-[0px_20px_166.2px_4px_#580EB726] my-4 border border-[#C5C5C5] rounded-[12px] p-5 grid grid-cols-4"
-            >
-              <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-                {target.code}
-              </li>
-              <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-                <button className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px] bg-[#2A6C2D]">
-                  Pending
-                </button>
-              </li>
-              <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-                {" "}
-                <div className="w-full flex flex-col items-center justify-center">
-                  <CountdownTimer
-                    endTime={new Date(target.revealTime)}
-                    onComplete={() => {
-                      queryClient.invalidateQueries({
-                        queryKey: ["all-un-queued-tmc-targets"],
-                      });
-                    }}
-                  />
-                </div>
-              </li>
-              <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-                <button
-                  onClick={() => handleTmcAddToQueue(target._id)}
-                  className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px] bg-[#D74727]"
-                >
-                  Add to
-                </button>
-              </li>
-            </ul>
-          ))}
+          {[...data.data]
+            .sort(
+              (a, b) =>
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime()
+            )
+            .map((target, index) => (
+              <ul
+                key={index}
+                className="bg-white/10 shadow-[0px_20px_166.2px_4px_#580EB726] my-4 border border-[#C5C5C5] rounded-[12px] p-5 grid grid-cols-4"
+              >
+                <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+                  {target.code}
+                </li>
+                <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+                  <button className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px] bg-[#2A6C2D]">
+                    Pending
+                  </button>
+                </li>
+                <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+                  {" "}
+                  <div className="w-full flex flex-col items-center justify-center">
+                    <CountdownTimer
+                      endTime={new Date(target.revealTime)}
+                      onComplete={() => {
+                        queryClient.invalidateQueries({
+                          queryKey: ["all-un-queued-tmc-targets"],
+                        });
+                      }}
+                    />
+                  </div>
+                </li>
+                <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+                  <button
+                    onClick={() => handleTmcAddToQueue(target._id)}
+                    className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px] bg-[#D74727]"
+                  >
+                    Add to
+                  </button>
+                </li>
+              </ul>
+            ))}
         </div>
       );
     }
