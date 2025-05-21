@@ -118,100 +118,106 @@ const ArvInactiveTargets = () => {
     } else {
       content = (
         <div>
-          {data.data.map((target, index) => (
-            <ul
-              key={index}
-              className="bg-white/10 shadow-[0px_20px_166.2px_4px_#580EB726] my-4 border border-[#C5C5C5] rounded-[12px] p-5 grid grid-cols-6"
-            >
-              <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-                {target.eventName}
-              </li>
-              <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-                {target.code}
-              </li>
-              <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-                {(() => {
-                  const status = getTargetStatus(target);
-                  return (
+          {[...data.data]
+            .sort(
+              (a, b) =>
+                new Date(b.createdAt).getTime() -
+                new Date(a.createdAt).getTime()
+            )
+            .map((target, index) => (
+              <ul
+                key={index}
+                className="bg-white/10 shadow-[0px_20px_166.2px_4px_#580EB726] my-4 border border-[#C5C5C5] rounded-[12px] p-5 grid grid-cols-6"
+              >
+                <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+                  {target.eventName}
+                </li>
+                <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+                  {target.code}
+                </li>
+                <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+                  {(() => {
+                    const status = getTargetStatus(target);
+                    return (
+                      <button
+                        className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px]"
+                        style={{ backgroundColor: status.bgColor }}
+                      >
+                        {status.text}
+                      </button>
+                    );
+                  })()}
+                </li>
+                <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+                  <div className="w-full flex flex-col items-center justify-center">
+                    {/* <span>
+                    {target.revealTime
+                      ? moment(target.revealTime).format("YYYY-MM-DD")
+                      : "N/A"}
+                  </span>
+                  <span>
+                    {target.revealTime
+                      ? moment(target.revealTime).format("HH:mm:ss")
+                      : ""}
+                  </span> */}
+                    <CountdownTimer
+                      endTime={
+                        target.revealTime
+                          ? new Date(target.revealTime)
+                          : new Date()
+                      }
+                    />
+                  </div>
+                </li>
+                <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+                  <div className="w-full flex flex-col items-center justify-center">
+                    {/* <span>
+                    {target.revealTime
+                      ? moment(target.revealTime).format("YYYY-MM-DD")
+                      : "N/A"}
+                  </span>
+                  <span>
+                    {target.revealTime
+                      ? moment(target.revealTime).format("HH:mm:ss")
+                      : ""}
+                  </span> */}
+                    <CountdownTimer
+                      endTime={
+                        target.outcomeTime
+                          ? new Date(target.outcomeTime)
+                          : new Date()
+                      }
+                      onComplete={() => {
+                        queryClient.invalidateQueries({
+                          queryKey: ["all-un-queued-tmc-targets"],
+                        });
+                      }}
+                    />
+                  </div>
+                </li>
+                <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+                  {
                     <button
-                      className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px]"
-                      style={{ backgroundColor: status.bgColor }}
+                      disabled={getTargetStatus(target).text !== "Pending"}
+                      onClick={() => handleArvAddToQueue(target?._id)}
+                      style={{
+                        backgroundColor:
+                          getTargetStatus(target).text !== "Pending"
+                            ? "#766f803b"
+                            : "#8F37FF",
+                        cursor:
+                          getTargetStatus(target).text !== "Pending"
+                            ? "not-allowed"
+                            : "pointer",
+                      }}
+                      className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px] bg-[#8F37FF] hover:bg-[#9333EA]"
                     >
-                      {status.text}
+                      Add to Queue
                     </button>
-                  );
-                })()}
-              </li>
-              <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-                <div className="w-full flex flex-col items-center justify-center">
-                  {/* <span>
-                    {target.revealTime
-                      ? moment(target.revealTime).format("YYYY-MM-DD")
-                      : "N/A"}
-                  </span>
-                  <span>
-                    {target.revealTime
-                      ? moment(target.revealTime).format("HH:mm:ss")
-                      : ""}
-                  </span> */}
-                  <CountdownTimer
-                    endTime={
-                      target.revealTime
-                        ? new Date(target.revealTime)
-                        : new Date()
-                    }
-                  />
-                </div>
-              </li>
-              <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-                <div className="w-full flex flex-col items-center justify-center">
-                  {/* <span>
-                    {target.revealTime
-                      ? moment(target.revealTime).format("YYYY-MM-DD")
-                      : "N/A"}
-                  </span>
-                  <span>
-                    {target.revealTime
-                      ? moment(target.revealTime).format("HH:mm:ss")
-                      : ""}
-                  </span> */}
-                  <CountdownTimer
-                    endTime={
-                      target.outcomeTime
-                        ? new Date(target.outcomeTime)
-                        : new Date()
-                    }
-                    onComplete={() => {
-                      queryClient.invalidateQueries({
-                        queryKey: ["all-un-queued-tmc-targets"],
-                      });
-                    }}
-                  />
-                </div>
-              </li>
-              <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-                {
-                  <button
-                    disabled={getTargetStatus(target).text !== "Pending"}
-                    onClick={() => handleArvAddToQueue(target?._id)}
-                    style={{
-                      backgroundColor:
-                        getTargetStatus(target).text !== "Pending"
-                          ? "#766f803b"
-                          : "#8F37FF",
-                      cursor:
-                        getTargetStatus(target).text !== "Pending"
-                          ? "not-allowed"
-                          : "pointer",
-                    }}
-                    className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px] bg-[#8F37FF] hover:bg-[#9333EA]"
-                  >
-                    Add to Queue
-                  </button>
-                }
-              </li>
-            </ul>
-          ))}
+                  }
+                </li>
+              </ul>
+            ))}
         </div>
       );
     }

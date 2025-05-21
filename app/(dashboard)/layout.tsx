@@ -24,22 +24,20 @@ export default function RootLayout({
 }>) {
   return (
     <ProtectedRoute>
-    <div className="flex h-screen overflow-hidden">
-      {/* Sidebar fixed on the left */}
-      <div className="fixed inset-y-0 left-0 w-[272px]  z-50">
-        <Sidebar lists={AdminDashboardTabsList} />
-      </div>
+      <div className="flex h-screen overflow-hidden">
+        {/* Sidebar fixed on the left */}
+        <div className="fixed inset-y-0 left-0 w-[272px]  z-50">
+          <Sidebar lists={AdminDashboardTabsList} />
+        </div>
 
-      {/* Main content area */}
-      <div className="flex-1 ml-[272px] flex flex-col backdrop-blur-sm bg-[#371B77]/40 dashboard-shadow overflow-y-auto">
-        <Header />
-        <main className="flex-1 p-4">
-          {children}
-        </main>
-        <ToastContainer position="top-right" autoClose={3000} />
-        <Toaster position="top-right" />
+        {/* Main content area */}
+        <div className="flex-1 ml-[272px] flex flex-col backdrop-blur-sm bg-[#371B77]/40 dashboard-shadow overflow-y-auto">
+          <Header />
+          <main className="flex-1 p-4">{children}</main>
+          <ToastContainer position="top-right" autoClose={3000} />
+          <Toaster position="top-right" />
+        </div>
       </div>
-    </div>
     </ProtectedRoute>
   );
 }

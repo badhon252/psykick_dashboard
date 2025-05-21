@@ -1,10 +1,10 @@
 "use client";
 
-import { TMCActiveTargetResponse } from "@/components/types/ManageActiveTarget";
+import type { TMCActiveTargetResponse } from "@/components/types/ManageActiveTarget";
 import { Button } from "@/components/ui/button";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import moment from "moment";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 // import { queryClient } from '@/lib/react-query';
 
@@ -26,7 +26,9 @@ const TmcActiveTarget = () => {
     mutationFn: () =>
       fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/TMCTarget/update-TMCTarget-makeInactive/${data?.data?._id}`,
-        { method: "PATCH" }
+        {
+          method: "PATCH",
+        }
       ).then((res) => res.json()),
     onSuccess: (data) => {
       if (!data?.status) {
@@ -38,6 +40,40 @@ const TmcActiveTarget = () => {
       queryClient.invalidateQueries({ queryKey: ["tmcActiveTargets"] });
     },
   });
+
+  // update tmc target make complete api
+  const { mutate: updateTmcTargetMakeComplete } = useMutation({
+    mutationKey: ["update-TMCTarget-makeComplete"],
+    mutationFn: () =>
+      fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/TMCTarget/update-TMCTarget-makeComplete/${data?.data?._id}`,
+        {
+          method: "PATCH",
+        }
+      ).then((res) => res.json()),
+    onSuccess: (data) => {
+      if (!data?.status) {
+        toast.error(data?.message || "Something went wrong");
+        return;
+      }
+      toast.success(data?.message);
+      queryClient.invalidateQueries({ queryKey: ["all-queued-tmc-targets"] });
+      queryClient.invalidateQueries({ queryKey: ["tmcActiveTargets"] });
+    },
+  });
+
+  // Handle deactivation by calling both APIs
+  const handleDeactivate = async () => {
+    try {
+      // First call the makeComplete API
+      await updateTmcTargetMakeComplete();
+      // Then call the makeInactive API
+      updateTmcTargetMakeInActive();
+    } catch (error) {
+      toast.error("Failed to deactivate target");
+      console.error("Deactivation error:", error);
+    }
+  };
 
   const now = moment();
   const isBufferTime = now.isSameOrAfter(data?.data?.bufferTime);
@@ -119,6 +155,7 @@ const TmcActiveTarget = () => {
                   <Button
                     size="sm"
                     className="rounded-sm bg-red-600 hover:bg-red-700 text-white my-2"
+                    onClick={handleDeactivate}
                   >
                     Deactive
                   </Button>
