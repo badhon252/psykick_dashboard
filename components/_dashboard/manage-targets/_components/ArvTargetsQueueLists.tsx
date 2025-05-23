@@ -21,7 +21,7 @@ const ArvTargetsQueueLists = () => {
     queryKey: ["all-queued-arv-targets", currentPage],
     queryFn: () =>
       fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/get-allQueuedARVTargets?page=${currentPage}&limit=5`
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/get-allQueuedARVTargets?page=${currentPage}&limit=5&sort=-createdAt`
       ).then((res) => res.json()),
   });
 

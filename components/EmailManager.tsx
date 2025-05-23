@@ -1,37 +1,37 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Dialog, DialogContent, } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
+import { useEffect, useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
-const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL
+const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 type Email = {
-  _id: string
-  name: string
-  email: string
-  subject: string
-  message: string
-  createdAt: string
-}
+  _id: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
+  createdAt: string;
+};
 
 export function EmailList() {
-  const [emails, setEmails] = useState<Email[]>([])
-  const [selectedEmail, setSelectedEmail] = useState<Email | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-  const [loadingDelete, setLoadingDelete] = useState(false)
+  const [emails, setEmails] = useState<Email[]>([]);
+  const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loadingDelete, setLoadingDelete] = useState(false);
 
   const getToken = () => {
-    return localStorage.getItem("token")
-  }
+    return localStorage.getItem("token");
+  };
 
   useEffect(() => {
     const fetchEmails = async () => {
-      const token = getToken()
+      const token = getToken();
       if (!token) {
-        console.error("No token found")
-        return
+        console.error("No token found");
+        return;
       }
 
       try {
@@ -39,26 +39,26 @@ export function EmailList() {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        })
-        const data = await res.json()
+        });
+        const data = await res.json();
         if (data.status) {
-          setEmails(data.data)
+          setEmails(data.data);
         } else {
-          console.error("Failed to fetch emails", data.message)
+          console.error("Failed to fetch emails", data.message);
         }
       } catch (error) {
-        console.error("Error fetching emails:", error)
+        console.error("Error fetching emails:", error);
       }
-    }
+    };
 
-    fetchEmails()
-  }, [])
+    fetchEmails();
+  }, []);
 
   const handleEmailClick = async (id: string) => {
-    const token = getToken()
+    const token = getToken();
     if (!token) {
-      console.error("No token found")
-      return
+      console.error("No token found");
+      return;
     }
 
     try {
@@ -66,51 +66,56 @@ export function EmailList() {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      })
-      const data = await res.json()
+      });
+      const data = await res.json();
       if (data.status) {
-        setSelectedEmail(data.data)
-        setIsModalOpen(true)
+        setSelectedEmail(data.data);
+        setIsModalOpen(true);
       } else {
-        console.error("Failed to fetch email details", data.message)
+        console.error("Failed to fetch email details", data.message);
       }
     } catch (error) {
-      console.error("Error fetching email details:", error)
+      console.error("Error fetching email details:", error);
     }
-  }
+  };
 
   const handleDeleteEmail = async () => {
-    if (!selectedEmail) return
-    const token = getToken()
+    if (!selectedEmail) return;
+    const token = getToken();
     if (!token) {
-      console.error("No token found")
-      return
+      console.error("No token found");
+      return;
     }
 
     try {
-      setLoadingDelete(true)
-      const res = await fetch(`${BASE_URL}/admin/contact-us/${selectedEmail._id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      const data = await res.json()
+      setLoadingDelete(true);
+      const res = await fetch(
+        `${BASE_URL}/admin/contact-us/${selectedEmail._id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      const data = await res.json();
 
       if (data.status) {
         // After delete, remove from emails list
-        setEmails((prev) => prev.filter((email) => email._id !== selectedEmail._id))
-        setIsModalOpen(false)
-        setSelectedEmail(null)
+        setEmails((prev) =>
+          prev.filter((email) => email._id !== selectedEmail._id)
+        );
+        setIsModalOpen(false);
+        setSelectedEmail(null);
       } else {
-        console.error("Failed to delete email", data.message)
+        console.error("Failed to delete email", data.message);
       }
     } catch (error) {
-      console.error("Error deleting email:", error)
+      console.error("Error deleting email:", error);
     } finally {
-      setLoadingDelete(false)
+      setLoadingDelete(false);
     }
-  }
+  };
 
   return (
     <div className="text-white rounded-lg overflow-hidden">
@@ -118,7 +123,7 @@ export function EmailList() {
         <h2 className="text-xl font-semibold">New</h2>
       </div>
       <div className="divide-y divide-purple-800">
-        {emails.map((email) => (
+        {[...emails].reverse().map((email) => (
           <div
             key={email._id}
             className="flex items-center p-4 hover:bg-purple-800 cursor-pointer transition-colors"
@@ -143,13 +148,14 @@ export function EmailList() {
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-[500px] bg-slate-900">
-        
-
           {selectedEmail && (
             <div>
               <div className="flex items-center gap-4 py-2">
                 <Avatar className="h-10 w-10">
-                  <AvatarImage src="/placeholder.svg" alt={selectedEmail.name} />
+                  <AvatarImage
+                    src="/placeholder.svg"
+                    alt={selectedEmail.name}
+                  />
                   <AvatarFallback className="bg-purple-700">
                     {selectedEmail.name.substring(0, 2)}
                   </AvatarFallback>
@@ -161,9 +167,14 @@ export function EmailList() {
                   </p>
                 </div>
               </div>
-              <div className="mt-2 whitespace-pre-line"><span className="font-bold">Sbuject:</span> {selectedEmail?.subject}</div> <br />
-              <div className="mt-2 whitespace-pre-line"><span className="font-bold">Body:</span> {selectedEmail.message}</div>
-
+              <div className="mt-2 whitespace-pre-line">
+                <span className="font-bold">Sbuject:</span>{" "}
+                {selectedEmail?.subject}
+              </div>{" "}
+              <br />
+              <div className="mt-2 whitespace-pre-line">
+                <span className="font-bold">Body:</span> {selectedEmail.message}
+              </div>
               {/* Delete button */}
               <div className="mt-4 flex justify-end">
                 <Button
@@ -179,5 +190,5 @@ export function EmailList() {
         </DialogContent>
       </Dialog>
     </div>
-  )
+  );
 }
