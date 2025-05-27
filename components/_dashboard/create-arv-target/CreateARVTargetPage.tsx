@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import Image from "next/image";
+import { toast } from "sonner";
 
 // Define proper types for API responses
 type CategoryResponse = {
@@ -72,6 +73,7 @@ type ImageOption = {
   categoryName: string;
   subcategoryName: string;
   isUsed?: boolean;
+  categoryId?: string;
 };
 
 // Define type for form images
@@ -146,20 +148,90 @@ export default function CreateARVTargetPage() {
     if (!images[0].url || !images[1].url || !images[2].url)
       return alert("All three target images are required");
 
-    const payload = {
-      eventName,
-      eventDescription,
-      revealTime: `${revealDate}T${revealTime}:00`,
-      outcomeTime: `${outcomeDate}T${outcomeTime}:00`,
-      bufferTime: `${bufferDate}T${bufferTime}:00`,
-      gameTime: `${gameDate}T${gameTime}:00`,
-      controlImage,
-      image1: images[0],
-      image2: images[1],
-      image3: images[2],
-    };
-
     try {
+      // Step 1: Collect all image URLs that need status updates
+      const imageUrls = [
+        controlImage,
+        images[0].url,
+        images[1].url,
+        images[2].url,
+      ];
+
+      // Step 2: Find corresponding imageId and categoryId for each image
+      type ImageUpdateRequest = {
+        imageId: string;
+        categoryId: string;
+        url: string;
+      };
+
+      const imageUpdateRequests = imageUrls
+        .map((url) => {
+          const imageData = imageAll?.data?.find((img) => img.image === url);
+          if (!imageData) {
+            console.warn(`Image data not found for URL: ${url}`);
+            return null;
+          }
+          return {
+            imageId: imageData.imageId,
+            categoryId: imageData.categoryId,
+            url: url,
+          };
+        })
+        .filter((request): request is ImageUpdateRequest => request !== null);
+
+      if (imageUpdateRequests.length !== imageUrls.length) {
+        return alert(
+          "Some selected images could not be found in the database. Please refresh and try again."
+        );
+      }
+
+      // Step 3: Update image status for all selected images
+      console.log("Updating image status for selected images...");
+
+      const updatePromises = imageUpdateRequests.map(async (imageData) => {
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/category/update-image-status/${imageData.categoryId}/${imageData.imageId}`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            `Failed to update status for image ${imageData.imageId}: ${
+              errorData.message || response.statusText
+            }`
+          );
+        }
+
+        return response.json();
+      });
+
+      // Wait for all image status updates to complete
+      await Promise.all(updatePromises);
+      console.log("All image statuses updated successfully");
+
+      // Step 4: Create the game payload
+      const payload = {
+        eventName,
+        eventDescription,
+        revealTime: `${revealDate}T${revealTime}:00`,
+        outcomeTime: `${outcomeDate}T${outcomeTime}:00`,
+        bufferTime: `${bufferDate}T${bufferTime}:00`,
+        gameTime: `${gameDate}T${gameTime}:00`,
+        controlImage,
+        image1: images[0],
+        image2: images[1],
+        image3: images[2],
+      };
+
+      // Step 5: Create the ARV Target
+      console.log("Creating ARV Target...");
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/create-ARVTarget`,
         {
@@ -171,15 +243,30 @@ export default function CreateARVTargetPage() {
           body: JSON.stringify(payload),
         }
       );
+
       const data = await res.json();
-      alert(
-        res.ok
-          ? "ARV Target created successfully!"
-          : `Error: ${data.message || "Failed"}`
-      );
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      alert("An error occurred. Check console for details.");
+
+      if (res.ok) {
+        toast.success(
+          "ARV Target created successfully! All image statuses have been updated."
+        );
+        // Optionally reset the form or redirect
+        // resetForm();
+      } else {
+        // If game creation fails after image updates, you might want to revert image statuses
+        console.error("Game creation failed:", data.message);
+        alert(`Error creating game: ${data.message || "Failed"}`);
+      }
+    } catch (error: unknown) {
+      console.error("Error in game creation process:", error);
+
+      if (error instanceof Error && error.message.includes("update status")) {
+        alert(`Image status update failed: ${error.message}`);
+      } else {
+        alert(
+          "An error occurred during game creation. Check console for details."
+        );
+      }
     }
   };
 

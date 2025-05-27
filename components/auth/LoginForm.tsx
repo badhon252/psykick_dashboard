@@ -1,49 +1,53 @@
-"use client"
+"use client";
 
-import React, { useState } from "react"
-import { Eye, EyeOff } from "lucide-react"
-import { useLogin } from "@/hooks/useLogin"
-import { useAuth } from "@/context/AuthContext"
-import { toast } from "sonner"
-import { useRouter } from "next/navigation"
+import React, { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
+import { useLogin } from "@/hooks/useLogin";
+import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function LoginForm() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
-  const router = useRouter()
-  const { mutate, isPending, error } = useLogin()
-  const { login } = useAuth()
+  const router = useRouter();
+  const { mutate, isPending, error } = useLogin();
+  const { login } = useAuth();
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     mutate(
       { email, password },
       {
         onSuccess: (data) => {
-          login(data.data, data.accessToken)
-          toast.success("Login successful!")
-          router.push("/") // ✅ Redirect to home page
+          login(data.data, data.accessToken);
+          toast.success("Login successful!");
+          router.push("/"); // ✅ Redirect to home page
         },
         onError: (error) => {
-          console.error(error)
-          toast.error(error.message || "Login failed") // ✅ Error toast
+          console.error(error);
+          toast.error(error.message || "Login failed"); // ✅ Error toast
         },
       }
-    )
-  }
+    );
+  };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[url('/space-background.png')] bg-cover bg-center p-4">
       <div className="w-full max-w-md rounded-lg bg-slate-800/80 p-8 backdrop-blur-sm">
-        <h1 className="mb-2 text-center text-2xl font-bold text-white">Log In</h1>
+        <h1 className="mb-2 text-center text-2xl font-bold text-white">
+          Log In
+        </h1>
         <p className="mb-6 text-center text-sm text-gray-300">
           Continue to register as a customer or vendor.
         </p>
 
-        <h2 className="mb-4 text-xl font-semibold text-white">Enter your Personal Information</h2>
+        <h2 className="mb-4 text-xl font-semibold text-white">
+          Enter your Personal Information
+        </h2>
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
@@ -94,16 +98,21 @@ export default function LoginForm() {
           </button>
 
           {error && (
-            <p className="text-center text-sm text-red-400">Login failed. Try again.</p>
+            <p className="text-center text-sm text-red-400">
+              Login failed. Try again.
+            </p>
           )}
         </form>
 
         <div className="text-center">
-          <a href="/forget-password" className="text-sm text-gray-300 hover:text-white">
+          <a
+            href="/forget-password"
+            className="text-sm text-gray-300 hover:text-white"
+          >
             Forget your password?
           </a>
         </div>
       </div>
     </div>
-  )
+  );
 }
