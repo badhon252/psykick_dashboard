@@ -2,5 +2,5 @@ import CreateTMCTargetPage from "@/components/_dashboard/create-tmc-target/Creat
 import React from "react";
 
 export default function page() {
-  return <CreateTMCTargetPage/>;
+  return <CreateTMCTargetPage />;
 }

@@ -38,7 +38,8 @@ export function Sidebar({ lists }: Props) {
           const normalizedItemPath = item.path.replace(/\/$/, "");
           const isActive =
             normalizedPathname === normalizedItemPath ||
-            (item.path === "/dashboard/" && normalizedPathname === "/dashboard");
+            (item.path === "/dashboard/" &&
+              normalizedPathname === "/dashboard");
 
           return (
             <Link
@@ -48,7 +49,11 @@ export function Sidebar({ lists }: Props) {
               aria-current={isActive ? "page" : undefined}
               aria-label={item.linkText}
               className={`group relative my-4 mb-1 flex items-center gap-3 rounded-md px-4 py-3 transition-all backdrop-blur-md
-                ${isActive ? "bg-gradient text-white border-r-2" : "text-[#F4EBFF] hover:bg-gradient hover:text-white"}
+                ${
+                  isActive
+                    ? "bg-gradient text-white border-r-2"
+                    : "text-[#F4EBFF] hover:bg-gradient hover:text-white"
+                }
               `}
             >
               <Icon className="h-5 w-5 transition-colors group-hover:text-white" />
@@ -85,7 +90,12 @@ export function Sidebar({ lists }: Props) {
             <div className="flex h-full flex-col">
               <div className="p-6">
                 <Link href="/" className="flex items-center gap-2">
-                  <Image src={logo} alt="psykick.club" width={120} height={60} />
+                  <Image
+                    src={logo}
+                    alt="psykick.club"
+                    width={120}
+                    height={60}
+                  />
                 </Link>
               </div>
               {NavigationContent}
@@ -124,7 +134,9 @@ export function Sidebar({ lists }: Props) {
       {isLogoutModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-purple-200 p-6 rounded-2xl shadow-lg text-center space-y-6 w-80">
-            <h2 className="text-lg font-semibold text-gray-800">Are you sure you want to logout?</h2>
+            <h2 className="text-lg font-semibold text-gray-800">
+              Are you sure you want to logout?
+            </h2>
             <div className="flex justify-center gap-4">
               <Button
                 onClick={handleLogout}

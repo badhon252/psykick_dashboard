@@ -8,6 +8,7 @@ import { Clock, Target, Users } from "lucide-react";
 
 import SkeletonWrapper from "../ui/skeleton-wrapper";
 import TotalParticippationofTmsc from "./TotalParticippationofTmsc";
+import { useAuth } from "@/context/AuthContext";
 
 // Define API response types
 interface ApiProps {
@@ -27,6 +28,8 @@ interface AverageTimeResponse {
 export default function Dashboard() {
   const token = localStorage.getItem("token"); // get token from localStorage
 
+  const { logout } = useAuth(); // get logout function from AuthContext
+
   // Fetch total users
   const { isLoading: isTotalUserLoading, data: totalUserStats } =
     useQuery<ApiProps>({
@@ -36,7 +39,9 @@ export default function Dashboard() {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }).then((res) => res.json()),
+        })
+          .then((res) => res.json())
+          .then((data) => data.message === "jwt expired" && logout()),
     });
 
   // Fetch average session duration

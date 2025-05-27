@@ -64,22 +64,37 @@ interface ImageData {
   alt: string;
 }
 
-interface SubCategory {
-  name: string;
-  images: {
-    _id: string;
-    imageUrl: string;
-  }[];
-}
+// interface SubCategory {
+//   name: string;
+//   images: {
+//     _id: string;
+//     imageUrl: string;
+//   }[];
+// }
 
-interface Category {
+// interface Category {
+//   categoryName: string;
+//   subCategories: SubCategory[];
+// }
+
+// interface QueryData {
+//   data: Category[];
+// }
+
+type AllImagesResponse = {
+  status: boolean;
+  message: string;
+  data: ImageOption[];
+};
+
+type ImageOption = {
+  imageId: string;
+  image: string;
   categoryName: string;
-  subCategories: SubCategory[];
-}
-
-interface QueryData {
-  data: Category[];
-}
+  subcategoryName: string;
+  categoryId: string;
+  isUsed?: boolean;
+};
 
 export default function CreateTMCTargetPage() {
   const [selectedTargetImage, setSelectedTargetImage] = useState<string | null>(
@@ -127,25 +142,29 @@ export default function CreateTMCTargetPage() {
     }
   }, [selectedCategory]);
 
-  // Fetch all images
-  const { data: allImagesData, isLoading: isLoadingAllImages } = useQuery({
-    queryKey: ["tmsleaderboardData"],
-    queryFn: async () => {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/category/get-all-category-images`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+  // Fetch all images with proper typing
+  const { data: allImagesData, isLoading: isLoadingAllImages } =
+    useQuery<AllImagesResponse>({
+      queryKey: ["allImages"],
+      queryFn: async () => {
+        if (!token) throw new Error("No authentication token");
+
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/category/get-all-images`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-      );
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      return response.json();
-    },
-    enabled: !!token, // Only fetch if token is ready
-  });
+        return response.json();
+      },
+      enabled: !!token,
+    });
 
   // Fetch categories
   const {
@@ -265,7 +284,9 @@ export default function CreateTMCTargetPage() {
       return response.json();
     },
     onSuccess: () => {
-      toast.success("Target created successfully!");
+      toast.success(
+        "TMC Target created successfully! All image statuses have been updated."
+      );
     },
     onError: (error: Error) => {
       toast.error(error.message || "Something went wrong!");
@@ -301,15 +322,11 @@ export default function CreateTMCTargetPage() {
     } else {
       // Return all images
       return (
-        (allImagesData as QueryData)?.data?.flatMap((category) =>
-          category.subCategories.flatMap((subCategory) =>
-            subCategory.images.map((image) => ({
-              id: image._id,
-              src: image.imageUrl,
-              alt: `${category.categoryName} - ${subCategory.name}`,
-            }))
-          )
-        ) || []
+        (allImagesData as AllImagesResponse)?.data?.map((image) => ({
+          id: image.imageId,
+          src: image.image,
+          alt: `${image.categoryName} - ${image.subcategoryName}`,
+        })) || []
       );
     }
   }, [allImagesData, selectedCategory, selectedSubcategory, subcategoryImages]);
@@ -335,63 +352,145 @@ export default function CreateTMCTargetPage() {
     }
   };
 
-  const handleCreateTarget = () => {
+  const handleCreateTarget = async () => {
     if (!selectedTargetImage || selectedControlImages.length === 0) {
       toast.error("Please select a target and at least one control image.");
       return;
     }
 
-    const now = new Date();
-    const gameTime = new Date(now);
-    let revealTime = new Date(now);
-    let bufferTime = new Date(now);
+    try {
+      // Step 1: Collect all selected image IDs
+      const allSelectedImageIds = [
+        selectedTargetImage,
+        ...selectedControlImages,
+      ];
 
-    // Set game time
-    gameTime.setMinutes(gameTime.getMinutes() + selectedMinutes);
-    gameTime.setHours(gameTime.getHours() + selectedHours);
-    gameTime.setDate(gameTime.getDate() + selectedDays);
+      // Step 2: Find corresponding imageId and categoryId for each selected image
+      const imageUpdateRequests = allSelectedImageIds
+        .map((imageId) => {
+          const imageData = allImagesData?.data?.find(
+            (img) => img.imageId === imageId
+          );
+          if (!imageData) {
+            console.warn(`Image data not found for ID: ${imageId}`);
+            return null;
+          }
+          return {
+            imageId: imageData.imageId,
+            categoryId: imageData.categoryId,
+            url: imageData.image,
+          };
+        })
+        .filter(Boolean); // Remove null entries
 
-    // Set reveal and buffer times based on mode
-    if (timingMode === "simple") {
-      // Default: Reveal after 2 hours, Buffer after 3 hours
-      revealTime = new Date(gameTime.getTime() + 2 * 60 * 60 * 1000);
-      bufferTime = new Date(gameTime.getTime() + 3 * 60 * 60 * 1000);
-    } else {
-      // Advanced: Custom time offsets
-      revealTime = new Date(
-        gameTime.getTime() +
-          revealHours * 60 * 60 * 1000 +
-          revealMinutes * 60 * 1000
-      );
+      if (imageUpdateRequests.length !== allSelectedImageIds.length) {
+        toast.error(
+          "Some selected images could not be found in the database. Please refresh and try again."
+        );
+        return;
+      }
 
-      bufferTime = new Date(
-        gameTime.getTime() +
-          bufferHours * 60 * 60 * 1000 +
-          bufferMinutes * 60 * 1000
-      );
+      // Step 3: Update image status for all selected images
+      console.log("Updating image status for selected images...");
+
+      const updatePromises = imageUpdateRequests.map(async (imageData) => {
+        if (!imageData) {
+          throw new Error("Image data is missing");
+        }
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/category/update-image-status/${imageData.categoryId}/${imageData.imageId}`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            `Failed to update status for image ${imageData.imageId}: ${
+              errorData.message || response.statusText
+            }`
+          );
+        }
+
+        return response.json();
+      });
+
+      // Wait for all image status updates to complete
+      await Promise.all(updatePromises);
+      console.log("All image statuses updated successfully");
+
+      // Step 4: Calculate timing
+      const now = new Date();
+      const gameTime = new Date(now);
+      let revealTime = new Date(now);
+      let bufferTime = new Date(now);
+
+      // Set game time
+      gameTime.setMinutes(gameTime.getMinutes() + selectedMinutes);
+      gameTime.setHours(gameTime.getHours() + selectedHours);
+      gameTime.setDate(gameTime.getDate() + selectedDays);
+
+      // Set reveal and buffer times based on mode
+      if (timingMode === "simple") {
+        // Default: Reveal after 2 hours, Buffer after 3 hours
+        revealTime = new Date(gameTime.getTime() + 2 * 60 * 60 * 1000);
+        bufferTime = new Date(gameTime.getTime() + 3 * 60 * 60 * 1000);
+      } else {
+        // Advanced: Custom time offsets
+        revealTime = new Date(
+          gameTime.getTime() +
+            revealHours * 60 * 60 * 1000 +
+            revealMinutes * 60 * 1000
+        );
+
+        bufferTime = new Date(
+          gameTime.getTime() +
+            bufferHours * 60 * 60 * 1000 +
+            bufferMinutes * 60 * 1000
+        );
+      }
+
+      // Step 5: Get image URLs for the payload
+      const targetImage = allImages.find(
+        (img) => img.id === selectedTargetImage
+      )?.src;
+      const controlImages = selectedControlImages
+        .map((id) => allImages.find((img) => img.id === id)?.src)
+        .filter((src): src is string => !!src);
+
+      if (!targetImage || controlImages.length === 0) {
+        toast.error("Invalid target or control images.");
+        return;
+      }
+
+      // Step 6: Create the TMC Target payload
+      const payload = {
+        targetImage,
+        controlImages,
+        revealTime: revealTime.toISOString(),
+        bufferTime: bufferTime.toISOString(),
+        gameTime: gameTime.toISOString(),
+      };
+
+      // Step 7: Create the TMC Target
+      console.log("Creating TMC Target...");
+      createTMCTargetMutation.mutate(payload);
+    } catch (error: unknown) {
+      console.error("Error in TMC target creation process:", error);
+
+      if (error instanceof Error && error.message.includes("update status")) {
+        toast.error(`Image status update failed: ${error.message}`);
+      } else {
+        toast.error(
+          "An error occurred during target creation. Check console for details."
+        );
+      }
     }
-
-    const targetImage = allImages.find(
-      (img) => img.id === selectedTargetImage
-    )?.src;
-    const controlImages = selectedControlImages
-      .map((id) => allImages.find((img) => img.id === id)?.src)
-      .filter((src): src is string => !!src);
-
-    if (!targetImage || controlImages.length === 0) {
-      toast.error("Invalid target or control images.");
-      return;
-    }
-
-    const payload = {
-      targetImage,
-      controlImages,
-      revealTime: revealTime.toISOString(),
-      bufferTime: bufferTime.toISOString(),
-      gameTime: gameTime.toISOString(),
-    };
-
-    createTMCTargetMutation.mutate(payload);
   };
 
   const renderTimeSelectors = (
