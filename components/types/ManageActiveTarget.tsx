@@ -64,3 +64,29 @@ export interface ImageInfo {
   url: string;
   description: string;
 }
+// This is a placeholder for your actual type definitions.
+// Ensure these types match the structure of your API responses.
+
+export interface TMCBaseTarget {
+  _id: string;
+  code: string;
+  revealTime: string; // ISO date string
+  gameTime: string; // ISO date string
+  bufferTime: string; // ISO date string
+  // Add other common fields
+}
+
+export interface TMCActiveTargetData {
+  _id: string;
+  code: string;
+  revealTime: string; // ISO date string
+  gameTime: string; // ISO date string
+  bufferTime: string; // ISO date string
+  // ... other properties specific to an active target
+}
+
+export interface MutationApiResponse {
+  status: boolean;
+  message: string;
+  data?: any; // Optional data field from mutation responses
+}
