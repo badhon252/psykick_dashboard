@@ -131,32 +131,38 @@ export default function Leaderboard() {
             </div>
 
             <div className="max-h-[500px] overflow-y-auto relative space-y-4 mt-4">
-              {combinedLeaderboard
-                .filter((entry: any) => !entry.isCurrentUser)
-                .map((entry: any, idx: number) => (
-                  <div
-                    key={entry.id}
-                    className={`grid grid-cols-4 items-center text-center py-3 bg-[#FFFFFF1A] rounded-md border ${
-                      (entry.rank, entry.isCurrentUser)
-                    }`}
-                  >
-                    <div className="font-bold text-white">{idx + 1}</div>
-                    <div className="flex items-center text-left">
-                      <div>
-                        <div className="font-medium text-white">
-                          {entry.user.fullName}
-                        </div>
-                        <div className="text-xs text-white/70">
-                          @{entry.user.screenName}
+              {combinedLeaderboard === null ? (
+                combinedLeaderboard
+                  .filter((entry: any) => !entry.isCurrentUser)
+                  .map((entry: any, idx: number) => (
+                    <div
+                      key={entry.id}
+                      className={`grid grid-cols-4 items-center text-center py-3 bg-[#FFFFFF1A] rounded-md border ${
+                        (entry.rank, entry.isCurrentUser)
+                      }`}
+                    >
+                      <div className="font-bold text-white">{idx + 1}</div>
+                      <div className="flex items-center text-left">
+                        <div>
+                          <div className="font-medium text-white">
+                            {entry.user.fullName}
+                          </div>
+                          <div className="text-xs text-white/70">
+                            @{entry.user.screenName}
+                          </div>
                         </div>
                       </div>
+                      <div className="text-white">{entry.tierRank}</div>
+                      <div className="font-bold text-white">
+                        {entry.totalPoints}
+                      </div>
                     </div>
-                    <div className="text-white">{entry.tierRank}</div>
-                    <div className="font-bold text-white">
-                      {entry.totalPoints}
-                    </div>
-                  </div>
-                ))}
+                  ))
+              ) : (
+                <p className="text-white text-center font-bold py-6">
+                  No data available!!
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -165,7 +171,7 @@ export default function Leaderboard() {
       <div className="grid md:grid-cols-2 gap-8 mt-6">
         {/* TMC Leaderboard */}
         <div className="rounded-b-lg overflow-hidden">
-          <div className="bg-[#e0d0ff] rounded-t-lg p-4 flex items-center">
+          <div className="bg-[#B268FA] rounded-t-lg p-4  flex items-center">
             <div className="w-8 h-8 rounded-full flex items-center justify-center text-white mr-3">
               <Image
                 src={vector2}
@@ -175,7 +181,7 @@ export default function Leaderboard() {
                 className="w-full h-full"
               />
             </div>
-            <h2 className="text-xl font-semibold text-[#3a1c6e]">
+            <h2 className="text-xl font-semibold  text-white">
               TMC Leaderboard
             </h2>
           </div>
@@ -192,32 +198,38 @@ export default function Leaderboard() {
               </div>
 
               <div className="max-h-[500px] overflow-y-auto relative space-y-4 mt-4">
-                {TMCLeaderboard.filter(
-                  (entry: any) => !entry.isCurrentUser
-                ).map((entry: any, idx: number) => (
-                  <div
-                    key={entry.id}
-                    className={`grid grid-cols-4 items-center text-center py-3 bg-[#FFFFFF1A] rounded-md border ${
-                      (entry.rank, entry.isCurrentUser)
-                    }`}
-                  >
-                    <div className="font-bold text-white">{idx + 1}</div>
-                    <div className="flex items-center text-left">
-                      <div>
-                        <div className="font-medium text-white">
-                          {entry.user.fullName}
-                        </div>
-                        <div className="text-xs text-white/70">
-                          @{entry.user.screenName}
+                {TMCLeaderboard === null ? (
+                  TMCLeaderboard.filter(
+                    (entry: any) => !entry.isCurrentUser
+                  ).map((entry: any, idx: number) => (
+                    <div
+                      key={entry.id}
+                      className={`grid grid-cols-4 items-center text-center py-3 bg-[#FFFFFF1A] rounded-md border ${
+                        (entry.rank, entry.isCurrentUser)
+                      }`}
+                    >
+                      <div className="font-bold text-white">{idx + 1}</div>
+                      <div className="flex items-center text-left">
+                        <div>
+                          <div className="font-medium text-white">
+                            {entry.user.fullName}
+                          </div>
+                          <div className="text-xs text-white/70">
+                            @{entry.user.screenName}
+                          </div>
                         </div>
                       </div>
+                      <div className="text-white">{entry.tierRank}</div>
+                      <div className="font-bold text-white">
+                        {entry.totalTMCPoints}
+                      </div>
                     </div>
-                    <div className="text-white">{entry.tierRank}</div>
-                    <div className="font-bold text-white">
-                      {entry.totalTMCPoints}
-                    </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="text-white text-center font-bold py-6">
+                    No data available!!
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -235,7 +247,7 @@ export default function Leaderboard() {
                 className="w-full h-full"
               />
             </div>
-            <h2 className="text-xl font-semibold text-[#3a1c6e]">
+            <h2 className="text-xl font-semibold  text-white">
               ARV Leaderboard
             </h2>
           </div>
@@ -252,32 +264,38 @@ export default function Leaderboard() {
               </div>
 
               <div className="max-h-[500px] overflow-y-auto relative space-y-4 mt-4">
-                {ARVLeaderboard.filter(
-                  (entry: any) => !entry.isCurrentUser
-                ).map((entry: any, idx: number) => (
-                  <div
-                    key={entry.id}
-                    className={`grid grid-cols-4 items-center text-center py-3 bg-[#FFFFFF1A] rounded-md border ${
-                      (entry.rank, entry.isCurrentUser)
-                    }`}
-                  >
-                    <div className="font-bold text-white">{idx + 1}</div>
-                    <div className="flex items-center text-left">
-                      <div>
-                        <div className="font-medium text-white">
-                          {entry.user.fullName}
-                        </div>
-                        <div className="text-xs text-white/70">
-                          @{entry.user.screenName}
+                {ARVLeaderboard === null ? (
+                  ARVLeaderboard.filter(
+                    (entry: any) => !entry.isCurrentUser
+                  ).map((entry: any, idx: number) => (
+                    <div
+                      key={entry.id}
+                      className={`grid grid-cols-4 items-center text-center py-3 bg-[#FFFFFF1A] rounded-md border ${
+                        (entry.rank, entry.isCurrentUser)
+                      }`}
+                    >
+                      <div className="font-bold text-white">{idx + 1}</div>
+                      <div className="flex items-center text-left">
+                        <div>
+                          <div className="font-medium text-white">
+                            {entry.user.fullName}
+                          </div>
+                          <div className="text-xs text-white/70">
+                            @{entry.user.screenName}
+                          </div>
                         </div>
                       </div>
+                      <div className="text-white">{entry.tierRank}</div>
+                      <div className="font-bold text-white">
+                        {entry.totalARVPoints}
+                      </div>
                     </div>
-                    <div className="text-white">{entry.tierRank}</div>
-                    <div className="font-bold text-white">
-                      {entry.totalARVPoints}
-                    </div>
-                  </div>
-                ))}
+                  ))
+                ) : (
+                  <p className="text-white text-center font-bold py-6">
+                    No data available!!
+                  </p>
+                )}
               </div>
             </div>
           </div>

@@ -158,7 +158,6 @@ const TmcTargetsQueueLists = () => {
       });
   };
 
- 
   let content;
   if (isLoading) {
     content = (

@@ -965,7 +965,7 @@ export default function CreateTMCTargetPage() {
             <h2 className="text-white text-2xl text-center mb-4">
               Selected Target Preview
             </h2>
-            <div className="border-4 border-red-500 rounded-lg overflow-hidden max-w-2xl mx-auto">
+            <div className="border-4 border-red-500 rounded-lg overflow-hidden max-w-2xl mx-auto h-[400px] w-[400px]">
               <Image
                 src={
                   allImages.find((img) => img.id === selectedTargetImage)
