@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import { ARVActiveTargetResponse } from "@/components/types/ManageActiveTarget";
@@ -26,12 +27,14 @@ const ArvActiveTarget = () => {
   });
 
   const [isOutcomeTimeReached, setIsOutcomeTimeReached] = useState(false);
+  const now = moment();
+  const isRevealTime = now.isSameOrAfter(data?.data?.revealTime);
+  const isOutcomeTime = now.isSameOrBefore(String(data?.data?.outcomeTime));
 
   useEffect(() => {
     if (!data?.data?.gameTime || !data?.data?.outcomeTime) return;
 
     const interval = setInterval(() => {
-      const now = moment();
       const gameTarget = moment(data.data.gameTime);
 
       const outcomeTarget = moment(String(data?.data?.revealTime));
@@ -42,7 +45,7 @@ const ArvActiveTarget = () => {
       // console.log("Now:", now.toISOString());
       // console.log("Game Target:", gameTarget.toISOString());
       // console.log("Outcome Target:", outcomeTarget.toISOString());
-      // console.log("isOutcomeTime:", isOutcomeTime);
+      console.log("isOutcomeTime:", isOutcomeTime);
 
       if (duration.asMilliseconds() <= 0) {
         clearInterval(interval);
@@ -66,10 +69,15 @@ const ArvActiveTarget = () => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [data?.data?.gameTime, data?.data?.outcomeTime, data?.data?.revealTime, isOutcomeTimeReached]);
+  }, [
+    data?.data?.gameTime,
+    data?.data?.outcomeTime,
+    data?.data?.revealTime,
+    isOutcomeTimeReached,
+  ]);
 
-  const now = moment();
-  const isBufferTime = now.isSameOrAfter(data?.data?.revealTime);
+  // const isRevealTime = now.isSameOrAfter(data?.data?.revealTime);
+  const isBufferTime = now.isSameOrAfter(data?.data?.bufferTime);
 
   if (isLoading) {
     return <p className="text-white">Loading...</p>;
@@ -87,7 +95,7 @@ const ArvActiveTarget = () => {
         </h2>
 
         <div>
-          {data?.data && (
+          {data?.data && !isBufferTime && (
             <div className="rounded-lg p-4 bg-white/10 w-[756px]">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 rounded-xl">
                 <div>
@@ -161,7 +169,7 @@ const ArvActiveTarget = () => {
                   </div>
 
                   <div className="w-full flex items-center justify-end">
-                    {isBufferTime && (
+                    {isRevealTime && isOutcomeTime && (
                       <Link href="/manage-targets/set-outcome">
                         <Button className="text-xs font-semibold leading-[120%] bg-[#8F37FF] hover:bg-[#9333EA] text-white mt-4 py-3 px-6 rounded-1">
                           Set Outcome
