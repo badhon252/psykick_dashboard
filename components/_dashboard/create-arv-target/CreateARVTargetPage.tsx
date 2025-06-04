@@ -485,7 +485,7 @@ export default function CreateARVTargetPage() {
     (isErrorSubcategoryImages && selectedCategory && selectedSubcategory);
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen relative">
       <main className="flex-1 p-6 space-y-6">
         <Card className="bg-[#170A2C]/50 border-0">
           <CardHeader>
@@ -1062,9 +1062,9 @@ export default function CreateARVTargetPage() {
 
       {/* Interactive Modal */}
       {showModal && pendingImage && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200">
+        <div className="absolute  bg-black/70 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200 top-0 bottom-0 left-0 right-0">
           <div
-            className="bg-[#170A2C] border border-gray-700 rounded-lg max-w-md w-full max-h-[90vh] overflow-auto shadow-xl animate-in zoom-in-90 duration-300"
+            className="bg-[#170A2C] border border-gray-700 rounded-lg max-w-md w-full ] overflow-auto shadow-xl animate-in zoom-in-90 duration-300"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-4 border-b border-gray-700 flex justify-between items-center">

@@ -121,21 +121,40 @@ const ArvTargetsQueueLists = () => {
     return () => clearInterval(interval);
   }, [isBufferTime]);
 
-  const handleARVMakeActive = () => {
-    fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/update-startNextGame`,
-      { method: "PATCH" }
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        if (!data?.status) {
-          toast.error(data?.message || "Something went wrong");
-          return;
-        }
-        toast.success(data?.message || "ARV Target is active now");
-        queryClient.invalidateQueries({ queryKey: ["all-queued-arv-targets"] });
-        queryClient.invalidateQueries({ queryKey: ["arvActiveTargets"] });
-      });
+  const handleARVMakeActive = async () => {
+    try {
+      // First check if there's any active or partially active game
+      const activeGameCheck = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/get-activeARVTarget`
+      ).then((res) => res.json());
+
+      // If there's an active or partially active game, show error
+      if (activeGameCheck?.data) {
+        toast.error(
+          "There's already an active game. Please wait for it to complete."
+        );
+        return;
+      }
+
+      // If no active game, proceed with starting next game
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/update-startNextGame`,
+        { method: "PATCH" }
+      );
+      const data = await res.json();
+
+      if (!data?.status) {
+        toast.error(data?.message || "Something went wrong");
+        return;
+      }
+
+      toast.success(data?.message || "ARV Target is active now");
+      queryClient.invalidateQueries({ queryKey: ["all-queued-arv-targets"] });
+      queryClient.invalidateQueries({ queryKey: ["arvActiveTargets"] });
+    } catch (error) {
+      console.error("Error activating next game:", error);
+      toast.error("Failed to activate next game");
+    }
   };
 
   // remove-arv-from-queue api

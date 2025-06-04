@@ -147,30 +147,40 @@ export default function SetOutcomePage() {
             Target Images
           </h2>
           <div className="grid grid-cols-3 gap-6">
-            {[data.data.image1, data.data.image2, data.data.image3].map(
-              (image, index) => (
-                <div
-                  key={index}
-                  className={cn(
-                    "bg-white/5 backdrop-blur-sm p-4 rounded-lg cursor-pointer transition-all",
-                    selectedImage === image.url
-                      ? "ring-2 ring-[red]"
-                      : "hover:bg-[purple]/50"
-                  )}
-                  onClick={() => handleSelectOutcome(image.url)}
-                >
-                  <div className="aspect-square relative mb-3">
-                    <Image
-                      src={image.url}
-                      alt={`Target image ${index + 1}`}
-                      fill
-                      className="object-cover rounded-lg"
-                    />
-                  </div>
-                  <p className="text-white text-sm">{image.description}</p>
+            {[
+              data.data.image1,
+              data.data.image2,
+              data.data.image3,
+              data.data.controlImage,
+            ].map((image, index) => (
+              <div
+                key={index}
+                className={cn(
+                  "bg-white/5 backdrop-blur-sm p-4 rounded-lg cursor-pointer transition-all",
+                  selectedImage ===
+                    (typeof image === "string" ? image : image.url)
+                    ? "ring-2 ring-[red]"
+                    : "hover:bg-[purple]/50"
+                )}
+                onClick={() =>
+                  handleSelectOutcome(
+                    typeof image === "string" ? image : image.url
+                  )
+                }
+              >
+                <div className="aspect-square relative mb-3">
+                  <Image
+                    src={typeof image === "string" ? image : image.url}
+                    alt={`Target image ${index + 1}`}
+                    fill
+                    className="object-cover rounded-lg"
+                  />
                 </div>
-              )
-            )}
+                <p className="text-white text-sm">
+                  {typeof image === "string" ? "" : image.description}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
 
