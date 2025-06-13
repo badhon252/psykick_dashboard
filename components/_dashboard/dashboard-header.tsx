@@ -1,6 +1,5 @@
 "use client";
 
-import { BellRing } from "lucide-react";
 import { MdOutlineDashboard } from "react-icons/md";
 // import Image, { StaticImageData } from "next/image";
 import { usePathname } from "next/navigation";
@@ -9,14 +8,11 @@ import { useMemo } from "react";
 import { useAuth } from "@/context/AuthContext";
 // import profileImg from "../../../.././../public/assets/img/dashboard-profile.png";
 
-
-
 export default function Header() {
   const pathname = usePathname();
 
-const {user } = useAuth()
-// console.log("user DAta", user)
-
+  const { user } = useAuth();
+  // console.log("user DAta", user)
 
   // Use useMemo to memoize the routeTitles map and associated icons
   const routeData = useMemo(
@@ -27,14 +23,14 @@ const {user } = useAuth()
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             [key: string]: { title: string; icon: React.ComponentType<any> };
           },
-          item: NavigationItem,
+          item: NavigationItem
         ) => {
           acc[item.path] = { title: item.linkText, icon: item.icon };
           return acc;
         },
-        {},
+        {}
       ),
-    [],
+    []
   );
 
   // Get the route title and icon
@@ -44,24 +40,15 @@ const {user } = useAuth()
   };
   const { title, icon: Icon } = currentRoute;
 
-  // Notification button JSX
-  const notificationButton = (
-    <button
-      className="rounded-full border p-2 text-white hover:bg-black/20 hover:rotate-12 duration-300"
-      aria-label="Notifications"
-    >
-      <BellRing className="h-5 w-5" />
-      <span className="sr-only">Notifications</span>
-    </button>
-  );
-
   // User profile JSX
   const userProfile = (
     <div className="flex items-center gap-2 cursor-pointer">
-  
       <div className="flex flex-col items-end  p-5">
-        <span className="text-sm font-medium text-white uppercase"> {user?.screenName}</span>
-        <p className="text-sm text-gray-600">admin</p>
+        <span className="text-sm font-medium text-white uppercase">
+          {" "}
+          {user?.screenName}
+        </span>
+        <p className="text-sm text-gray-600">Admin</p>
       </div>
     </div>
   );
@@ -73,10 +60,7 @@ const {user } = useAuth()
         <Icon className="h-5 w-5 text-white" />
         <h1 className="text-lg font-medium text-white ">{title}</h1>
       </div>
-      <div className="flex items-center gap-4">
-        {notificationButton}
-        {userProfile}
-      </div>
+      <div className="flex items-center gap-4">{userProfile}</div>
     </header>
   );
 }

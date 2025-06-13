@@ -37,42 +37,42 @@ const ArvTargetsQueueLists = () => {
   console.log(arvActiveTarget?.data?._id);
 
   // update-ARVTarget-makeComplete api
-  const { mutate: arvMakeComplete } = useMutation({
-    mutationKey: ["update-ARVTarget-makeComplete"],
-    mutationFn: () =>
-      fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/update-ARVTarget-makeComplete/${arvActiveTarget?.data?._id}`,
-        { method: "PATCH" }
-      ).then((res) => res.json()),
-    onSuccess: (data) => {
-      if (!data?.status) {
-        toast.error(data?.message || "Something went wrong");
-        return;
-      }
-      toast.success(data?.message);
-      queryClient.invalidateQueries({ queryKey: ["all-queued-arv-targets"] });
-      queryClient.invalidateQueries({ queryKey: ["arvActiveTargets"] });
-    },
-  });
+  // const { mutate: arvMakeComplete } = useMutation({
+  //   mutationKey: ["update-ARVTarget-makeComplete"],
+  //   mutationFn: () =>
+  //     fetch(
+  //       `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/update-ARVTarget-makeComplete/${arvActiveTarget?.data?._id}`,
+  //       { method: "PATCH" }
+  //     ).then((res) => res.json()),
+  //   onSuccess: (data) => {
+  //     if (!data?.status) {
+  //       toast.error(data?.message || "Something went wrong");
+  //       return;
+  //     }
+  //     toast.success(data?.message);
+  //     queryClient.invalidateQueries({ queryKey: ["all-queued-arv-targets"] });
+  //     queryClient.invalidateQueries({ queryKey: ["arvActiveTargets"] });
+  //   },
+  // });
 
   // update arv target make in active api
-  const { mutate: updateArvTargetMakeInActive } = useMutation({
-    mutationKey: ["update-ARVTarget-makeInactive"],
-    mutationFn: () =>
-      fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/update-ARVTarget-makeInactive/${arvActiveTarget?.data?._id}`,
-        { method: "PATCH" }
-      ).then((res) => res.json()),
-    onSuccess: (data) => {
-      if (!data?.status) {
-        toast.error(data?.message || "Something went wrong");
-        return;
-      }
-      toast.success(data?.message);
-      queryClient.invalidateQueries({ queryKey: ["all-queued-arv-targets"] });
-      queryClient.invalidateQueries({ queryKey: ["arvActiveTargets"] });
-    },
-  });
+  // const { mutate: updateArvTargetMakeInActive } = useMutation({
+  //   mutationKey: ["update-ARVTarget-makeInactive"],
+  //   mutationFn: () =>
+  //     fetch(
+  //       `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/update-ARVTarget-makeInactive/${arvActiveTarget?.data?._id}`,
+  //       { method: "PATCH" }
+  //     ).then((res) => res.json()),
+  //   onSuccess: (data) => {
+  //     if (!data?.status) {
+  //       toast.error(data?.message || "Something went wrong");
+  //       return;
+  //     }
+  //     toast.success(data?.message);
+  //     queryClient.invalidateQueries({ queryKey: ["all-queued-arv-targets"] });
+  //     queryClient.invalidateQueries({ queryKey: ["arvActiveTargets"] });
+  //   },
+  // });
 
   // Check for exceeded buffer times when component loads
   useEffect(() => {
@@ -85,11 +85,11 @@ const ArvTargetsQueueLists = () => {
           "Found active game with exceeded buffer time, processing..."
         );
         // 1. Mark current target as complete
-        arvMakeComplete();
+        // arvMakeComplete();
         // 2. Mark current target as inactive
-        updateArvTargetMakeInActive();
+        // updateArvTargetMakeInActive();
         // 3. Start the next game if available
-        handleARVMakeActive();
+        // handleARVMakeActive();
       }
     }
   }, [arvActiveTarget?.data?.bufferTime]);
@@ -105,20 +105,20 @@ const ArvTargetsQueueLists = () => {
     const bufferTime = moment(arvActiveTarget.data.bufferTime);
     console.log("Buffer Time:", bufferTime.toISOString());
 
-    const interval = setInterval(() => {
-      const now = moment();
-      if (now.isSameOrAfter(bufferTime)) {
-        clearInterval(interval);
-        // 1. Mark current target as complete
-        arvMakeComplete();
-        // 2. Mark current target as inactive
-        updateArvTargetMakeInActive();
-        // 3. Start the next game if available
-        handleARVMakeActive();
-      }
-    }, 5000);
+    // const interval = setInterval(() => {
+    //   const now = moment();
+    //   if (now.isSameOrAfter(bufferTime)) {
+    //     clearInterval(interval);
+    //     // 1. Mark current target as complete
+    //     // arvMakeComplete();
+    //     // 2. Mark current target as inactive
+    //     // updateArvTargetMakeInActive();
+    //     // 3. Start the next game if available
+    //     // handleARVMakeActive();
+    //   }
+    // }, 5000);
 
-    return () => clearInterval(interval);
+    // return () => clearInterval(interval);
   }, [isBufferTime]);
 
   const handleARVMakeActive = async () => {

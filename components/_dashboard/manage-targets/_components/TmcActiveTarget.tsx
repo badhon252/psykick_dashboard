@@ -42,31 +42,31 @@ const TmcActiveTarget = () => {
   });
 
   // update tmc target make complete api
-  const { mutate: updateTmcTargetMakeComplete } = useMutation({
-    mutationKey: ["update-TMCTarget-makeComplete"],
-    mutationFn: () =>
-      fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/TMCTarget/update-TMCTarget-makeComplete/${data?.data?._id}`,
-        {
-          method: "PATCH",
-        }
-      ).then((res) => res.json()),
-    onSuccess: (data) => {
-      if (!data?.status) {
-        toast.error(data?.message || "Something went wrong");
-        return;
-      }
-      toast.success(data?.message);
-      queryClient.invalidateQueries({ queryKey: ["all-queued-tmc-targets"] });
-      queryClient.invalidateQueries({ queryKey: ["tmcActiveTargets"] });
-    },
-  });
+  // const { mutate: updateTmcTargetMakeComplete } = useMutation({
+  //   mutationKey: ["update-TMCTarget-makeComplete"],
+  //   mutationFn: () =>
+  //     fetch(
+  //       `${process.env.NEXT_PUBLIC_BACKEND_URL}/TMCTarget/update-TMCTarget-makeComplete/${data?.data?._id}`,
+  //       {
+  //         method: "PATCH",
+  //       }
+  //     ).then((res) => res.json()),
+  //   onSuccess: (data) => {
+  //     if (!data?.status) {
+  //       toast.error(data?.message || "Something went wrong");
+  //       return;
+  //     }
+  //     toast.success(data?.message);
+  //     queryClient.invalidateQueries({ queryKey: ["all-queued-tmc-targets"] });
+  //     queryClient.invalidateQueries({ queryKey: ["tmcActiveTargets"] });
+  //   },
+  // });
 
   // Handle deactivation by calling both APIs
   const handleDeactivate = async () => {
     try {
       // First call the makeComplete API
-      await updateTmcTargetMakeComplete();
+      // await updateTmcTargetMakeComplete();
       // Then call the makeInactive API
       updateTmcTargetMakeInActive();
     } catch (error) {
@@ -88,10 +88,7 @@ const TmcActiveTarget = () => {
     }
   }, [isBufferTime, updateTmcTargetMakeInActive]);
   console.log("Buffer time exceeded, making next target active...");
-  // if (isBufferTime) {
-  //   updateTmcTargetMakeInActive();
-  // } else {
-  // }
+
 
   const [timeLeft, setTimeLeft] = useState({
     days: 0,

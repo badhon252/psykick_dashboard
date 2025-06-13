@@ -2,20 +2,26 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
+import { useEffect, useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 import vector1 from "@/public/assets/img/Vector1.png";
 import vector2 from "@/public/assets/img/vector2.png";
 import vector3 from "@/public/assets/img/vector3.png";
 
 export default function Leaderboard() {
-  const token = localStorage.getItem("token");
-  // const token =
-  //   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODBhNGIzYzk2ZDMyMDRmMjJiYjBlMGIiLCJpYXQiOjE3NDU1NzUyMDAsImV4cCI6MTc0NjE4MDAwMH0.4gfZW_rwIzEuzl6IAa6L_v8ptyw9_h0Jdhow0cYrj7I";
+  const [token, setToken] = useState<string | null>(null);
+
+  // Handle token retrieval on client side to avoid hydration issues
+  useEffect(() => {
+    const storedToken = localStorage.getItem("token");
+    setToken(storedToken);
+  }, []);
 
   const {
-    data: comdaind,
-    isLoading,
-    isError,
-    error,
+    data: combinedData,
+    isLoading: isCombinedLoading,
+    isError: isCombinedError,
+    error: combinedError,
   } = useQuery({
     queryKey: ["combined"],
     queryFn: async () => {
@@ -36,12 +42,15 @@ export default function Leaderboard() {
 
       return res.json();
     },
-    enabled: !!token, // ✅ Optional: wait until token is available
+    enabled: !!token,
   });
 
-  const combinedLeaderboard = comdaind?.data || [];
-
-  const { data: arvData } = useQuery({
+  const {
+    data: arvData,
+    isLoading: isArvLoading,
+    isError: isArvError,
+    error: arvError,
+  } = useQuery({
     queryKey: ["arvResult"],
     queryFn: async () => {
       const res = await fetch(
@@ -63,9 +72,13 @@ export default function Leaderboard() {
     },
     enabled: !!token,
   });
-  const ARVLeaderboard = arvData?.data || [];
 
-  const { data: tmcData } = useQuery({
+  const {
+    data: tmcData,
+    isLoading: isTmcLoading,
+    isError: isTmcError,
+    error: tmcError,
+  } = useQuery({
     queryKey: ["tmcResult"],
     queryFn: async () => {
       const res = await fetch(
@@ -88,15 +101,55 @@ export default function Leaderboard() {
     enabled: !!token,
   });
 
+  const combinedLeaderboard = combinedData?.data || [];
+  const ARVLeaderboard = arvData?.data || [];
   const TMCLeaderboard = tmcData?.data || [];
 
-  if (isLoading) {
-    return <p>Loading...</p>; // You can show a loader or skeleton here.
-  }
+  // Loading skeleton component
+  const LeaderboardSkeleton = () => (
+    <div className="space-y-4 mt-4">
+      {[...Array(5)].map((_, idx) => (
+        <div
+          key={idx}
+          className="grid grid-cols-4 items-center text-center py-3 bg-[#FFFFFF1A] rounded-md"
+        >
+          <Skeleton className="h-4 w-8 mx-auto bg-gray-600" />
+          <div className="flex items-center text-left">
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-24 bg-gray-600" />
+              <Skeleton className="h-3 w-16 bg-gray-600" />
+            </div>
+          </div>
+          <Skeleton className="h-4 w-16 mx-auto bg-gray-600" />
+          <Skeleton className="h-4 w-12 mx-auto bg-gray-600" />
+        </div>
+      ))}
+    </div>
+  );
 
-  if (isError) {
+  // Error component
+  const ErrorMessage = ({ error }: { error: Error | null }) => (
+    <div className="text-red-400 text-center font-bold py-6">
+      Error: {error?.message || "Unknown error occurred"}
+    </div>
+  );
+
+  // No data component
+  const NoDataMessage = () => (
+    <div className="text-white text-center font-bold py-6">
+      No data available
+    </div>
+  );
+
+  // If no token is available yet, show loading
+  if (!token) {
     return (
-      <p>Error: {error instanceof Error ? error.message : "Unknown error"}</p>
+      <div className="mx-auto p-4">
+        <div className="text-white text-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
+          Initializing...
+        </div>
+      </div>
     );
   }
 
@@ -107,10 +160,10 @@ export default function Leaderboard() {
         <div className="bg-[#8a2be2] rounded-t-lg p-4 flex items-center">
           <div className="w-8 h-8 rounded-full flex items-center justify-center text-[#8a2be2] mr-3">
             <Image
-              src={vector1}
+              src={vector1 || "/placeholder.svg"}
               width={100}
               height={100}
-              alt="logo_iamge"
+              alt="logo_image"
               className="w-full h-full"
             />
           </div>
@@ -130,38 +183,42 @@ export default function Leaderboard() {
               <div className="text-gray-600 font-medium">Score</div>
             </div>
 
-            <div className="max-h-[500px] overflow-y-auto relative space-y-4 mt-4">
-              {combinedLeaderboard === null ? (
-                combinedLeaderboard
-                  .filter((entry: any) => !entry.isCurrentUser)
-                  .map((entry: any, idx: number) => (
-                    <div
-                      key={entry.id}
-                      className={`grid grid-cols-4 items-center text-center py-3 bg-[#FFFFFF1A] rounded-md border ${
-                        (entry.rank, entry.isCurrentUser)
-                      }`}
-                    >
-                      <div className="font-bold text-white">{idx + 1}</div>
-                      <div className="flex items-center text-left">
-                        <div>
-                          <div className="font-medium text-white">
-                            {entry.user.fullName}
-                          </div>
-                          <div className="text-xs text-white/70">
-                            @{entry.user.screenName}
+            <div className="max-h-[500px] overflow-y-auto relative">
+              {isCombinedLoading ? (
+                <LeaderboardSkeleton />
+              ) : isCombinedError ? (
+                <ErrorMessage error={combinedError} />
+              ) : combinedLeaderboard.length > 0 ? (
+                <div className="space-y-4 mt-4">
+                  {combinedLeaderboard
+                    .filter((entry: any) => !entry.isCurrentUser)
+                    .map((entry: any, idx: number) => (
+                      <div
+                        key={entry.id || idx}
+                        className="grid grid-cols-4 items-center text-center py-3 bg-[#FFFFFF1A] rounded-md border"
+                      >
+                        <div className="font-bold text-white">{idx + 1}</div>
+                        <div className="flex items-center text-left">
+                          <div>
+                            <div className="font-medium text-white">
+                              {entry.user?.fullName || "Unknown User"}
+                            </div>
+                            <div className="text-xs text-white/70">
+                              @{entry.user?.screenName || "unknown"}
+                            </div>
                           </div>
                         </div>
+                        <div className="text-white">
+                          {entry.tierRank || "N/A"}
+                        </div>
+                        <div className="font-bold text-white">
+                          {entry.totalPoints || 0}
+                        </div>
                       </div>
-                      <div className="text-white">{entry.tierRank}</div>
-                      <div className="font-bold text-white">
-                        {entry.totalPoints}
-                      </div>
-                    </div>
-                  ))
+                    ))}
+                </div>
               ) : (
-                <p className="text-white text-center font-bold py-6">
-                  No data available!!
-                </p>
+                <NoDataMessage />
               )}
             </div>
           </div>
@@ -171,17 +228,17 @@ export default function Leaderboard() {
       <div className="grid md:grid-cols-2 gap-8 mt-6">
         {/* TMC Leaderboard */}
         <div className="rounded-b-lg overflow-hidden">
-          <div className="bg-[#B268FA] rounded-t-lg p-4  flex items-center">
+          <div className="bg-[#B268FA] rounded-t-lg p-4 flex items-center">
             <div className="w-8 h-8 rounded-full flex items-center justify-center text-white mr-3">
               <Image
-                src={vector2}
+                src={vector2 || "/placeholder.svg"}
                 width={100}
                 height={100}
-                alt="logo_iamge"
+                alt="logo_image"
                 className="w-full h-full"
               />
             </div>
-            <h2 className="text-xl font-semibold  text-white">
+            <h2 className="text-xl font-semibold text-white">
               TMC Leaderboard
             </h2>
           </div>
@@ -197,38 +254,42 @@ export default function Leaderboard() {
                 <div className="text-gray-600 font-medium">Score</div>
               </div>
 
-              <div className="max-h-[500px] overflow-y-auto relative space-y-4 mt-4">
-                {TMCLeaderboard === null ? (
-                  TMCLeaderboard.filter(
-                    (entry: any) => !entry.isCurrentUser
-                  ).map((entry: any, idx: number) => (
-                    <div
-                      key={entry.id}
-                      className={`grid grid-cols-4 items-center text-center py-3 bg-[#FFFFFF1A] rounded-md border ${
-                        (entry.rank, entry.isCurrentUser)
-                      }`}
-                    >
-                      <div className="font-bold text-white">{idx + 1}</div>
-                      <div className="flex items-center text-left">
-                        <div>
-                          <div className="font-medium text-white">
-                            {entry.user.fullName}
-                          </div>
-                          <div className="text-xs text-white/70">
-                            @{entry.user.screenName}
+              <div className="max-h-[500px] overflow-y-auto relative">
+                {isTmcLoading ? (
+                  <LeaderboardSkeleton />
+                ) : isTmcError ? (
+                  <ErrorMessage error={tmcError} />
+                ) : TMCLeaderboard.length > 0 ? (
+                  <div className="space-y-4 mt-4">
+                    {TMCLeaderboard.filter(
+                      (entry: any) => !entry.isCurrentUser
+                    ).map((entry: any, idx: number) => (
+                      <div
+                        key={entry.id || idx}
+                        className="grid grid-cols-4 items-center text-center py-3 bg-[#FFFFFF1A] rounded-md border"
+                      >
+                        <div className="font-bold text-white">{idx + 1}</div>
+                        <div className="flex items-center text-left">
+                          <div>
+                            <div className="font-medium text-white">
+                              {entry.user?.fullName || "Unknown User"}
+                            </div>
+                            <div className="text-xs text-white/70">
+                              @{entry.user?.screenName || "unknown"}
+                            </div>
                           </div>
                         </div>
+                        <div className="text-white">
+                          {entry.tierRank || "N/A"}
+                        </div>
+                        <div className="font-bold text-white">
+                          {entry.totalTMCPoints || 0}
+                        </div>
                       </div>
-                      <div className="text-white">{entry.tierRank}</div>
-                      <div className="font-bold text-white">
-                        {entry.totalTMCPoints}
-                      </div>
-                    </div>
-                  ))
+                    ))}
+                  </div>
                 ) : (
-                  <p className="text-white text-center font-bold py-6">
-                    No data available!!
-                  </p>
+                  <NoDataMessage />
                 )}
               </div>
             </div>
@@ -240,14 +301,14 @@ export default function Leaderboard() {
           <div className="bg-[#9186FF] rounded-t-lg p-4 flex items-center">
             <div className="w-8 h-8 rounded-full flex items-center justify-center text-white mr-3">
               <Image
-                src={vector3}
+                src={vector3 || "/placeholder.svg"}
                 width={100}
                 height={100}
-                alt="logo_iamge"
+                alt="logo_image"
                 className="w-full h-full"
               />
             </div>
-            <h2 className="text-xl font-semibold  text-white">
+            <h2 className="text-xl font-semibold text-white">
               ARV Leaderboard
             </h2>
           </div>
@@ -263,38 +324,42 @@ export default function Leaderboard() {
                 <div className="text-gray-600 font-medium">Score</div>
               </div>
 
-              <div className="max-h-[500px] overflow-y-auto relative space-y-4 mt-4">
-                {ARVLeaderboard === null ? (
-                  ARVLeaderboard.filter(
-                    (entry: any) => !entry.isCurrentUser
-                  ).map((entry: any, idx: number) => (
-                    <div
-                      key={entry.id}
-                      className={`grid grid-cols-4 items-center text-center py-3 bg-[#FFFFFF1A] rounded-md border ${
-                        (entry.rank, entry.isCurrentUser)
-                      }`}
-                    >
-                      <div className="font-bold text-white">{idx + 1}</div>
-                      <div className="flex items-center text-left">
-                        <div>
-                          <div className="font-medium text-white">
-                            {entry.user.fullName}
-                          </div>
-                          <div className="text-xs text-white/70">
-                            @{entry.user.screenName}
+              <div className="max-h-[500px] overflow-y-auto relative">
+                {isArvLoading ? (
+                  <LeaderboardSkeleton />
+                ) : isArvError ? (
+                  <ErrorMessage error={arvError} />
+                ) : ARVLeaderboard.length > 0 ? (
+                  <div className="space-y-4 mt-4">
+                    {ARVLeaderboard.filter(
+                      (entry: any) => !entry.isCurrentUser
+                    ).map((entry: any, idx: number) => (
+                      <div
+                        key={entry.id || idx}
+                        className="grid grid-cols-4 items-center text-center py-3 bg-[#FFFFFF1A] rounded-md border"
+                      >
+                        <div className="font-bold text-white">{idx + 1}</div>
+                        <div className="flex items-center text-left">
+                          <div>
+                            <div className="font-medium text-white">
+                              {entry.user?.fullName || "Unknown User"}
+                            </div>
+                            <div className="text-xs text-white/70">
+                              @{entry.user?.screenName || "unknown"}
+                            </div>
                           </div>
                         </div>
+                        <div className="text-white">
+                          {entry.tierRank || "N/A"}
+                        </div>
+                        <div className="font-bold text-white">
+                          {entry.totalARVPoints || 0}
+                        </div>
                       </div>
-                      <div className="text-white">{entry.tierRank}</div>
-                      <div className="font-bold text-white">
-                        {entry.totalARVPoints}
-                      </div>
-                    </div>
-                  ))
+                    ))}
+                  </div>
                 ) : (
-                  <p className="text-white text-center font-bold py-6">
-                    No data available!!
-                  </p>
+                  <NoDataMessage />
                 )}
               </div>
             </div>
