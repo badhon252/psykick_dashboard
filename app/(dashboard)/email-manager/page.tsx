@@ -1,4 +1,4 @@
-import { EmailList } from "@/components/EmailManager";
+import EmailList from "@/components/EmailManager";
 import React from "react";
 
 export default function page() {
