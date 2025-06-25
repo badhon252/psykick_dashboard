@@ -69,7 +69,7 @@ const TmcTargetsQueueLists = () => {
         // 2. Mark current target as inactive
         updateTmcTargetMakeInActive();
         // 3. Start the next game if available
-        handleTMCMakeActive();
+        // handleTMCMakeActive();
       }
     }
   }, [tmcActiveTarget?.data?.bufferTime]);
@@ -93,7 +93,7 @@ const TmcTargetsQueueLists = () => {
         // Then mark it as inactive
         updateTmcTargetMakeInActive();
         // Finally start the next game if available
-        handleTMCMakeActive();
+        // handleTMCMakeActive();
       }
     }, 5000);
 
