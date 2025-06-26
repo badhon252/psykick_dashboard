@@ -119,12 +119,12 @@ export default function CreateTMCTargetPage() {
   const [selectedMinutes, setSelectedMinutes] = useState<number>(0);
 
   // Reveal Time settings - hours after game time
-  const [revealHours, setRevealHours] = useState<number>(2);
-  const [revealMinutes, setRevealMinutes] = useState<number>(0);
+  const [revealHours, setRevealHours] = useState<number>(0);
+  const [revealMinutes, setRevealMinutes] = useState<number>(1);
 
   // Buffer Time settings - hours after game time
-  const [bufferHours, setBufferHours] = useState<number>(3);
-  const [bufferMinutes, setBufferMinutes] = useState<number>(0);
+  const [bufferHours, setBufferHours] = useState<number>(0);
+  const [bufferMinutes, setBufferMinutes] = useState<number>(2);
 
   // Current timing mode
   const [timingMode, setTimingMode] = useState<"simple" | "advanced">("simple");
