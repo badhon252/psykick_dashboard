@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/select";
 import Image from "next/image";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import moment from "moment";
 
 // Define proper types for API responses
 type CategoryResponse = {
@@ -55,6 +57,7 @@ type SubcategoryImageData = {
 };
 
 type SubcategoryImage = {
+  status: string;
   imageUrl: string;
   isUsed: boolean;
   _id: string;
@@ -68,6 +71,8 @@ type AllImagesResponse = {
 
 // Define proper type instead of using `any`
 type ImageOption = {
+  usedAt?: string | null;
+  status?: string;
   imageId: string;
   image: string;
   categoryName: string;
@@ -892,7 +897,7 @@ export default function CreateARVTargetPage() {
                           onClick={() =>
                             !disableSelection && handleImageSelection(img)
                           }
-                          className={`relative rounded-lg overflow-hidden cursor-pointer border-2 transition-all ${
+                          className={`relative rounded-lg cursor-pointer border-2 transition-all ${
                             isMainImage
                               ? "border-purple-500 ring-2 ring-purple-500/50 shadow-lg shadow-purple-500/30"
                               : isControlImage
@@ -911,6 +916,13 @@ export default function CreateARVTargetPage() {
                             alt={`${img.categoryName} - ${img.subcategoryName}`}
                             className="w-full aspect-square object-cover"
                           />
+                          <Badge className="absolute text-[11px] -bottom-2 -right-2 z-30 border border-black bg-[#36007b] text-white rounded-full">
+                            {img.usedAt
+                              ? `${img?.status} ${moment(
+                                  img?.usedAt
+                                ).fromNow()}`
+                              : `${img?.status}`}
+                          </Badge>
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
                           <div className="absolute bottom-0 left-0 right-0 p-2 text-white">
                             <p className="text-sm font-medium truncate">

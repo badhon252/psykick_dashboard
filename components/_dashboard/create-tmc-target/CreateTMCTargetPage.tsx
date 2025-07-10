@@ -16,6 +16,8 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import moment from "moment";
 
 // Define proper types for API responses
 type CategoryResponse = {
@@ -88,6 +90,8 @@ type AllImagesResponse = {
 };
 
 type ImageOption = {
+  usedAt: string;
+  status: string;
   imageId: string;
   image: string;
   categoryName: string;
@@ -120,11 +124,11 @@ export default function CreateTMCTargetPage() {
 
   // Reveal Time settings - hours after game time
   const [revealHours, setRevealHours] = useState<number>(0);
-  const [revealMinutes, setRevealMinutes] = useState<number>(1);
+  const [revealMinutes, setRevealMinutes] = useState<number>(5);
 
   // Buffer Time settings - hours after game time
   const [bufferHours, setBufferHours] = useState<number>(0);
-  const [bufferMinutes, setBufferMinutes] = useState<number>(2);
+  const [bufferMinutes, setBufferMinutes] = useState<number>(5);
 
   // Current timing mode
   const [timingMode, setTimingMode] = useState<"simple" | "advanced">("simple");
@@ -263,7 +267,7 @@ export default function CreateTMCTargetPage() {
       controlImages: string[];
       revealTime: string;
       bufferTime: string;
-      gameTime: string;
+      gameStart: string;
     }) => {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/TMCTarget/create-TMCTarget`,
@@ -331,12 +335,12 @@ export default function CreateTMCTargetPage() {
     }
   }, [allImagesData, selectedCategory, selectedSubcategory, subcategoryImages]);
 
-  const visibleTargetImages = showMoreTargets
-    ? allImages
-    : allImages.slice(0, 15);
-  const visibleControlImages = showMoreControls
-    ? allImages
-    : allImages.slice(0, 15);
+  // const visibleTargetImages = showMoreTargets
+  //   ? allImages
+  //   : allImages.slice(0, 15);
+  // const visibleControlImages = showMoreControls
+  //   ? allImages
+  //   : allImages.slice(0, 15);
 
   const handleSelectTargetImage = (id: string) => {
     setSelectedTargetImage(id);
@@ -426,30 +430,30 @@ export default function CreateTMCTargetPage() {
 
       // Step 4: Calculate timing
       const now = new Date();
-      const gameTime = new Date(now);
+      const gameStart = new Date(now);
       let revealTime = new Date(now);
       let bufferTime = new Date(now);
 
       // Set game time
-      gameTime.setMinutes(gameTime.getMinutes() + selectedMinutes);
-      gameTime.setHours(gameTime.getHours() + selectedHours);
-      gameTime.setDate(gameTime.getDate() + selectedDays);
+      gameStart.setMinutes(gameStart.getMinutes() + selectedMinutes);
+      gameStart.setHours(gameStart.getHours() + selectedHours);
+      gameStart.setDate(gameStart.getDate() + selectedDays);
 
       // Set reveal and buffer times based on mode
       if (timingMode === "simple") {
         // Default: Reveal after 2 hours, Buffer after 3 hours
-        revealTime = new Date(gameTime.getTime() + 2 * 60 * 60 * 1000);
-        bufferTime = new Date(gameTime.getTime() + 3 * 60 * 60 * 1000);
+        revealTime = new Date(gameStart.getTime() + 2 * 60 * 60 * 1000);
+        bufferTime = new Date(gameStart.getTime() + 3 * 60 * 60 * 1000);
       } else {
         // Advanced: Custom time offsets
         revealTime = new Date(
-          gameTime.getTime() +
+          gameStart.getTime() +
             revealHours * 60 * 60 * 1000 +
             revealMinutes * 60 * 1000
         );
 
         bufferTime = new Date(
-          gameTime.getTime() +
+          gameStart.getTime() +
             bufferHours * 60 * 60 * 1000 +
             bufferMinutes * 60 * 1000
         );
@@ -474,7 +478,7 @@ export default function CreateTMCTargetPage() {
         controlImages,
         revealTime: revealTime.toISOString(),
         bufferTime: bufferTime.toISOString(),
-        gameTime: gameTime.toISOString(),
+        gameStart: gameStart.toISOString(),
       };
 
       // Step 7: Create the TMC Target
@@ -669,23 +673,31 @@ export default function CreateTMCTargetPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                  {visibleTargetImages.map((image) => (
+                  {allImagesData?.data.map((image) => (
                     <div
-                      key={image.id}
+                      key={image.imageId}
                       className={cn(
-                        "relative rounded-md overflow-hidden cursor-pointer border-2 border-transparent",
-                        selectedTargetImage === image.id && "border-[#8F37FF]"
+                        "relative rounded-md  cursor-pointer border-2 border-transparent",
+                        selectedTargetImage === image.imageId &&
+                          "border-[#8F37FF]"
                       )}
-                      onClick={() => handleSelectTargetImage(image.id)}
+                      onClick={() => handleSelectTargetImage(image.imageId)}
                     >
                       <Image
-                        src={image.src || "/placeholder.svg"}
-                        alt={image.alt}
+                        src={image.image || "/placeholder.svg"}
+                        alt={image.categoryName}
                         width={200}
                         height={150}
                         className="w-full h-32 object-cover"
                       />
-                      {selectedTargetImage === image.id && (
+                      <Badge className="absolute text-[11px] -bottom-2 border border-black bg-[#36007b] text-white rounded-full">
+                        {image.usedAt
+                          ? `${image?.status} ${moment(
+                              image?.usedAt
+                            ).fromNow()}`
+                          : `${image?.status}`}
+                      </Badge>
+                      {selectedTargetImage === image.imageId && (
                         <div className="absolute top-2 left-2 bg-[#8F37FF] text-white rounded-full w-6 h-6 flex items-center justify-center">
                           1
                         </div>
@@ -726,7 +738,7 @@ export default function CreateTMCTargetPage() {
                     Error loading images. Please try again.
                   </p>
                 </div>
-              ) : allImages.length === 0 ? (
+              ) : allImages?.length === 0 ? (
                 <div className="p-4 bg-[#170A2C]/30 border border-gray-700 rounded-md text-center">
                   <p className="text-gray-400">
                     {selectedCategory && selectedSubcategory
@@ -736,26 +748,33 @@ export default function CreateTMCTargetPage() {
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                  {visibleControlImages.map((image) => (
+                  {allImagesData?.data.map((image) => (
                     <div
-                      key={image.id}
+                      key={image.imageId}
                       className={cn(
-                        "relative rounded-md overflow-hidden cursor-pointer border-2 border-transparent",
-                        selectedControlImages.includes(image.id) &&
+                        "relative rounded-md  cursor-pointer border-2 border-transparent",
+                        selectedControlImages.includes(image.imageId) &&
                           "border-[#8F37FF]"
                       )}
-                      onClick={() => handleSelectControlImage(image.id)}
+                      onClick={() => handleSelectControlImage(image.imageId)}
                     >
                       <Image
-                        src={image.src || "/placeholder.svg"}
-                        alt={image.alt}
+                        src={image.image || "/placeholder.svg"}
+                        alt={image.categoryName}
                         width={200}
                         height={150}
                         className="w-full h-32 object-cover"
                       />
-                      {selectedControlImages.includes(image.id) && (
+                      <Badge className="absolute text-[11px] -top-2 -right-2 border border-black bg-[#36007b] text-white">
+                        {image.usedAt
+                          ? `${image?.status} ${moment(
+                              image?.usedAt
+                            ).fromNow()}`
+                          : `${image?.status}`}
+                      </Badge>
+                      {selectedControlImages.includes(image.imageId) && (
                         <div className="absolute top-2 left-2 bg-[#8F37FF] text-white rounded-full w-6 h-6 flex items-center justify-center">
-                          {selectedControlImages.indexOf(image.id) + 1}
+                          {selectedControlImages.indexOf(image.imageId) + 1}
                         </div>
                       )}
                     </div>
@@ -842,8 +861,8 @@ export default function CreateTMCTargetPage() {
                   </div>
 
                   <div className="text-sm text-amber-400 bg-amber-500/10 p-3 rounded-md">
-                    In simple mode, reveal time is set to 2 hours after game
-                    time and buffer time is set to 3 hours after game time.
+                    In simple mode, reveal time is set to 5 minutes after game
+                    time and buffer time is set to 5 minutes after game time.
                   </div>
                 </TabsContent>
 

@@ -137,7 +137,7 @@ const ArvInactiveTargets = () => {
                       className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px]"
                       style={{ backgroundColor: status.bgColor }}
                     >
-                      {status.text}
+                      {target.status}
                     </button>
                   );
                 })()}

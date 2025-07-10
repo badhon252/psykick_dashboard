@@ -108,7 +108,7 @@ const TmcInactiveTargets = () => {
                 </li>
                 <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
                   <button className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px] bg-[#2A6C2D]">
-                    Pending
+                    {target.status}
                   </button>
                 </li>
                 <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">

@@ -16,7 +16,12 @@ import { toast } from "react-toastify";
 const TmcTargetsQueueLists = () => {
   const [currentPage, setCurrentPage] = React.useState(1);
   const queryClient = useQueryClient();
-  const { data, isLoading, isError, error } = useQuery<TMCTargetsListResponse>({
+  const {
+    data: tmcQueued,
+    isLoading,
+    isError,
+    error,
+  } = useQuery<TMCTargetsListResponse>({
     queryKey: ["all-queued-tmc-targets", currentPage],
     queryFn: () =>
       fetch(
@@ -176,18 +181,17 @@ const TmcTargetsQueueLists = () => {
         <ErrorContainer message={error?.message || "Something went Wrong"} />
       </div>
     );
-  } else if (data && data?.data && data?.data?.length === 0) {
+  } else if (tmcQueued && tmcQueued?.data && tmcQueued?.data?.length === 0) {
     content = (
       <div className="w-full flex gap-2 items-center justify-center py-10 font-bold text-[20px] text-[#b2b2b2]">
         No TMC Target available in queue, please add TMC Target to queue!
         {/* <NotFound message="Oops! No data available. Modify your filters or check your internet connection." /> */}
       </div>
     );
-  } else if (data && data?.data && data?.data?.length > 0) {
-    const currentTime = moment();
-    const activeTargets = data.data.filter((target) =>
-      moment(target.gameTime).isAfter(currentTime)
-    );
+  } else if (tmcQueued && tmcQueued?.data && tmcQueued?.data?.length > 0) {
+    // const currentTime = moment();
+    const activeTargets = tmcQueued.data;
+    console.log("Active Targets:", activeTargets);
 
     if (activeTargets.length === 0) {
       content = (
@@ -231,7 +235,7 @@ const TmcTargetsQueueLists = () => {
                   onClick={() => handleTmcRemoveFromQueue(target?._id)}
                   className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[10px] rounded-[4px] bg-[#D74727]"
                 >
-                  Remove from queue
+                  Remove
                 </button>
               </li>
             </ul>
@@ -304,21 +308,23 @@ const TmcTargetsQueueLists = () => {
         <div>{content}</div>
         {/* pagination  */}
         <div>
-          {data && data?.pagination && data?.pagination?.totalPages > 1 && (
-            <div className="w-full flex items-center justify-between pt-10 pb-2">
-              <p className="font-normal text-[16px] leading-[20px] text-white">
-                Showing {currentPage} to {data?.pagination?.totalPages} in first
-                entries
-              </p>
-              <div>
-                <FivosPagination
-                  totalPages={data?.pagination?.totalPages}
-                  currentPage={currentPage}
-                  onPageChange={(page) => setCurrentPage(page)}
-                />
+          {tmcQueued &&
+            tmcQueued?.pagination &&
+            tmcQueued?.pagination?.totalPages > 1 && (
+              <div className="w-full flex items-center justify-between pt-10 pb-2">
+                <p className="font-normal text-[16px] leading-[20px] text-white">
+                  Showing {currentPage} to {tmcQueued?.pagination?.totalPages}{" "}
+                  in first entries
+                </p>
+                <div>
+                  <FivosPagination
+                    totalPages={tmcQueued?.pagination?.totalPages}
+                    currentPage={currentPage}
+                    onPageChange={(page) => setCurrentPage(page)}
+                  />
+                </div>
               </div>
-            </div>
-          )}
+            )}
         </div>
       </div>
     </div>

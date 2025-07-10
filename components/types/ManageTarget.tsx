@@ -1,6 +1,7 @@
 // TMC Part 
 
 export interface TMCTarget {
+  status: ReactNode;
   _id: string;
   code: string;
   targetImage: string;
@@ -39,6 +40,7 @@ export interface ImageInfo {
   }
   
   export interface ARVTarget {
+    status: ReactNode;
     _id: string;
     code: string;
     eventName: string;
