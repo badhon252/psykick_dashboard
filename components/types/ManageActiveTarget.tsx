@@ -3,6 +3,10 @@ import { ReactNode } from "react";
 
 // TMC Active target
 export type TMCActiveTarget = {
+  startTime: string | number | Date;
+  gameDuration: any;
+  revealDuration: any;
+  bufferDuration: any;
   outcomeTime(outcomeTime: any): unknown;
   resultImage: any;
   image1: any;

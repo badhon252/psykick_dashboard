@@ -62,10 +62,10 @@ const TmcTargetsQueueLists = () => {
   // Check for exceeded buffer times when component loads
   useEffect(() => {
     if (tmcActiveTarget?.data) {
-      const bufferTime = moment(tmcActiveTarget.data.bufferTime);
-      const now = moment();
+      // const bufferTime = moment(tmcActiveTarget.data.bufferTime);
+      // const now = moment();
 
-      if (now.isSameOrAfter(bufferTime)) {
+      if (tmcActiveTarget?.data?.bufferDuration === 0) {
         console.log(
           "Found active TMC game with exceeded buffer time, processing..."
         );
@@ -212,14 +212,14 @@ const TmcTargetsQueueLists = () => {
               </li>
               <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
                 <div className="w-full flex flex-col items-center justify-center">
-                  <span>{moment(target.revealTime).format("YYYY-MM-DD")}</span>
-                  <span>{moment(target.revealTime).format("HH:mm:ss")}</span>
+                  <span>{target.revealDuration} Minutes</span>
+                  {/* <span>{moment(target.revealTime).format("HH:mm:ss")}</span> */}
                 </div>
               </li>
               <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
                 <div className="w-full flex flex-col items-center justify-center">
-                  <span>{moment(target.gameTime).format("YYYY-MM-DD")}</span>
-                  <span>{moment(target.gameTime).format("HH:mm:ss")}</span>
+                  <span>{target.gameDuration} Minutes</span>
+                  {/* <span>{moment(target.gameTime).format("HH:mm:ss")}</span> */}
                 </div>
               </li>
               <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">

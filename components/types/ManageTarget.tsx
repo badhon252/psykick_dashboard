@@ -1,7 +1,11 @@
-// TMC Part 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// TMC Part
 
 export interface TMCTarget {
-  status: ReactNode;
+  startTime: string | number | Date;
+  gameDuration: any;
+  revealDuration: any;
+  status: string;
   _id: string;
   code: string;
   targetImage: string;
@@ -30,48 +34,47 @@ export interface TMCTargetsResponse {
   message: string;
 }
 
-
-
-// ARV part  
+// ARV part
 
 export interface ImageInfo {
-    url: string;
-    description: string;
-  }
-  
-  export interface ARVTarget {
-    status: ReactNode;
-    _id: string;
-    code: string;
-    eventName: string;
-    eventDescription: string;
-    image1: ImageInfo;
-    image2: ImageInfo;
-    image3: ImageInfo;
-    revealTime: string | null;
-    outcomeTime: string | null;
-    bufferTime?: string; // optional because some entries don't have it
-    gameTime?: string;   // optional because some entries don't have it
-    controlImage: string;
-    resultImage: string;
-    isActive: boolean;
-    isQueued: boolean;
-    isCompleted: boolean;
-    createdAt: string;
-    updatedAt: string;
-  }
-  
-  export interface ARVPagination {
-    currentPage: number;
-    totalPages: number;
-    totalItems: number;
-    itemsPerPage: number;
-  }
-  
-  export interface ARVTargetResponse {
-    status: boolean;
-    data: ARVTarget[];
-    pagination: ARVPagination;
-    message: string;
-  }
-  
+  url: string;
+  description: string;
+}
+
+export interface ARVTarget {
+  outcomeDuration: any;
+  revealDuration: any;
+  status: string;
+  _id: string;
+  code: string;
+  eventName: string;
+  eventDescription: string;
+  image1: ImageInfo;
+  image2: ImageInfo;
+  image3: ImageInfo;
+  revealTime: string | null;
+  outcomeTime: string | null;
+  bufferTime?: string; // optional because some entries don't have it
+  gameTime?: string; // optional because some entries don't have it
+  controlImage: string;
+  resultImage: string;
+  isActive: boolean;
+  isQueued: boolean;
+  isCompleted: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ARVPagination {
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  itemsPerPage: number;
+}
+
+export interface ARVTargetResponse {
+  status: boolean;
+  data: ARVTarget[];
+  pagination: ARVPagination;
+  message: string;
+}

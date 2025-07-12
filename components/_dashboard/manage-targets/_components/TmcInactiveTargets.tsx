@@ -8,7 +8,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import React, { useState } from "react";
 import { toast } from "sonner";
-import { CountdownTimer } from "@/components/countdown-timer";
+// import { CountdownTimer } from "@/components/countdown-timer";
 // import moment from "moment";
 
 const TmcInactiveTargets = () => {
@@ -114,14 +114,17 @@ const TmcInactiveTargets = () => {
                 <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
                   {" "}
                   <div className="w-full flex flex-col items-center justify-center">
-                    <CountdownTimer
-                      endTime={new Date(target.revealTime)}
-                      onComplete={() => {
-                        queryClient.invalidateQueries({
-                          queryKey: ["all-un-queued-tmc-targets"],
-                        });
-                      }}
-                    />
+                    {target.revealDuration} minutes
+                    {/* <CountdownTimer
+                      endTime={
+                        new Date(
+                          new Date(target.startTime).getTime() +
+                            (target.gameDuration + target.revealDuration) *
+                              60 *
+                              1000
+                        )
+                      }
+                    /> */}
                   </div>
                 </li>
                 <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">

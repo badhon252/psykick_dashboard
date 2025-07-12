@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { ChevronDown, Calendar, Clock, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import {
   Select,
@@ -89,17 +89,9 @@ type FormImage = {
 };
 
 export default function CreateARVTargetPage() {
-  const [showTimePicker, setShowTimePicker] = useState(false);
+  // ...existing code...
   const [eventName, setEventName] = useState("");
   const [eventDescription, setEventDescription] = useState("");
-  const [revealDate, setRevealDate] = useState("");
-  const [revealTime, setRevealTime] = useState("");
-  const [outcomeDate, setOutcomeDate] = useState("");
-  const [outcomeTime, setOutcomeTime] = useState("");
-  const [bufferDate, setBufferDate] = useState("");
-  const [bufferTime, setBufferTime] = useState("");
-  const [gameDate, setGameDate] = useState("");
-  const [gameTime, setGameTime] = useState("");
   const [controlImage, setControlImage] = useState("");
   const [token, setToken] = useState("");
   const [images, setImages] = useState<FormImage[]>([
@@ -117,6 +109,43 @@ export default function CreateARVTargetPage() {
   const [showModal, setShowModal] = useState(false);
   const [pendingImage, setPendingImage] = useState<ImageOption | null>(null);
   const [pendingEmptySlot, setPendingEmptySlot] = useState(-1);
+
+  // New state variables for time inputs (single declaration block)
+  // Remove duplicate declarations below main block
+  const [gameDays, setGameDays] = useState(0);
+  const [gameHours, setGameHours] = useState(0);
+  const [gameMinutes, setGameMinutes] = useState(0);
+  const [revealDays, setRevealDays] = useState(0);
+  const [revealHours, setRevealHours] = useState(0);
+  const [revealMinutes, setRevealMinutes] = useState(0);
+  const [outcomeDays, setOutcomeDays] = useState(0);
+  const [outcomeHours, setOutcomeHours] = useState(0);
+  const [outcomeMinutes, setOutcomeMinutes] = useState(0);
+  const [bufferDays, setBufferDays] = useState(0);
+  const [bufferHours, setBufferHours] = useState(0);
+  const [bufferMinutes, setBufferMinutes] = useState(0);
+
+  // Helper to get ISO time string from days/hours/minutes
+  // const getFutureISOTime = (
+  //   days: number,
+  //   hours: number,
+  //   minutes: number
+  // ): string => {
+  //   const now = moment();
+  //   return now
+  //     .add(days, "days")
+  //     .add(hours, "hours")
+  //     .add(minutes, "minutes")
+  //     .toISOString();
+  // };
+
+  // Submit handler (single, correct version)
+  // (REMOVED DUPLICATE handleSubmit)
+
+  // REMOVE DUPLICATE STATE AND FUNCTION DECLARATIONS BELOW
+  // ...existing code...
+
+  // ...existing code...
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -145,13 +174,17 @@ export default function CreateARVTargetPage() {
     // Validate required fields
     if (!eventName) return alert("Event name is required");
     if (!eventDescription) return alert("Event description is required");
-    if (!revealDate || !revealTime) return alert("Reveal time is required");
-    if (!outcomeDate || !outcomeTime) return alert("Outcome time is required");
-    if (!bufferDate || !bufferTime) return alert("Buffer time is required");
-    if (!gameDate || !gameTime) return alert("Game time is required");
+    if (!revealDays && !revealHours && !revealMinutes)
+      return alert("Reveal time is required");
+    if (!outcomeDays && !outcomeHours && !outcomeMinutes)
+      return alert("Outcome time is required");
+    if (!bufferDays && !bufferHours && !bufferMinutes)
+      return alert("Buffer time is required");
+    if (!gameDays && !gameHours && !gameMinutes)
+      return alert("Game time is required");
     if (!controlImage) return alert("Control image is required");
     if (!images[0].url || !images[1].url || !images[2].url)
-      return alert("All three target images are required");
+      return toast.warning("All three target images are required");
 
     try {
       // Step 1: Collect all image URLs that need status updates
@@ -222,17 +255,31 @@ export default function CreateARVTargetPage() {
       console.log("All image statuses updated successfully");
 
       // Step 4: Create the game payload
+      // Helper to get ISO time from now + offset
+      const getISOTime = (
+        days: number,
+        hours: number,
+        minutes: number
+      ): string => {
+        const now = new Date();
+        const result = new Date(now.getTime());
+        result.setDate(result.getDate() + days);
+        result.setHours(result.getHours() + hours);
+        result.setMinutes(result.getMinutes() + minutes);
+        return result.toISOString();
+      };
+
       const payload = {
         eventName,
         eventDescription,
-        revealTime: `${revealDate}T${revealTime}:00`,
-        outcomeTime: `${outcomeDate}T${outcomeTime}:00`,
-        bufferTime: `${bufferDate}T${bufferTime}:00`,
-        gameTime: `${gameDate}T${gameTime}:00`,
+        gameTime: getISOTime(gameDays, gameHours, gameMinutes),
+        revealTime: getISOTime(revealDays, revealHours, revealMinutes),
+        outcomeTime: getISOTime(outcomeDays, outcomeHours, outcomeMinutes),
+        bufferTime: getISOTime(bufferDays, bufferHours, bufferMinutes),
         controlImage,
-        image1: images[0],
-        image2: images[1],
-        image3: images[2],
+        image1: { url: images[0].url, description: images[0].description },
+        image2: { url: images[1].url, description: images[1].description },
+        image3: { url: images[2].url, description: images[2].description },
       };
 
       // Step 5: Create the ARV Target
@@ -519,239 +566,135 @@ export default function CreateARVTargetPage() {
               />
             </div>
 
-            {/* Time Settings */}
-            <div className="space-y-4">
-              <Button
-                variant="outline"
-                className="w-full justify-between bg-[#170A2C] border-gray-700 text-white"
-                onClick={() => setShowTimePicker(!showTimePicker)}
-                type="button"
-              >
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  <span>Schedule Times</span>
+            {/* Time Settings - Number Pickers */}
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold text-white mb-2">
+                Schedule Times
+              </h3>
+              <div className="mb-4">
+                <label className="block text-white font-semibold mb-2">
+                  Game Time
+                </label>
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    min={0}
+                    value={gameDays}
+                    onChange={(e) => setGameDays(Number(e.target.value))}
+                    placeholder="Days"
+                    className="bg-[#170A2C] border-gray-700 text-white"
+                  />
+                  <Input
+                    type="number"
+                    min={0}
+                    value={gameHours}
+                    onChange={(e) => setGameHours(Number(e.target.value))}
+                    placeholder="Hours"
+                    className="bg-[#170A2C] border-gray-700 text-white"
+                  />
+                  <Input
+                    type="number"
+                    min={0}
+                    value={gameMinutes}
+                    onChange={(e) => setGameMinutes(Number(e.target.value))}
+                    placeholder="Minutes"
+                    className="bg-[#170A2C] border-gray-700 text-white"
+                  />
                 </div>
-                <ChevronDown
-                  className={`h-4 w-4 transition-transform ${
-                    showTimePicker ? "rotate-180" : ""
-                  }`}
-                />
-              </Button>
-
-              {showTimePicker && (
-                <div className="mt-4 border border-gray-700 rounded-lg bg-[#170A2C]/30 p-4">
-                  <div className="grid gap-6 md:grid-cols-2">
-                    {/* Game Time Section */}
-                    <div className="space-y-4 p-3 border border-gray-700 rounded-md bg-[#170A2C]/20">
-                      <h3 className="text-white font-medium flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        Game Time
-                      </h3>
-                      <p className="text-xs text-gray-400">
-                        When the game will be available to play
-                      </p>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                          <label className="text-xs text-white flex items-center gap-1">
-                            <Calendar className="h-3 w-3" /> Date
-                          </label>
-                          <Input
-                            type="date"
-                            className="bg-[#170A2C] border-gray-700 text-white h-9"
-                            value={gameDate}
-                            onChange={(e) => setGameDate(e.target.value)}
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-xs text-white flex items-center gap-1">
-                            <Clock className="h-3 w-3" /> Time
-                          </label>
-                          <Input
-                            type="time"
-                            className="bg-[#170A2C] border-gray-700 text-white h-9"
-                            value={gameTime}
-                            onChange={(e) => setGameTime(e.target.value)}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Reveal Time Section */}
-                    <div className="space-y-4 p-3 border border-gray-700 rounded-md bg-[#170A2C]/20">
-                      <h3 className="text-white font-medium flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        Reveal Time
-                      </h3>
-                      <p className="text-xs text-gray-400">
-                        When the target will be revealed to viewers
-                      </p>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                          <label className="text-xs text-white flex items-center gap-1">
-                            <Calendar className="h-3 w-3" /> Date
-                          </label>
-                          <Input
-                            type="date"
-                            className="bg-[#170A2C] border-gray-700 text-white h-9"
-                            value={revealDate}
-                            onChange={(e) => setRevealDate(e.target.value)}
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-xs text-white flex items-center gap-1">
-                            <Clock className="h-3 w-3" /> Time
-                          </label>
-                          <Input
-                            type="time"
-                            className="bg-[#170A2C] border-gray-700 text-white h-9"
-                            value={revealTime}
-                            onChange={(e) => setRevealTime(e.target.value)}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Outcome Time Section */}
-                    <div className="space-y-4 p-3 border border-gray-700 rounded-md bg-[#170A2C]/20">
-                      <h3 className="text-white font-medium flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        Outcome Time
-                      </h3>
-                      <p className="text-xs text-gray-400">
-                        When the outcome will be determined
-                      </p>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                          <label className="text-xs text-white flex items-center gap-1">
-                            <Calendar className="h-3 w-3" /> Date
-                          </label>
-                          <Input
-                            type="date"
-                            className="bg-[#170A2C] border-gray-700 text-white h-9"
-                            value={outcomeDate}
-                            onChange={(e) => setOutcomeDate(e.target.value)}
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-xs text-white flex items-center gap-1">
-                            <Clock className="h-3 w-3" /> Time
-                          </label>
-                          <Input
-                            type="time"
-                            className="bg-[#170A2C] border-gray-700 text-white h-9"
-                            value={outcomeTime}
-                            onChange={(e) => setOutcomeTime(e.target.value)}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Buffer Time Section */}
-                    <div className="space-y-4 p-3 border border-gray-700 rounded-md bg-[#170A2C]/20">
-                      <h3 className="text-white font-medium flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        Buffer Time
-                      </h3>
-                      <p className="text-xs text-gray-400">
-                        Additional time buffer after outcome
-                      </p>
-
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="space-y-1">
-                          <label className="text-xs text-white flex items-center gap-1">
-                            <Calendar className="h-3 w-3" /> Date
-                          </label>
-                          <Input
-                            type="date"
-                            className="bg-[#170A2C] border-gray-700 text-white h-9"
-                            value={bufferDate}
-                            onChange={(e) => setBufferDate(e.target.value)}
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-xs text-white flex items-center gap-1">
-                            <Clock className="h-3 w-3" /> Time
-                          </label>
-                          <Input
-                            type="time"
-                            className="bg-[#170A2C] border-gray-700 text-white h-9"
-                            value={bufferTime}
-                            onChange={(e) => setBufferTime(e.target.value)}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mt-4 p-3 border border-gray-700 rounded-md bg-[#170A2C]/20">
-                    <h3 className="text-white font-medium mb-2">
-                      Timeline Preview
-                    </h3>
-                    <div className="relative">
-                      <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-gray-700"></div>
-
-                      <div className="relative pl-6 pb-4">
-                        <div className="absolute left-0 top-1 w-2 h-2 rounded-full bg-purple-500"></div>
-                        <p className="text-white text-sm font-medium">
-                          Game Time
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          {gameDate && gameTime
-                            ? new Date(
-                                `${gameDate}T${gameTime}`
-                              ).toLocaleString()
-                            : "Not set"}
-                        </p>
-                      </div>
-
-                      <div className="relative pl-6 pb-4">
-                        <div className="absolute left-0 top-1 w-2 h-2 rounded-full bg-blue-500"></div>
-                        <p className="text-white text-sm font-medium">
-                          Reveal Time
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          {revealDate && revealTime
-                            ? new Date(
-                                `${revealDate}T${revealTime}`
-                              ).toLocaleString()
-                            : "Not set"}
-                        </p>
-                      </div>
-
-                      <div className="relative pl-6 pb-4">
-                        <div className="absolute left-0 top-1 w-2 h-2 rounded-full bg-green-500"></div>
-                        <p className="text-white text-sm font-medium">
-                          Outcome Time
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          {outcomeDate && outcomeTime
-                            ? new Date(
-                                `${outcomeDate}T${outcomeTime}`
-                              ).toLocaleString()
-                            : "Not set"}
-                        </p>
-                      </div>
-
-                      <div className="relative pl-6">
-                        <div className="absolute left-0 top-1 w-2 h-2 rounded-full bg-yellow-500"></div>
-                        <p className="text-white text-sm font-medium">
-                          Buffer Time
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          {bufferDate && bufferTime
-                            ? new Date(
-                                `${bufferDate}T${bufferTime}`
-                              ).toLocaleString()
-                            : "Not set"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+              </div>
+              <div className="mb-4">
+                <label className="block text-white font-semibold mb-2">
+                  Reveal Time
+                </label>
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    min={0}
+                    value={revealDays}
+                    onChange={(e) => setRevealDays(Number(e.target.value))}
+                    placeholder="Days"
+                    className="bg-[#170A2C] border-gray-700 text-white"
+                  />
+                  <Input
+                    type="number"
+                    min={0}
+                    value={revealHours}
+                    onChange={(e) => setRevealHours(Number(e.target.value))}
+                    placeholder="Hours"
+                    className="bg-[#170A2C] border-gray-700 text-white"
+                  />
+                  <Input
+                    type="number"
+                    min={0}
+                    value={revealMinutes}
+                    onChange={(e) => setRevealMinutes(Number(e.target.value))}
+                    placeholder="Minutes"
+                    className="bg-[#170A2C] border-gray-700 text-white"
+                  />
                 </div>
-              )}
+              </div>
+              <div className="mb-4">
+                <label className="block text-white font-semibold mb-2">
+                  Outcome Time
+                </label>
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    min={0}
+                    value={outcomeDays}
+                    onChange={(e) => setOutcomeDays(Number(e.target.value))}
+                    placeholder="Days"
+                    className="bg-[#170A2C] border-gray-700 text-white"
+                  />
+                  <Input
+                    type="number"
+                    min={0}
+                    value={outcomeHours}
+                    onChange={(e) => setOutcomeHours(Number(e.target.value))}
+                    placeholder="Hours"
+                    className="bg-[#170A2C] border-gray-700 text-white"
+                  />
+                  <Input
+                    type="number"
+                    min={0}
+                    value={outcomeMinutes}
+                    onChange={(e) => setOutcomeMinutes(Number(e.target.value))}
+                    placeholder="Minutes"
+                    className="bg-[#170A2C] border-gray-700 text-white"
+                  />
+                </div>
+              </div>
+              <div className="mb-4">
+                <label className="block text-white font-semibold mb-2">
+                  Buffer Time
+                </label>
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    min={0}
+                    value={bufferDays}
+                    onChange={(e) => setBufferDays(Number(e.target.value))}
+                    placeholder="Days"
+                    className="bg-[#170A2C] border-gray-700 text-white"
+                  />
+                  <Input
+                    type="number"
+                    min={0}
+                    value={bufferHours}
+                    onChange={(e) => setBufferHours(Number(e.target.value))}
+                    placeholder="Hours"
+                    className="bg-[#170A2C] border-gray-700 text-white"
+                  />
+                  <Input
+                    type="number"
+                    min={0}
+                    value={bufferMinutes}
+                    onChange={(e) => setBufferMinutes(Number(e.target.value))}
+                    placeholder="Minutes"
+                    className="bg-[#170A2C] border-gray-700 text-white"
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Images Section */}
@@ -916,7 +859,7 @@ export default function CreateARVTargetPage() {
                             alt={`${img.categoryName} - ${img.subcategoryName}`}
                             className="w-full aspect-square object-cover"
                           />
-                          <Badge className="absolute text-[11px] -bottom-2 -right-2 z-30 border border-black bg-[#36007b] text-white rounded-full">
+                          <Badge className="absolute text-[11px] -bottom-2 -right-2 z-30 border border-black bg-gradient text-white rounded-full">
                             {img.usedAt
                               ? `${img?.status} ${moment(
                                   img?.usedAt

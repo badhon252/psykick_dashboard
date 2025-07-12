@@ -1,10 +1,12 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
+import { CountdownTimer } from "@/components/countdown-timer";
 import type { TMCActiveTargetResponse } from "@/components/types/ManageActiveTarget";
 import { Button } from "@/components/ui/button";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import moment from "moment";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { toast } from "sonner";
 // import { queryClient } from '@/lib/react-query';
 
@@ -75,51 +77,50 @@ const TmcActiveTarget = () => {
     }
   };
 
-  const now = moment();
-  const isBufferTime = now.isSameOrAfter(data?.data?.bufferTime);
+  // const now = moment();
+  // const isBufferTime = now.isSameOrAfter(data?.data?.bufferTime);
 
   useEffect(() => {
     // console.log("hello");
-    if (isBufferTime) {
+    if (data?.data?.bufferDuration === 0) {
       console.log("Buffer time exceeded, making next target active...");
       updateTmcTargetMakeInActive();
     } else {
       console.log("Buffer time not exceeded");
     }
-  }, [isBufferTime, updateTmcTargetMakeInActive]);
+  }, [updateTmcTargetMakeInActive]);
   console.log("Buffer time exceeded, making next target active...");
 
+  // const [timeLeft, setTimeLeft] = useState({
+  //   days: 0,
+  //   hours: 0,
+  //   minutes: 0,
+  //   seconds: 0,
+  // });
 
-  const [timeLeft, setTimeLeft] = useState({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
+  // useEffect(() => {
+  //   if (!data?.data?.gameTime) return;
 
-  useEffect(() => {
-    if (!data?.data?.gameTime) return;
+  //   const interval = setInterval(() => {
+  //     const now = moment();
+  //     const target = moment(data.data.gameTime);
+  //     const duration = moment.duration(target.diff(now));
 
-    const interval = setInterval(() => {
-      const now = moment();
-      const target = moment(data.data.gameTime);
-      const duration = moment.duration(target.diff(now));
+  //     if (duration.asMilliseconds() <= 0) {
+  //       clearInterval(interval);
+  //       setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  //     } else {
+  //       const days = Math.floor(duration.asDays());
+  //       const hours = duration.hours(); // <-- 0 to 23 hours, correct clock style
+  //       const minutes = duration.minutes();
+  //       const seconds = duration.seconds();
 
-      if (duration.asMilliseconds() <= 0) {
-        clearInterval(interval);
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-      } else {
-        const days = Math.floor(duration.asDays());
-        const hours = duration.hours(); // <-- 0 to 23 hours, correct clock style
-        const minutes = duration.minutes();
-        const seconds = duration.seconds();
+  //       setTimeLeft({ days, hours, minutes, seconds });
+  //     }
+  //   }, 1000);
 
-        setTimeLeft({ days, hours, minutes, seconds });
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [data?.data?.gameTime]);
+  //   return () => clearInterval(interval);
+  // }, [data?.data?.gameTime]);
 
   if (isLoading) {
     return <p className="text-white">Loading...</p>;
@@ -163,53 +164,16 @@ const TmcActiveTarget = () => {
                     Hurry up! Time ends in:
                   </p>
 
-                  <div className="flex gap-2 text-white justify-center">
-                    {timeLeft.days > 0 && (
-                      <>
-                        <div className="p-1 rounded">
-                          <span className="text-xl font-medium leading-[120%] text-white">
-                            {String(timeLeft.days).padStart(2, "0")}
-                          </span>
-                          <span className="block text-sm font-normal text-[#C5C5C5] leading-[120%]">
-                            Days
-                          </span>
-                        </div>
-                        <span className="text-xl font-medium leading-[120%] text-white">
-                          :
-                        </span>
-                      </>
-                    )}
-                    <div className="p-1 rounded">
-                      <span className="text-xl font-medium leading-[120%] text-white">
-                        {String(timeLeft.hours).padStart(2, "0")}
-                      </span>
-                      <span className="block text-sm font-normal text-[#C5C5C5] leading-[120%]">
-                        Hours
-                      </span>
-                    </div>
-                    <span className="text-xl font-medium leading-[120%] text-white">
-                      :
-                    </span>
-                    <div className="p-1 rounded">
-                      <span className="text-xl font-medium leading-[120%] text-white">
-                        {String(timeLeft.minutes).padStart(2, "0")}
-                      </span>
-                      <span className="block text-sm font-normal text-[#C5C5C5] leading-[120%]">
-                        Mins
-                      </span>
-                    </div>
-                    <span className="text-xl font-medium leading-[120%] text-white">
-                      :
-                    </span>
-                    <div className="p-1 rounded">
-                      <span className="text-xl font-medium leading-[120%] text-white">
-                        {String(timeLeft.seconds).padStart(2, "0")}
-                      </span>
-                      <span className="block text-sm font-normal text-[#C5C5C5] leading-[120%]">
-                        Secs
-                      </span>
-                    </div>
-                  </div>
+                  <CountdownTimer
+                    endTime={
+                      new Date(
+                        new Date(data.data.startTime).getTime() +
+                          (data.data.gameDuration + data.data.revealDuration) *
+                            60 *
+                            1000
+                      )
+                    }
+                  />
                 </div>
               </div>
             </div>

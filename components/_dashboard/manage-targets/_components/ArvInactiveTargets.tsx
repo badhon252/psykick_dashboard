@@ -1,19 +1,19 @@
 "use client";
-import { CountdownTimer } from "@/components/countdown-timer";
+// import { CountdownTimer } from "@/components/countdown-timer";
 import ErrorContainer from "@/components/shared/ErrorContainer/ErrorContainer";
 // import NotFound from "@/components/shared/NotFound/NotFound";
 import TableSkeleton from "@/components/shared/TableSkeleton/TableSkeleton";
 import { ARVTargetResponse } from "@/components/types/ManageTarget";
 import FivosPagination from "@/components/ui/FivosPagination";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import moment from "moment";
+import { useMutation, useQuery } from "@tanstack/react-query";
+// import moment from "moment";
 import Link from "next/link";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
 
 const ArvInactiveTargets = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const queryClient = useQueryClient();
+  // const queryClient = useQueryClient();
   const { data, isLoading, isError, error } = useQuery<ARVTargetResponse>({
     queryKey: ["all-un-queued-arv-targets", currentPage],
     queryFn: () =>
@@ -22,49 +22,51 @@ const ArvInactiveTargets = () => {
       ).then((res) => res.json()),
   });
 
-  type TargetStatus = {
-    text: string;
-    bgColor: string;
-  };
+  console.log(data?.data);
 
-  const getTargetStatus = (target: {
-    isCompleted: boolean;
-    isQueued: boolean;
-    revealTime: string | null;
-  }): TargetStatus => {
-    const now = moment();
-    const revealTime = target.revealTime ? moment(target.revealTime) : null;
+  // type TargetStatus = {
+  //   text: string;
+  //   bgColor: string;
+  // };
 
-    // Expired - Targets that have been revealed, and the outcome has been set
-    if (target.isCompleted && revealTime && revealTime.isBefore(now)) {
-      return {
-        text: "Expired",
-        bgColor: "#666666", // Gray
-      };
-    }
+  // const getTargetStatus = (target: {
+  //   isCompleted: boolean;
+  //   isQueued: boolean;
+  //   revealTime: string | null;
+  // }): TargetStatus => {
+  //   const now = moment();
+  //   const revealTime = target.revealTime ? moment(target.revealTime) : null;
 
-    // Revealed - Targets that have been revealed but the outcome has not been set
-    if (!target.isCompleted && revealTime && revealTime.isBefore(now)) {
-      return {
-        text: "Revealed",
-        bgColor: "#E6B32A", // Yellow/Orange
-      };
-    }
+  //   // Expired - Targets that have been revealed, and the outcome has been set
+  //   if (target.isCompleted && revealTime && revealTime.isBefore(now)) {
+  //     return {
+  //       text: "Expired",
+  //       bgColor: "#666666", // Gray
+  //     };
+  //   }
 
-    // Queued - Targets that are created and have been added to the queue
-    if (target.isQueued) {
-      return {
-        text: "Queued",
-        bgColor: "#2A6C2D", // Green
-      };
-    }
+  //   // Revealed - Targets that have been revealed but the outcome has not been set
+  //   if (!target.isCompleted && revealTime && revealTime.isBefore(now)) {
+  //     return {
+  //       text: "Revealed",
+  //       bgColor: "#E6B32A", // Yellow/Orange
+  //     };
+  //   }
 
-    // Pending – Targets that are created but not yet used or queued
-    return {
-      text: "Pending",
-      bgColor: "#D74727", // Red
-    };
-  };
+  //   // Queued - Targets that are created and have been added to the queue
+  //   if (target.isQueued) {
+  //     return {
+  //       text: "Queued",
+  //       bgColor: "#2A6C2D", // Green
+  //     };
+  //   }
+
+  //   // Pending – Targets that are created but not yet used or queued
+  //   return {
+  //     text: "Pending",
+  //     bgColor: "#D74727", // Red
+  //   };
+  // };
 
   let content;
   if (isLoading) {
@@ -121,7 +123,7 @@ const ArvInactiveTargets = () => {
           {[...data.data].map((target, index) => (
             <ul
               key={index}
-              className="bg-white/10 shadow-[0px_20px_166.2px_4px_#580EB726] my-4 border border-[#C5C5C5] rounded-[12px] p-5 grid grid-cols-6"
+              className="bg-white/10 shadow-[0px 20px 166.2px 4px #580EB726] my-4 border border-[#C5C5C5] rounded-[12px] p-5 grid grid-cols-6"
             >
               <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
                 {target.eventName}
@@ -130,17 +132,7 @@ const ArvInactiveTargets = () => {
                 {target.code}
               </li>
               <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-                {(() => {
-                  const status = getTargetStatus(target);
-                  return (
-                    <button
-                      className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px]"
-                      style={{ backgroundColor: status.bgColor }}
-                    >
-                      {target.status}
-                    </button>
-                  );
-                })()}
+                {target.status}
               </li>
               <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
                 <div className="w-full flex flex-col items-center justify-center">
@@ -154,13 +146,14 @@ const ArvInactiveTargets = () => {
                       ? moment(target.revealTime).format("HH:mm:ss")
                       : ""}
                   </span> */}
-                  <CountdownTimer
+                  {/* <CountdownTimer
                     endTime={
                       target.revealTime
                         ? new Date(target.revealTime)
                         : new Date()
                     }
-                  />
+                  /> */}
+                  {target.revealDuration} minutes
                 </div>
               </li>
               <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
@@ -175,7 +168,7 @@ const ArvInactiveTargets = () => {
                       ? moment(target.revealTime).format("HH:mm:ss")
                       : ""}
                   </span> */}
-                  <CountdownTimer
+                  {/* <CountdownTimer
                     endTime={
                       target.outcomeTime
                         ? new Date(target.outcomeTime)
@@ -186,23 +179,20 @@ const ArvInactiveTargets = () => {
                         queryKey: ["all-un-queued-tmc-targets"],
                       });
                     }}
-                  />
+                  /> */}
+                  {target.outcomeDuration} minutes
                 </div>
               </li>
               <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
                 {
                   <button
-                    disabled={getTargetStatus(target).text !== "Pending"}
+                    // disabled={getTargetStatus(target).text !== "Pending"}
                     onClick={() => handleArvAddToQueue(target?._id)}
                     style={{
                       backgroundColor:
-                        getTargetStatus(target).text !== "Pending"
-                          ? "#766f803b"
-                          : "#8F37FF",
+                        target.status !== "active" ? "#766f803b" : "#8F37FF",
                       cursor:
-                        getTargetStatus(target).text !== "Pending"
-                          ? "not-allowed"
-                          : "pointer",
+                        target.status !== "expired" ? "not-allowed" : "pointer",
                     }}
                     className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px] bg-[#8F37FF] hover:bg-[#9333EA]"
                   >
@@ -231,9 +221,9 @@ const ArvInactiveTargets = () => {
         return;
       }
       toast.success(data?.message || "Added to queue successfully");
-      queryClient.invalidateQueries({
-        queryKey: ["all-un-queued-arv-targets"],
-      });
+      // queryClient.invalidateQueries({
+      //   queryKey: ["all-un-queued-arv-targets"],
+      // });
     },
   });
 
