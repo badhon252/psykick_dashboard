@@ -979,7 +979,7 @@ export default function CreateARVTargetPage() {
                             height={300}
                             src={controlImage || "/placeholder.svg"}
                             alt="Selected control image"
-                            className="w-full h-48 object-cover"
+                            className="w-full h-[500px] object-cover"
                           />
                         </div>
                       ) : (
