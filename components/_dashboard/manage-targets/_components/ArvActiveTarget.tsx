@@ -1,12 +1,15 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
+import { CountdownTimer } from "@/components/countdown-timer";
 import { ARVActiveTargetResponse } from "@/components/types/ManageActiveTarget";
 import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
-import moment from "moment";
+// import moment from "moment";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+// import Link from "next/link";
+import React from "react";
 
 const ArvActiveTarget = () => {
   const { data, isLoading, isError, error } = useQuery<ARVActiveTargetResponse>(
@@ -19,65 +22,19 @@ const ArvActiveTarget = () => {
     }
   );
 
-  const [timeLeft, setTimeLeft] = useState({
-    days: 0,
-    hours: 0,
-    minutes: 0,
-    seconds: 0,
-  });
+  // const [timeLeft, setTimeLeft] = useState({
+  //   days: 0,
+  //   hours: 0,
+  //   minutes: 0,
+  //   seconds: 0,
+  // });
 
-  const [isOutcomeTimeReached, setIsOutcomeTimeReached] = useState(false);
-  const now = moment();
-  const isRevealTime = now.isSameOrAfter(data?.data?.revealTime);
-  const isOutcomeTime = now.isSameOrBefore(String(data?.data?.outcomeTime));
-
-  useEffect(() => {
-    if (!data?.data?.gameTime || !data?.data?.outcomeTime) return;
-
-    const interval = setInterval(() => {
-      const gameTarget = moment(data.data.gameTime);
-
-      const outcomeTarget = moment(String(data?.data?.revealTime));
-
-      const duration = moment.duration(gameTarget.diff(now));
-      const isOutcomeTime = now.isSameOrAfter(outcomeTarget);
-
-      // console.log("Now:", now.toISOString());
-      // console.log("Game Target:", gameTarget.toISOString());
-      // console.log("Outcome Target:", outcomeTarget.toISOString());
-      console.log("isOutcomeTime:", isOutcomeTime);
-
-      if (duration.asMilliseconds() <= 0) {
-        clearInterval(interval);
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
-
-        // Ensure we still check the outcome time after the timer ends
-        setIsOutcomeTimeReached(isOutcomeTime);
-      } else {
-        setTimeLeft({
-          days: Math.floor(duration.asDays()),
-          hours: duration.hours(),
-          minutes: duration.minutes(),
-          seconds: duration.seconds(),
-        });
-
-        // Update outcome state only when it changes to true
-        setIsOutcomeTimeReached((prev) =>
-          !prev && isOutcomeTime ? true : prev
-        );
-      }
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [
-    data?.data?.gameTime,
-    data?.data?.outcomeTime,
-    data?.data?.revealTime,
-    isOutcomeTimeReached,
-  ]);
+  // const [isOutcomeTimeReached, setIsOutcomeTimeReached] = useState(false);
+  // const now = moment();
+  // const isRevealTime = now.isSameOrAfter(data?.data?.revealTime);
+  // const isOutcomeTime = now.isSameOrBefore(String(data?.data?.outcomeTime));
 
   // const isRevealTime = now.isSameOrAfter(data?.data?.revealTime);
-  const isBufferTime = now.isSameOrAfter(data?.data?.bufferTime);
 
   if (isLoading) {
     return <p className="text-white">Loading...</p>;
@@ -95,8 +52,8 @@ const ArvActiveTarget = () => {
         </h2>
 
         <div>
-          {data?.data && !isBufferTime && (
-            <div className="rounded-lg p-4 bg-white/10 w-[756px]">
+          {data?.data && (
+            <div className="rounded-lg p-4 bg-white/10 min-w-[756px]">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 rounded-xl">
                 <div>
                   <p className="text-[#ECECEC] text-[20px] 3xl:text-[24px] font-medium leading-[120%]">
@@ -107,13 +64,39 @@ const ArvActiveTarget = () => {
                   </p>
                   <p className="text-[#ECECEC] text-[20px] 3xl:text-[24px] font-medium leading-[120%] py-4">
                     Reveal Time:{" "}
-                    {moment(String(data.data.outcomeTime)).format(
+                    {/* {moment(String(data.data.outcomeTime)).format(
                       "YYYY / MM / DD"
-                    )}
+                    )} */}
                   </p>
                 </div>
+                <div className="p-3 rounded-md text-center bg-white/20">
+                  <p className="text-base text-[#C5C5C5] font-normal leading-[120%] mb-1">
+                    Hurry up! Time ends in:
+                  </p>
 
-                <div>
+                  <CountdownTimer
+                    endTime={
+                      new Date(
+                        new Date(data.data.gameTime).getTime() +
+                          (data.data.outcomeDuration +
+                            data.data.revealDuration) *
+                            60 *
+                            1000
+                      )
+                    }
+                  />
+                </div>
+                <div className="w-full flex items-center justify-end">
+                  {data.data.revealDuration > 0 && (
+                    <Link href={`/manage-targets/set-outcome/${data.data._id}`}>
+                      <Button className="text-xs font-semibold leading-[120%] bg-[#8F37FF] hover:bg-[#9333EA] text-white mt-4 py-3 px-6 rounded-1">
+                        Set Outcome
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+
+                {/* <div>
                   <div className="p-3 rounded-md text-center bg-white/20">
                     <p className="text-base text-[#C5C5C5] font-normal leading-[120%] mb-1">
                       Hurry up! Time ends in:
@@ -168,16 +151,8 @@ const ArvActiveTarget = () => {
                     </div>
                   </div>
 
-                  <div className="w-full flex items-center justify-end">
-                    {isRevealTime && isOutcomeTime && (
-                      <Link href="/manage-targets/set-outcome">
-                        <Button className="text-xs font-semibold leading-[120%] bg-[#8F37FF] hover:bg-[#9333EA] text-white mt-4 py-3 px-6 rounded-1">
-                          Set Outcome
-                        </Button>
-                      </Link>
-                    )}
-                  </div>
-                </div>
+                  
+                </div> */}
               </div>
             </div>
           )}

@@ -254,28 +254,22 @@ export default function CreateARVTargetPage() {
       await Promise.all(updatePromises);
       console.log("All image statuses updated successfully");
 
-      // Step 4: Create the game payload
-      // Helper to get ISO time from now + offset
-      const getISOTime = (
-        days: number,
-        hours: number,
-        minutes: number
-      ): string => {
-        const now = new Date();
-        const result = new Date(now.getTime());
-        result.setDate(result.getDate() + days);
-        result.setHours(result.getHours() + hours);
-        result.setMinutes(result.getMinutes() + minutes);
-        return result.toISOString();
-      };
+      // Step 4: Create the game payload (send durations as minutes strings)
+      const gameTimeMinutes = gameDays * 24 * 60 + gameHours * 60 + gameMinutes;
+      const revealTimeMinutes =
+        revealDays * 24 * 60 + revealHours * 60 + revealMinutes;
+      const outcomeTimeMinutes =
+        outcomeDays * 24 * 60 + outcomeHours * 60 + outcomeMinutes;
+      const bufferTimeMinutes =
+        bufferDays * 24 * 60 + bufferHours * 60 + bufferMinutes;
 
       const payload = {
         eventName,
         eventDescription,
-        gameTime: getISOTime(gameDays, gameHours, gameMinutes),
-        revealTime: getISOTime(revealDays, revealHours, revealMinutes),
-        outcomeTime: getISOTime(outcomeDays, outcomeHours, outcomeMinutes),
-        bufferTime: getISOTime(bufferDays, bufferHours, bufferMinutes),
+        gameDuration: gameTimeMinutes.toString(),
+        revealDuration: revealTimeMinutes.toString(),
+        outcomeDuration: outcomeTimeMinutes.toString(),
+        bufferDuration: bufferTimeMinutes.toString(),
         controlImage,
         image1: { url: images[0].url, description: images[0].description },
         image2: { url: images[1].url, description: images[1].description },

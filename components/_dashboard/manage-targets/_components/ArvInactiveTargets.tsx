@@ -1,18 +1,22 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 // import { CountdownTimer } from "@/components/countdown-timer";
 import ErrorContainer from "@/components/shared/ErrorContainer/ErrorContainer";
 // import NotFound from "@/components/shared/NotFound/NotFound";
 import TableSkeleton from "@/components/shared/TableSkeleton/TableSkeleton";
 import { ARVTargetResponse } from "@/components/types/ManageTarget";
+import { Button } from "@/components/ui/button";
 import FivosPagination from "@/components/ui/FivosPagination";
 import { useMutation, useQuery } from "@tanstack/react-query";
 // import moment from "moment";
 import Link from "next/link";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
+import StatusBadge from "./status-badge";
 
 const ArvInactiveTargets = () => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [resetLoading, setResetLoading] = useState(false);
   // const queryClient = useQueryClient();
   const { data, isLoading, isError, error } = useQuery<ARVTargetResponse>({
     queryKey: ["all-un-queued-arv-targets", currentPage],
@@ -131,9 +135,7 @@ const ArvInactiveTargets = () => {
               <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
                 {target.code}
               </li>
-              <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-                {target.status}
-              </li>
+              <StatusBadge key={target._id} status={target.status as any} />
               <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
                 <div className="w-full flex flex-col items-center justify-center">
                   {/* <span>
@@ -184,21 +186,27 @@ const ArvInactiveTargets = () => {
                 </div>
               </li>
               <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-                {
+                {target.resultImage !== "" || target.status === "inactive" ? (
                   <button
                     // disabled={getTargetStatus(target).text !== "Pending"}
                     onClick={() => handleArvAddToQueue(target?._id)}
                     style={{
                       backgroundColor:
-                        target.status !== "active" ? "#766f803b" : "#8F37FF",
+                        target.status !== "inactive" ? "#766f803b" : "#8F37FF",
                       cursor:
-                        target.status !== "expired" ? "not-allowed" : "pointer",
+                        target.status === "expired" ? "not-allowed" : "pointer",
                     }}
-                    className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px] bg-[#8F37FF] hover:bg-[#9333EA]"
+                    className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px] bg-[#370bf8] hover:bg-[#9333EA]"
                   >
                     Add to Queue
                   </button>
-                }
+                ) : (
+                  <Button>
+                    <Link href={`/manage-targets/set-outcome/${target._id}`}>
+                      set outcome
+                    </Link>{" "}
+                  </Button>
+                )}
               </li>
             </ul>
           ))}
@@ -230,6 +238,35 @@ const ArvInactiveTargets = () => {
   const handleArvAddToQueue = (id: string) => {
     mutate(id);
   };
+
+  // Handler for Reset Queue button
+  const handleResetQueue = async () => {
+    setResetLoading(true);
+    try {
+      const stopRes = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/stop-queue`,
+        { method: "PATCH" }
+      );
+      const stopData = await stopRes.json();
+      if (!stopData?.status)
+        throw new Error(stopData?.message || "Failed to stop queue");
+
+      const resetRes = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/reset-queue`,
+        { method: "POST" }
+      );
+      const resetData = await resetRes.json();
+      if (!resetData?.status)
+        throw new Error(resetData?.message || "Failed to reset queue");
+
+      toast.success("Queue reset successfully!");
+      // queryClient.invalidateQueries({ queryKey: ["all-un-queued-arv-targets"] });
+    } catch (err: any) {
+      toast.error(err.message || "Error resetting queue");
+    } finally {
+      setResetLoading(false);
+    }
+  };
   return (
     <div>
       <div className="bg-[#c4a0ff17] p-6 rounded-lg">
@@ -239,11 +276,20 @@ const ArvInactiveTargets = () => {
             <h2 className="text-[24px] xl:text-[28px] font-semibold leading-[120%]text-white">
               Inactive Targets
             </h2>
-            <Link href="/manage-targets/arv-queue">
-              <button className="bg-gradient-to-r from-[#8F37FF] to-[#2D17FF] text-base font-semibold text-white leading-[120%] py-[20px] px-[87px] rounded-tr-[24px] rounded-bl-[24px] ">
-                See Queue
+            <div className="flex gap-4">
+              <button
+                className="btn-outline text-base font-semibold text-white leading-[120%] py-[20px] px-[87px] rounded-tr-[24px] rounded-bl-[24px] disabled:opacity-60"
+                onClick={handleResetQueue}
+                disabled={resetLoading}
+              >
+                {resetLoading ? "Resetting..." : "Reset Queue"}
               </button>
-            </Link>
+              <Link href="/manage-targets/arv-queue">
+                <button className="bg-gradient text-base font-semibold text-white leading-[120%] py-[12px] px-[47px] rounded-tr-[24px] rounded-bl-[24px] ">
+                  See Queue
+                </button>
+              </Link>
+            </div>
           </div>
           <ul className="bg-[#ECECEC] py-[20px] grid grid-cols-6">
             <li className="w-full flex items-center justify-center text-base font-medium text-[#444444] leading-[120%]">
@@ -262,7 +308,7 @@ const ArvInactiveTargets = () => {
               Outcome Time
             </li>
             <li className="w-full flex items-center justify-center text-base font-medium text-[#444444] leading-[120%]">
-              Add to Queue
+              Action
             </li>
           </ul>
         </div>

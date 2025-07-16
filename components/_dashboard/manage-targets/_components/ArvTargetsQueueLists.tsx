@@ -124,17 +124,17 @@ const ArvTargetsQueueLists = () => {
   const handleARVMakeActive = async () => {
     try {
       // First check if there's any active or partially active game
-      const activeGameCheck = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/get-activeARVTarget`
-      ).then((res) => res.json());
+      // const activeGameCheck = await fetch(
+      //   `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/get-activeARVTarget`
+      // ).then((res) => res.json());
 
       // If there's an active or partially active game, show error
-      if (activeGameCheck?.data) {
-        toast.error(
-          "There's already an active game. Please wait for it to complete."
-        );
-        return;
-      }
+      // if (activeGameCheck?.data === null) {
+      //   toast.error(
+      //     "There's already an active game. Please wait for it to complete."
+      //   );
+      //   return;
+      // }
 
       // If no active game, proceed with starting next game
       const res = await fetch(
@@ -233,14 +233,13 @@ const ArvTargetsQueueLists = () => {
                 </p>
               </li>
               <li className="flex flex-col items-center justify-center text-white font-medium">
-                <span>{moment(target.revealTime).format("YYYY-MM-DD")}</span>
-                <span>{moment(target.revealTime).format("HH:mm:ss")}</span>
+                <span>{target.revealDuration}</span>
+                {/* <span>{moment(target.revealTime).format("HH:mm:ss")}</span> */}
               </li>
               <li className="flex flex-col items-center justify-center text-white font-medium">
-                <span>{moment(target.gameTime).format("YYYY-MM-DD")}</span>
-                <span>{moment(target.gameTime).format("HH:mm:ss")}</span>
+                <span>{target.revealDuration}</span>
+                {/* <span>{moment(target.gameTime).format("HH:mm:ss")}</span> */}
               </li>
-
               <li className="flex items-center justify-center">
                 <button
                   onClick={() => handleARVMakeActive()}

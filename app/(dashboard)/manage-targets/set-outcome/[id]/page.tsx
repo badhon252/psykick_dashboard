@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import moment from "moment";
 
 interface ARVTarget {
+  revealDuration: string;
   _id: string;
   code: string;
   eventName: string;
@@ -24,21 +24,29 @@ interface ARVTarget {
 
 interface APIResponse {
   status: boolean;
-  data: ARVTarget;
+  data: ARVTarget[]; // Corrected: data is an array of ARVTarget
   message: string;
 }
 
 export default function SetOutcomePage() {
   const router = useRouter();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const pathName = usePathname();
+
+  // Extract the ID from the pathname
+  const pathSegments = pathName.split("/");
+  const targetId = pathSegments[pathSegments.length - 1];
 
   const { data, isLoading } = useQuery<APIResponse>({
-    queryKey: ["activeARVTarget"],
+    queryKey: ["arvTargetsWithNullResultImage"], // Changed queryKey for clarity
     queryFn: () =>
       fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/get-activeARVTarget`
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/get-ARVTargetWithNullResultImage/`
       ).then((res) => res.json()),
   });
+
+  // Filter the data to find the specific target based on the extracted ID
+  const filteredTarget = data?.data?.find((target) => target._id === targetId);
 
   if (isLoading) {
     return (
@@ -48,10 +56,12 @@ export default function SetOutcomePage() {
     );
   }
 
-  if (!data?.data) {
+  if (!filteredTarget) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="text-2xl text-white">No active target found</div>
+        <div className="text-2xl text-white">
+          No target found for ID: {targetId}
+        </div>
       </div>
     );
   }
@@ -68,18 +78,14 @@ export default function SetOutcomePage() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/update-ARVTarget-resultImage/${data.data._id}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/update-ARVTarget-resultImage/${filteredTarget._id}`,
         {
           method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ resultImage: selectedImage }),
         }
       );
-
       const result = await response.json();
-
       if (result.status) {
         alert("Outcome set successfully");
         router.push("/manage-targets");
@@ -98,49 +104,41 @@ export default function SetOutcomePage() {
         {/* Header Information */}
         <div className="bg-white/5 backdrop-blur-sm rounded-lg p-6 space-y-4">
           <h1 className="text-2xl font-bold text-white mb-6">Set Outcome</h1>
-
           <div className="grid grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
                 <p className="text-gray-400">Revealed Target Code</p>
                 <p className="text-white text-xl font-semibold">
-                  {data.data.code}
+                  {filteredTarget.code}
                 </p>
               </div>
               <div>
                 <p className="text-gray-400">Event Name</p>
-                <p className="text-white text-xl">{data.data.eventName}</p>
+                <p className="text-white text-xl">{filteredTarget.eventName}</p>
               </div>
               <div>
                 <p className="text-gray-400">Event Descriptions</p>
                 <p className="text-white text-xl">
-                  {data.data.eventDescription}
+                  {filteredTarget.eventDescription}
                 </p>
               </div>
               <div>
                 <p className="text-gray-400">Game Time</p>
-                <p className="text-white">
-                  {moment(data.data.gameTime).format("MMMM Do YYYY, h:mm a")}
-                </p>
+                <p className="text-white">{filteredTarget.gameTime}</p>
               </div>
             </div>
             <div className="space-y-4">
               <div>
                 <p className="text-gray-400">Reveal Time & Date</p>
-                <p className="text-white">
-                  {moment(data.data.revealTime).format("MMMM Do YYYY, h:mm a")}
-                </p>
+                <p className="text-white">{filteredTarget.revealDuration}</p>
               </div>
               <div>
                 <p className="text-gray-400">Outcome time</p>
-                <p className="text-white">
-                  {moment(data.data.outcomeTime).format("MMMM Do YYYY, h:mm a")}
-                </p>
+                <p className="text-white">{filteredTarget.outcomeTime}</p>
               </div>
             </div>
           </div>
         </div>
-
         {/* Target Images */}
         <div className="bg-white/5 backdrop-blur-sm rounded-lg p-6">
           <h2 className="text-xl font-semibold text-white mb-6">
@@ -148,17 +146,17 @@ export default function SetOutcomePage() {
           </h2>
           <div className="grid grid-cols-3 gap-6">
             {[
-              data.data.image1,
-              data.data.image2,
-              data.data.image3,
-              data.data.controlImage,
-            ].map((image, index) => (
+              filteredTarget.image1,
+              filteredTarget.image2,
+              filteredTarget.image3,
+              filteredTarget.controlImage,
+            ]?.map((image, index) => (
               <div
                 key={index}
                 className={cn(
                   "bg-white/5 backdrop-blur-sm p-4 rounded-lg cursor-pointer transition-all",
                   selectedImage ===
-                    (typeof image === "string" ? image : image.url)
+                    (typeof image === "string" ? image : image?.url)
                     ? "ring-2 ring-[red]"
                     : "hover:bg-[purple]/50"
                 )}
@@ -177,13 +175,12 @@ export default function SetOutcomePage() {
                   />
                 </div>
                 <p className="text-white text-sm">
-                  {typeof image === "string" ? "" : image.description}
+                  {/* {typeof image === "string" ? "" : image.description} */}
                 </p>
               </div>
             ))}
           </div>
         </div>
-
         {/* Selected Outcome */}
         {selectedImage && (
           <div className="bg-white/5 backdrop-blur-sm rounded-lg p-6">
@@ -193,7 +190,7 @@ export default function SetOutcomePage() {
             <div className="max-w-[300px] mx-auto border-4 border-[red] rounded-lg ">
               <div className="aspect-square relative">
                 <Image
-                  src={selectedImage}
+                  src={selectedImage || "/placeholder.svg"}
                   alt="Selected outcome"
                   fill
                   className="object-cover rounded-lg"
@@ -202,7 +199,6 @@ export default function SetOutcomePage() {
             </div>
           </div>
         )}
-
         {/* Submit Button */}
         <div className="flex justify-center">
           <Button

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import ErrorContainer from "@/components/shared/ErrorContainer/ErrorContainer";
 // import NotFound from "@/components/shared/NotFound/NotFound";
@@ -13,6 +14,7 @@ import { toast } from "sonner";
 
 const TmcInactiveTargets = () => {
   const [currentPage, setCurrentPage] = useState(1);
+  const [resetLoading, setResetLoading] = useState(false);
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError, error } = useQuery<TMCTargetsResponse>({
@@ -167,6 +169,37 @@ const TmcInactiveTargets = () => {
   const handleTmcAddToQueue = (id: string) => {
     mutate(id);
   };
+
+  // Handler for Reset Queue button
+  const handleResetQueue = async () => {
+    setResetLoading(true);
+    try {
+      const resetRes = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/reset-queue`,
+        { method: "POST" }
+      );
+      const resetData = await resetRes.json();
+      if (!resetData?.status)
+        throw new Error(resetData?.message || "Failed to reset queue");
+
+      const stopRes = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/stop-queue`,
+        { method: "POST" }
+      );
+      const stopData = await stopRes.json();
+      if (!stopData?.status)
+        throw new Error(stopData?.message || "Failed to stop queue");
+
+      toast.success("Queue reset successfully!");
+      queryClient.invalidateQueries({
+        queryKey: ["all-un-queued-tmc-targets"],
+      });
+    } catch (err: any) {
+      toast.error(err.message || "Error resetting queue");
+    } finally {
+      setResetLoading(false);
+    }
+  };
   return (
     <div>
       <div className="bg-[#c4a0ff17] p-6 rounded-lg">
@@ -176,11 +209,20 @@ const TmcInactiveTargets = () => {
             <h2 className="text-[24px] xl:text-[28px] font-semibold leading-[120%]text-white">
               Inactive Targets
             </h2>
-            <Link href="/manage-targets/tmc-queue">
-              <button className="bg-gradient-to-r from-[#8F37FF] to-[#2D17FF] text-base font-semibold text-white leading-[120%] py-[20px] px-[87px] rounded-tr-[24px] rounded-bl-[24px] ">
-                See Queue
+            <div className="flex gap-4">
+              <button
+                className="btn-outline text-base font-semibold text-white leading-[120%] py-[20px] px-[87px] rounded-tr-[24px] rounded-bl-[24px] disabled:opacity-60"
+                onClick={handleResetQueue}
+                disabled={resetLoading}
+              >
+                {resetLoading ? "Resetting..." : "Reset Queue"}
               </button>
-            </Link>
+              <Link href="/manage-targets/tmc-queue">
+                <button className="bg-gradient-to-r from-[#8F37FF] to-[#2D17FF] text-base font-semibold text-white leading-[120%] py-[12px] px-[47px] rounded-tr-[24px] rounded-bl-[24px] ">
+                  See Queue
+                </button>
+              </Link>
+            </div>
           </div>
           <div>
             <ul className="bg-[#ECECEC] py-[20px] grid grid-cols-4">

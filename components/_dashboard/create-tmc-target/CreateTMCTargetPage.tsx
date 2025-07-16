@@ -265,9 +265,9 @@ export default function CreateTMCTargetPage() {
     mutationFn: async (payload: {
       targetImage: string;
       controlImages: string[];
-      revealTime: string;
-      bufferTime: string;
-      gameStart: string;
+      revealDuration: string;
+      bufferDuration: string;
+      gameDuration: string;
     }) => {
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/TMCTarget/create-TMCTarget`,
@@ -427,30 +427,14 @@ export default function CreateTMCTargetPage() {
       // Wait for all image status updates to complete
       await Promise.all(updatePromises);
       console.log("All image statuses updated successfully");
-
-      // Step 4: Calculate timing
-      const now = new Date();
-      const gameStart = new Date(now);
-      let revealTime = new Date(now);
-      let bufferTime = new Date(now);
-
-      // Set game time
-      gameStart.setMinutes(gameStart.getMinutes() + selectedMinutes);
-      gameStart.setHours(gameStart.getHours() + selectedHours);
-      gameStart.setDate(gameStart.getDate() + selectedDays);
-
-      // Advanced: Custom time offsets only (no mode check)
-      revealTime = new Date(
-        gameStart.getTime() +
-          revealHours * 60 * 60 * 1000 +
-          revealMinutes * 60 * 1000
-      );
-
-      bufferTime = new Date(
-        gameStart.getTime() +
-          bufferHours * 60 * 60 * 1000 +
-          bufferMinutes * 60 * 1000
-      );
+      // Step 4: Calculate durations in minutes
+      // Game duration: total minutes from now
+      const gameDurationMinutes =
+        selectedDays * 24 * 60 + selectedHours * 60 + selectedMinutes;
+      // Reveal duration: total minutes after game start
+      const revealDurationMinutes = revealHours * 60 + revealMinutes;
+      // Buffer duration: total minutes after game start
+      const bufferDurationMinutes = bufferHours * 60 + bufferMinutes;
 
       // Step 5: Get image URLs for the payload
       const targetImage = allImages.find(
@@ -465,17 +449,17 @@ export default function CreateTMCTargetPage() {
         return;
       }
 
-      // Step 6: Create the TMC Target payload
+      // Step 6: Create the TMC Target payload (send durations as strings)
       const payload = {
         targetImage,
         controlImages,
-        revealTime: revealTime.toISOString(),
-        bufferTime: bufferTime.toISOString(),
-        gameStart: gameStart.toISOString(),
+        revealDuration: revealDurationMinutes.toString(),
+        bufferDuration: bufferDurationMinutes.toString(),
+        gameDuration: gameDurationMinutes.toString(),
       };
 
       // Step 7: Create the TMC Target
-      console.log("Creating TMC Target...");
+      console.log("Creating TMC Target with durations (min):", payload);
       createTMCTargetMutation.mutate(payload);
     } catch (error: unknown) {
       console.error("Error in TMC target creation process:", error);
@@ -490,55 +474,55 @@ export default function CreateTMCTargetPage() {
     }
   };
 
-  const renderTimeSelectors = (
-    label: string,
-    hoursValue: number,
-    minutesValue: number,
-    onHoursChange: (hours: number) => void,
-    onMinutesChange: (minutes: number) => void
-  ) => (
-    <div className="space-y-2">
-      <h4 className="text-white text-sm">{label}</h4>
-      <div className="grid grid-cols-2 gap-2">
-        <div>
-          <label className="text-xs text-gray-400 mb-1 block">Hours</label>
-          <Select
-            value={hoursValue.toString()}
-            onValueChange={(value) => onHoursChange(Number.parseInt(value))}
-          >
-            <SelectTrigger className="bg-[#170A2C] border-gray-700 text-white">
-              <SelectValue placeholder="Hours" />
-            </SelectTrigger>
-            <SelectContent>
-              {Array.from({ length: 24 }).map((_, i) => (
-                <SelectItem key={i} value={i.toString()}>
-                  {i}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div>
-          <label className="text-xs text-gray-400 mb-1 block">Minutes</label>
-          <Select
-            value={minutesValue.toString()}
-            onValueChange={(value) => onMinutesChange(Number.parseInt(value))}
-          >
-            <SelectTrigger className="bg-[#170A2C] border-gray-700 text-white">
-              <SelectValue placeholder="Minutes" />
-            </SelectTrigger>
-            <SelectContent>
-              {Array.from({ length: 12 }).map((_, i) => (
-                <SelectItem key={i} value={(i * 5).toString()}>
-                  {i * 5}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-    </div>
-  );
+  // const renderTimeSelectors = (
+  //   label: string,
+  //   hoursValue: number,
+  //   minutesValue: number,
+  //   onHoursChange: (hours: number) => void,
+  //   onMinutesChange: (minutes: number) => void
+  // ) => (
+  //   <div className="space-y-2">
+  //     <h4 className="text-white text-sm">{label}</h4>
+  //     <div className="grid grid-cols-2 gap-2">
+  //       <div>
+  //         <label className="text-xs text-gray-400 mb-1 block">Hours</label>
+  //         <Select
+  //           value={hoursValue.toString()}
+  //           onValueChange={(value) => onHoursChange(Number.parseInt(value))}
+  //         >
+  //           <SelectTrigger className="bg-[#170A2C] border-gray-700 text-white">
+  //             <SelectValue placeholder="Hours" />
+  //           </SelectTrigger>
+  //           <SelectContent>
+  //             {Array.from({ length: 24 }).map((_, i) => (
+  //               <SelectItem key={i} value={i.toString()}>
+  //                 {i}
+  //               </SelectItem>
+  //             ))}
+  //           </SelectContent>
+  //         </Select>
+  //       </div>
+  //       <div>
+  //         <label className="text-xs text-gray-400 mb-1 block">Minutes</label>
+  //         <Select
+  //           value={minutesValue.toString()}
+  //           onValueChange={(value) => onMinutesChange(Number.parseInt(value))}
+  //         >
+  //           <SelectTrigger className="bg-[#170A2C] border-gray-700 text-white">
+  //             <SelectValue placeholder="Minutes" />
+  //           </SelectTrigger>
+  //           <SelectContent>
+  //             {Array.from({ length: 12 }).map((_, i) => (
+  //               <SelectItem key={i} value={(i * 5).toString()}>
+  //                 {i * 5}
+  //               </SelectItem>
+  //             ))}
+  //           </SelectContent>
+  //         </Select>
+  //       </div>
+  //     </div>
+  //   </div>
+  // );
 
   // Determine if we're loading images
   const isLoading =
@@ -683,7 +667,7 @@ export default function CreateTMCTargetPage() {
                         height={150}
                         className="w-full h-32 object-cover"
                       />
-                      <Badge className="absolute text-[11px] -bottom-2 border border-black bg-[#36007b] text-white rounded-full">
+                      <Badge className="absolute text-[11px] -bottom-2 border border-black bg-gradient text-white rounded-full">
                         {image.usedAt
                           ? `${image?.status} ${moment(
                               image?.usedAt
@@ -758,7 +742,7 @@ export default function CreateTMCTargetPage() {
                         height={150}
                         className="w-full h-32 object-cover"
                       />
-                      <Badge className="absolute text-[11px] -top-2 -right-2 border border-black bg-[#36007b] text-white">
+                      <Badge className="absolute text-[11px] -top-2 -right-2 border border-black bg-gradient text-white">
                         {image.usedAt
                           ? `${image?.status} ${moment(
                               image?.usedAt
@@ -800,88 +784,122 @@ export default function CreateTMCTargetPage() {
                       <label className="text-xs text-gray-400 mb-1 block">
                         Days
                       </label>
-                      <Select
-                        value={selectedDays.toString()}
-                        onValueChange={(value) =>
-                          setSelectedDays(Number.parseInt(value))
+                      <input
+                        type="number"
+                        min={0}
+                        value={selectedDays}
+                        onChange={(e) =>
+                          setSelectedDays(Number(e.target.value))
                         }
-                      >
-                        <SelectTrigger className="bg-[#170A2C] border-gray-700 text-white">
-                          <SelectValue placeholder="Days" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Array.from({ length: 31 }).map((_, i) => (
-                            <SelectItem key={i} value={(i + 1).toString()}>
-                              {i + 1}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        className="w-full px-2 py-1 rounded bg-[#170A2C] text-white border border-gray-700"
+                      />
                     </div>
                     <div>
                       <label className="text-xs text-gray-400 mb-1 block">
                         Hours
                       </label>
-                      <Select
-                        value={selectedHours.toString()}
-                        onValueChange={(value) =>
-                          setSelectedHours(Number.parseInt(value))
+                      <input
+                        type="number"
+                        min={0}
+                        max={23}
+                        value={selectedHours}
+                        onChange={(e) =>
+                          setSelectedHours(Number(e.target.value))
                         }
-                      >
-                        <SelectTrigger className="bg-[#170A2C] border-gray-700 text-white">
-                          <SelectValue placeholder="Hours" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Array.from({ length: 24 }).map((_, i) => (
-                            <SelectItem key={i} value={i.toString()}>
-                              {i}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        className="w-full px-2 py-1 rounded bg-[#170A2C] text-white border border-gray-700"
+                      />
                     </div>
                     <div>
                       <label className="text-xs text-gray-400 mb-1 block">
                         Minutes
                       </label>
-                      <Select
-                        value={selectedMinutes.toString()}
-                        onValueChange={(value) =>
-                          setSelectedMinutes(Number.parseInt(value))
+                      <input
+                        type="number"
+                        min={0}
+                        max={59}
+                        value={selectedMinutes}
+                        onChange={(e) =>
+                          setSelectedMinutes(Number(e.target.value))
                         }
-                      >
-                        <SelectTrigger className="bg-[#170A2C] border-gray-700 text-white">
-                          <SelectValue placeholder="Minutes" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Array.from({ length: 12 }).map((_, i) => (
-                            <SelectItem key={i} value={(i * 5).toString()}>
-                              {i * 5}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        className="w-full px-2 py-1 rounded bg-[#170A2C] text-white border border-gray-700"
+                      />
                     </div>
                   </div>
                 </div>
 
                 {/* Reveal Time (after game time) */}
-                {renderTimeSelectors(
-                  "Reveal Time (after game time)",
-                  revealHours,
-                  revealMinutes,
-                  setRevealHours,
-                  setRevealMinutes
-                )}
+                <div className="space-y-2">
+                  <h4 className="text-white text-sm">
+                    Reveal Time (after game time)
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs text-gray-400 mb-1 block">
+                        Hours
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        max={23}
+                        value={revealHours}
+                        onChange={(e) => setRevealHours(Number(e.target.value))}
+                        className="w-full px-2 py-1 rounded bg-[#170A2C] text-white border border-gray-700"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-400 mb-1 block">
+                        Minutes
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        max={59}
+                        value={revealMinutes}
+                        onChange={(e) =>
+                          setRevealMinutes(Number(e.target.value))
+                        }
+                        className="w-full px-2 py-1 rounded bg-[#170A2C] text-white border border-gray-700"
+                      />
+                    </div>
+                  </div>
+                </div>
 
                 {/* Buffer Time (after game time) */}
-                {renderTimeSelectors(
-                  "Buffer Time (after game time)",
-                  bufferHours,
-                  bufferMinutes,
-                  setBufferHours,
-                  setBufferMinutes
-                )}
+                <div className="space-y-2">
+                  <h4 className="text-white text-sm">
+                    Buffer Time (after game time)
+                  </h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="text-xs text-gray-400 mb-1 block">
+                        Hours
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        max={23}
+                        value={bufferHours}
+                        onChange={(e) => setBufferHours(Number(e.target.value))}
+                        className="w-full px-2 py-1 rounded bg-[#170A2C] text-white border border-gray-700"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-gray-400 mb-1 block">
+                        Minutes
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        max={59}
+                        value={bufferMinutes}
+                        onChange={(e) =>
+                          setBufferMinutes(Number(e.target.value))
+                        }
+                        className="w-full px-2 py-1 rounded bg-[#170A2C] text-white border border-gray-700"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
