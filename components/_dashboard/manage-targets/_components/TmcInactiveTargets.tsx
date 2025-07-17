@@ -170,13 +170,13 @@ const TmcInactiveTargets = () => {
     mutate(id);
   };
 
-  // Handler for Reset Queue button
+  //! Handler for Reset Queue button
   const handleResetQueue = async () => {
     setResetLoading(true);
     try {
       const resetRes = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/reset-queue`,
-        { method: "POST" }
+        { method: "PATCH" }
       );
       const resetData = await resetRes.json();
       if (!resetData?.status)
@@ -184,7 +184,7 @@ const TmcInactiveTargets = () => {
 
       const stopRes = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/stop-queue`,
-        { method: "POST" }
+        { method: "PATCH" }
       );
       const stopData = await stopRes.json();
       if (!stopData?.status)
@@ -200,6 +200,7 @@ const TmcInactiveTargets = () => {
       setResetLoading(false);
     }
   };
+
   return (
     <div>
       <div className="bg-[#c4a0ff17] p-6 rounded-lg">
