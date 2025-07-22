@@ -14,7 +14,6 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-// import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import moment from "moment";
@@ -66,23 +65,6 @@ interface ImageData {
   alt: string;
 }
 
-// interface SubCategory {
-//   name: string;
-//   images: {
-//     _id: string;
-//     imageUrl: string;
-//   }[];
-// }
-
-// interface Category {
-//   categoryName: string;
-//   subCategories: SubCategory[];
-// }
-
-// interface QueryData {
-//   data: Category[];
-// }
-
 type AllImagesResponse = {
   status: boolean;
   message: string;
@@ -130,9 +112,6 @@ export default function CreateTMCTargetPage() {
   const [bufferHours, setBufferHours] = useState<number>(0);
   const [bufferMinutes, setBufferMinutes] = useState<number>(0);
 
-  // Current timing mode
-  // const [timingMode, setTimingMode] = useState<"simple" | "advanced">("simple");
-
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
     setToken(storedToken);
@@ -152,7 +131,6 @@ export default function CreateTMCTargetPage() {
       queryKey: ["allImages"],
       queryFn: async () => {
         if (!token) throw new Error("No authentication token");
-
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/category/get-all-images`,
           {
@@ -179,7 +157,6 @@ export default function CreateTMCTargetPage() {
     queryKey: ["categories"],
     queryFn: async () => {
       if (!token) throw new Error("No authentication token");
-
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/category/get-category-and-subcategory-names`,
         {
@@ -212,7 +189,6 @@ export default function CreateTMCTargetPage() {
       if (!token) throw new Error("No authentication token");
       if (!selectedCategory || selectedCategory === "")
         return { status: true, message: "", data: [] };
-
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/category/get-subcategories/${selectedCategory}`,
         {
@@ -245,7 +221,6 @@ export default function CreateTMCTargetPage() {
       if (!token) throw new Error("No authentication token");
       if (!selectedCategory || !selectedSubcategory)
         return { status: true, message: "", data: [] };
-
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/category/get-subcategory-images/${selectedCategory}/${selectedSubcategory}`,
         {
@@ -280,11 +255,9 @@ export default function CreateTMCTargetPage() {
           body: JSON.stringify(payload),
         }
       );
-
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-
       return response.json();
     },
     onSuccess: () => {
@@ -335,15 +308,24 @@ export default function CreateTMCTargetPage() {
     }
   }, [allImagesData, selectedCategory, selectedSubcategory, subcategoryImages]);
 
-  // const visibleTargetImages = showMoreTargets
-  //   ? allImages
-  //   : allImages.slice(0, 15);
-  // const visibleControlImages = showMoreControls
-  //   ? allImages
-  //   : allImages.slice(0, 15);
+  // Filter control images to exclude the selected target image
+  const availableControlImages = useMemo(() => {
+    if (!allImagesData?.data) return [];
+
+    return allImagesData.data.filter((image) => {
+      // Exclude the selected target image from control images
+      return image.imageId !== selectedTargetImage;
+    });
+  }, [allImagesData?.data, selectedTargetImage]);
 
   const handleSelectTargetImage = (id: string) => {
     setSelectedTargetImage(id);
+
+    // If the selected target image was previously selected as a control image, remove it
+    if (selectedControlImages.includes(id)) {
+      setSelectedControlImages((prev) => prev.filter((imgId) => imgId !== id));
+      toast.info("Target image removed from control images selection.");
+    }
   };
 
   const handleSelectControlImage = (id: string) => {
@@ -352,6 +334,8 @@ export default function CreateTMCTargetPage() {
     } else {
       if (selectedControlImages.length < 5) {
         setSelectedControlImages((prev) => [...prev, id]);
+      } else {
+        toast.warning("You can select maximum 5 control images.");
       }
     }
   };
@@ -396,7 +380,6 @@ export default function CreateTMCTargetPage() {
 
       // Step 3: Update image status for all selected images
       console.log("Updating image status for selected images...");
-
       const updatePromises = imageUpdateRequests.map(async (imageData) => {
         if (!imageData) {
           throw new Error("Image data is missing");
@@ -411,7 +394,6 @@ export default function CreateTMCTargetPage() {
             },
           }
         );
-
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(
@@ -420,13 +402,13 @@ export default function CreateTMCTargetPage() {
             }`
           );
         }
-
         return response.json();
       });
 
       // Wait for all image status updates to complete
       await Promise.all(updatePromises);
       console.log("All image statuses updated successfully");
+
       // Step 4: Calculate durations in minutes
       // Game duration: total minutes from now
       const gameDurationMinutes =
@@ -463,7 +445,6 @@ export default function CreateTMCTargetPage() {
       createTMCTargetMutation.mutate(payload);
     } catch (error: unknown) {
       console.error("Error in TMC target creation process:", error);
-
       if (error instanceof Error && error.message.includes("update status")) {
         toast.error(`Image status update failed: ${error.message}`);
       } else {
@@ -473,56 +454,6 @@ export default function CreateTMCTargetPage() {
       }
     }
   };
-
-  // const renderTimeSelectors = (
-  //   label: string,
-  //   hoursValue: number,
-  //   minutesValue: number,
-  //   onHoursChange: (hours: number) => void,
-  //   onMinutesChange: (minutes: number) => void
-  // ) => (
-  //   <div className="space-y-2">
-  //     <h4 className="text-white text-sm">{label}</h4>
-  //     <div className="grid grid-cols-2 gap-2">
-  //       <div>
-  //         <label className="text-xs text-gray-400 mb-1 block">Hours</label>
-  //         <Select
-  //           value={hoursValue.toString()}
-  //           onValueChange={(value) => onHoursChange(Number.parseInt(value))}
-  //         >
-  //           <SelectTrigger className="bg-[#170A2C] border-gray-700 text-white">
-  //             <SelectValue placeholder="Hours" />
-  //           </SelectTrigger>
-  //           <SelectContent>
-  //             {Array.from({ length: 24 }).map((_, i) => (
-  //               <SelectItem key={i} value={i.toString()}>
-  //                 {i}
-  //               </SelectItem>
-  //             ))}
-  //           </SelectContent>
-  //         </Select>
-  //       </div>
-  //       <div>
-  //         <label className="text-xs text-gray-400 mb-1 block">Minutes</label>
-  //         <Select
-  //           value={minutesValue.toString()}
-  //           onValueChange={(value) => onMinutesChange(Number.parseInt(value))}
-  //         >
-  //           <SelectTrigger className="bg-[#170A2C] border-gray-700 text-white">
-  //             <SelectValue placeholder="Minutes" />
-  //           </SelectTrigger>
-  //           <SelectContent>
-  //             {Array.from({ length: 12 }).map((_, i) => (
-  //               <SelectItem key={i} value={(i * 5).toString()}>
-  //                 {i * 5}
-  //               </SelectItem>
-  //             ))}
-  //           </SelectContent>
-  //         </Select>
-  //       </div>
-  //     </div>
-  //   </div>
-  // );
 
   // Determine if we're loading images
   const isLoading =
@@ -654,7 +585,7 @@ export default function CreateTMCTargetPage() {
                     <div
                       key={image.imageId}
                       className={cn(
-                        "relative rounded-md  cursor-pointer border-2 border-transparent",
+                        "relative rounded-md cursor-pointer border-2 border-transparent",
                         selectedTargetImage === image.imageId &&
                           "border-[#8F37FF]"
                       )}
@@ -699,6 +630,11 @@ export default function CreateTMCTargetPage() {
             <div className="space-y-4">
               <h3 className="text-white text-lg">
                 Select Control Images (max 5):
+                {selectedTargetImage && (
+                  <span className="text-sm text-gray-400 ml-2">
+                    (Target image excluded from selection)
+                  </span>
+                )}
               </h3>
               {isLoading ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -715,21 +651,23 @@ export default function CreateTMCTargetPage() {
                     Error loading images. Please try again.
                   </p>
                 </div>
-              ) : allImages?.length === 0 ? (
+              ) : availableControlImages?.length === 0 ? (
                 <div className="p-4 bg-[#170A2C]/30 border border-gray-700 rounded-md text-center">
                   <p className="text-gray-400">
-                    {selectedCategory && selectedSubcategory
+                    {selectedTargetImage
+                      ? "No other images available for control selection"
+                      : selectedCategory && selectedSubcategory
                       ? "No images found for this subcategory"
                       : "No images available"}
                   </p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                  {allImagesData?.data.map((image) => (
+                  {availableControlImages.map((image) => (
                     <div
                       key={image.imageId}
                       className={cn(
-                        "relative rounded-md  cursor-pointer border-2 border-transparent",
+                        "relative rounded-md cursor-pointer border-2 border-transparent",
                         selectedControlImages.includes(image.imageId) &&
                           "border-[#8F37FF]"
                       )}
@@ -763,7 +701,7 @@ export default function CreateTMCTargetPage() {
                   variant="outline"
                   className="bg-[#8F37FF] text-white hover:bg-[#8F37FF]/80"
                   onClick={() => setShowMoreControls(!showMoreControls)}
-                  disabled={allImages.length <= 15}
+                  disabled={availableControlImages.length <= 15}
                 >
                   {showMoreControls ? "Show Less" : "See More"}
                 </Button>
@@ -774,11 +712,11 @@ export default function CreateTMCTargetPage() {
 
             {/* Time Settings */}
             <div className="space-y-4">
-              <h3 className="text-white text-lg">Time Settings</h3>
+              <h3 className="text-white text-lg font-bold">Time Settings</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Game Time */}
                 <div className="space-y-2">
-                  <h4 className="text-white text-sm">Game Time (From Now)</h4>
+                  <h4 className="text-white text-sm">Game Duration</h4>
                   <div className="grid grid-cols-3 gap-2">
                     <div>
                       <label className="text-xs text-gray-400 mb-1 block">
@@ -829,9 +767,7 @@ export default function CreateTMCTargetPage() {
 
                 {/* Reveal Time (after game time) */}
                 <div className="space-y-2">
-                  <h4 className="text-white text-sm">
-                    Reveal Time (after game time)
-                  </h4>
+                  <h4 className="text-white text-sm">Reveal Time</h4>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="text-xs text-gray-400 mb-1 block">
@@ -866,9 +802,7 @@ export default function CreateTMCTargetPage() {
 
                 {/* Buffer Time (after game time) */}
                 <div className="space-y-2">
-                  <h4 className="text-white text-sm">
-                    Buffer Time (after game time)
-                  </h4>
+                  <h4 className="text-white text-sm">Buffer Time</h4>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
                       <label className="text-xs text-gray-400 mb-1 block">

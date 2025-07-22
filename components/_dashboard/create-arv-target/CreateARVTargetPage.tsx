@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -89,7 +88,6 @@ type FormImage = {
 };
 
 export default function CreateARVTargetPage() {
-  // ...existing code...
   const [eventName, setEventName] = useState("");
   const [eventDescription, setEventDescription] = useState("");
   const [controlImage, setControlImage] = useState("");
@@ -99,7 +97,6 @@ export default function CreateARVTargetPage() {
     { id: 2, description: "", url: "" },
     { id: 3, description: "", url: "" },
   ]);
-
   const [categories, setCategories] = useState<CategoryData[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>("");
   const [subcategories, setSubcategories] = useState<string[]>([]);
@@ -110,42 +107,52 @@ export default function CreateARVTargetPage() {
   const [pendingImage, setPendingImage] = useState<ImageOption | null>(null);
   const [pendingEmptySlot, setPendingEmptySlot] = useState(-1);
 
-  // New state variables for time inputs (single declaration block)
-  // Remove duplicate declarations below main block
-  const [gameDays, setGameDays] = useState(0);
-  const [gameHours, setGameHours] = useState(0);
-  const [gameMinutes, setGameMinutes] = useState(0);
-  const [revealDays, setRevealDays] = useState(0);
-  const [revealHours, setRevealHours] = useState(0);
-  const [revealMinutes, setRevealMinutes] = useState(0);
-  const [outcomeDays, setOutcomeDays] = useState(0);
-  const [outcomeHours, setOutcomeHours] = useState(0);
-  const [outcomeMinutes, setOutcomeMinutes] = useState(0);
-  const [bufferDays, setBufferDays] = useState(0);
-  const [bufferHours, setBufferHours] = useState(0);
-  const [bufferMinutes, setBufferMinutes] = useState(0);
+  // Updated state variables for ISO time inputs
+  const [gameTime, setGameTime] = useState("");
+  const [revealTime, setRevealTime] = useState("");
+  const [outcomeTime, setOutcomeTime] = useState("");
 
-  // Helper to get ISO time string from days/hours/minutes
-  // const getFutureISOTime = (
-  //   days: number,
-  //   hours: number,
-  //   minutes: number
-  // ): string => {
-  //   const now = moment();
-  //   return now
-  //     .add(days, "days")
-  //     .add(hours, "hours")
-  //     .add(minutes, "minutes")
-  //     .toISOString();
-  // };
+  const [timeOrderError, setTimeOrderError] = useState<string | null>(null);
 
-  // Submit handler (single, correct version)
-  // (REMOVED DUPLICATE handleSubmit)
+  // Helper to get default datetime-local value (current time + offset)
+  const getDefaultDateTime = (hoursOffset = 1): string => {
+    const now = new Date();
+    now.setHours(now.getHours() + hoursOffset);
+    return now.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:MM
+  };
 
-  // REMOVE DUPLICATE STATE AND FUNCTION DECLARATIONS BELOW
-  // ...existing code...
+  // Helper to validate time order
+  const validateTimeOrder = (): string | null => {
+    if (!gameTime || !revealTime || !outcomeTime) {
+      return null; // Don't validate if any time is missing
+    }
 
-  // ...existing code...
+    const game = new Date(gameTime);
+    const reveal = new Date(revealTime);
+    const outcome = new Date(outcomeTime);
+
+    if (game >= reveal) {
+      return "Game time must be before reveal time";
+    }
+    if (reveal >= outcome) {
+      return "Reveal time must be before outcome time";
+    }
+
+    return null; // All times are in correct order
+  };
+
+  // Initialize with default values
+  useEffect(() => {
+    if (!gameTime) setGameTime(getDefaultDateTime(1));
+    if (!revealTime) setRevealTime(getDefaultDateTime(2));
+    if (!outcomeTime) setOutcomeTime(getDefaultDateTime(3));
+  }, [gameTime, revealTime, outcomeTime]);
+
+  // Validate time order whenever times change
+  useEffect(() => {
+    const error = validateTimeOrder();
+    setTimeOrderError(error);
+  }, [gameTime, revealTime, outcomeTime]);
 
   useEffect(() => {
     const storedToken = localStorage.getItem("token");
@@ -174,17 +181,28 @@ export default function CreateARVTargetPage() {
     // Validate required fields
     if (!eventName) return alert("Event name is required");
     if (!eventDescription) return alert("Event description is required");
-    if (!revealDays && !revealHours && !revealMinutes)
-      return alert("Reveal time is required");
-    if (!outcomeDays && !outcomeHours && !outcomeMinutes)
-      return alert("Outcome time is required");
-    if (!bufferDays && !bufferHours && !bufferMinutes)
-      return alert("Buffer time is required");
-    if (!gameDays && !gameHours && !gameMinutes)
-      return alert("Game time is required");
+    if (!gameTime) return alert("Game time is required");
+    if (!revealTime) return alert("Reveal time is required");
+    if (!outcomeTime) return alert("Outcome time is required");
     if (!controlImage) return alert("Control image is required");
     if (!images[0].url || !images[1].url || !images[2].url)
       return toast.warning("All three target images are required");
+
+    // Validate that times are in the future
+    const now = new Date();
+    const gameDateTime = new Date(gameTime);
+    const revealDateTime = new Date(revealTime);
+    const outcomeDateTime = new Date(outcomeTime);
+
+    if (gameDateTime <= now) return alert("Game time must be in the future");
+    if (revealDateTime <= now)
+      return alert("Reveal time must be in the future");
+    if (outcomeDateTime <= now)
+      return alert("Outcome time must be in the future");
+
+    // Validate time order
+    const timeOrderError = validateTimeOrder();
+    if (timeOrderError) return alert(timeOrderError);
 
     try {
       // Step 1: Collect all image URLs that need status updates
@@ -225,7 +243,6 @@ export default function CreateARVTargetPage() {
 
       // Step 3: Update image status for all selected images
       console.log("Updating image status for selected images...");
-
       const updatePromises = imageUpdateRequests.map(async (imageData) => {
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/category/update-image-status/${imageData.categoryId}/${imageData.imageId}`,
@@ -246,7 +263,6 @@ export default function CreateARVTargetPage() {
             }`
           );
         }
-
         return response.json();
       });
 
@@ -254,22 +270,13 @@ export default function CreateARVTargetPage() {
       await Promise.all(updatePromises);
       console.log("All image statuses updated successfully");
 
-      // Step 4: Create the game payload (send durations as minutes strings)
-      const gameTimeMinutes = gameDays * 24 * 60 + gameHours * 60 + gameMinutes;
-      const revealTimeMinutes =
-        revealDays * 24 * 60 + revealHours * 60 + revealMinutes;
-      const outcomeTimeMinutes =
-        outcomeDays * 24 * 60 + outcomeHours * 60 + outcomeMinutes;
-      const bufferTimeMinutes =
-        bufferDays * 24 * 60 + bufferHours * 60 + bufferMinutes;
-
+      // Step 4: Create the game payload (send ISO datetime strings)
       const payload = {
         eventName,
         eventDescription,
-        gameDuration: gameTimeMinutes.toString(),
-        revealDuration: revealTimeMinutes.toString(),
-        outcomeDuration: outcomeTimeMinutes.toString(),
-        bufferDuration: bufferTimeMinutes.toString(),
+        gameTime: gameTime, // ISO string
+        revealTime: revealTime, // ISO string
+        outcomeTime: outcomeTime, // ISO string
         controlImage,
         image1: { url: images[0].url, description: images[0].description },
         image2: { url: images[1].url, description: images[1].description },
@@ -291,7 +298,6 @@ export default function CreateARVTargetPage() {
       );
 
       const data = await res.json();
-
       if (res.ok) {
         toast.success(
           "ARV Target created successfully! All image statuses have been updated."
@@ -305,7 +311,6 @@ export default function CreateARVTargetPage() {
       }
     } catch (error: unknown) {
       console.error("Error in game creation process:", error);
-
       if (error instanceof Error && error.message.includes("update status")) {
         alert(`Image status update failed: ${error.message}`);
       } else {
@@ -324,7 +329,6 @@ export default function CreateARVTargetPage() {
     queryKey: ["imageAll"],
     queryFn: async () => {
       if (!token) throw new Error("No authentication token");
-
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/category/get-all-images`,
         {
@@ -348,7 +352,6 @@ export default function CreateARVTargetPage() {
     queryKey: ["categories"],
     queryFn: async () => {
       if (!token) throw new Error("No authentication token");
-
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/category/get-category-and-subcategory-names`,
         {
@@ -380,7 +383,6 @@ export default function CreateARVTargetPage() {
       if (!token) throw new Error("No authentication token");
       if (!selectedCategory || selectedCategory === "")
         return { status: true, message: "", data: [] };
-
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/category/get-subcategories/${selectedCategory}`,
         {
@@ -413,7 +415,6 @@ export default function CreateARVTargetPage() {
       if (!token) throw new Error("No authentication token");
       if (!selectedCategory || !selectedSubcategory)
         return { status: true, message: "", data: [] };
-
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/category/get-subcategory-images/${selectedCategory}/${selectedSubcategory}`,
         {
@@ -484,7 +485,6 @@ export default function CreateARVTargetPage() {
     } else {
       // Find the first empty main image slot
       const emptySlotIndex = images.findIndex((i) => i.url === "");
-
       if (emptySlotIndex !== -1 && !controlImage) {
         // If we have an empty slot and no control image yet, show modal
         setPendingImage(img);
@@ -560,133 +560,85 @@ export default function CreateARVTargetPage() {
               />
             </div>
 
-            {/* Time Settings - Number Pickers */}
+            {/* Time Settings - ISO DateTime Inputs */}
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-white mb-2">
+              <h3 className="text-lg font-semibold text-white mb-4">
                 Schedule Times
               </h3>
-              <div className="mb-4">
-                <label className="block text-white font-semibold mb-2">
-                  Game Time
-                </label>
-                <div className="flex gap-2">
-                  <Input
-                    type="number"
-                    min={0}
-                    value={gameDays}
-                    onChange={(e) => setGameDays(Number(e.target.value))}
-                    placeholder="Days"
-                    className="bg-[#170A2C] border-gray-700 text-white"
-                  />
-                  <Input
-                    type="number"
-                    min={0}
-                    value={gameHours}
-                    onChange={(e) => setGameHours(Number(e.target.value))}
-                    placeholder="Hours"
-                    className="bg-[#170A2C] border-gray-700 text-white"
-                  />
-                  <Input
-                    type="number"
-                    min={0}
-                    value={gameMinutes}
-                    onChange={(e) => setGameMinutes(Number(e.target.value))}
-                    placeholder="Minutes"
-                    className="bg-[#170A2C] border-gray-700 text-white"
-                  />
+              {timeOrderError && (
+                <div className="p-3 bg-red-900/20 border border-red-800 rounded-md">
+                  <p className="text-red-400 text-sm">{timeOrderError}</p>
                 </div>
-              </div>
-              <div className="mb-4">
-                <label className="block text-white font-semibold mb-2">
-                  Reveal Time
-                </label>
-                <div className="flex gap-2">
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="block text-white font-semibold">
+                    Game Time
+                  </label>
                   <Input
-                    type="number"
-                    min={0}
-                    value={revealDays}
-                    onChange={(e) => setRevealDays(Number(e.target.value))}
-                    placeholder="Days"
+                    type="datetime-local"
+                    value={gameTime}
+                    onChange={(e) => setGameTime(e.target.value)}
                     className="bg-[#170A2C] border-gray-700 text-white"
+                    min={new Date().toISOString().slice(0, 16)}
                   />
-                  <Input
-                    type="number"
-                    min={0}
-                    value={revealHours}
-                    onChange={(e) => setRevealHours(Number(e.target.value))}
-                    placeholder="Hours"
-                    className="bg-[#170A2C] border-gray-700 text-white"
-                  />
-                  <Input
-                    type="number"
-                    min={0}
-                    value={revealMinutes}
-                    onChange={(e) => setRevealMinutes(Number(e.target.value))}
-                    placeholder="Minutes"
-                    className="bg-[#170A2C] border-gray-700 text-white"
-                  />
+                  {gameTime && (
+                    <p className="text-xs text-gray-400">
+                      {moment(gameTime).format("MMMM Do YYYY, h:mm A")} (
+                      {moment(gameTime).fromNow()})
+                    </p>
+                  )}
                 </div>
-              </div>
-              <div className="mb-4">
-                <label className="block text-white font-semibold mb-2">
-                  Outcome Time
-                </label>
-                <div className="flex gap-2">
+
+                <div className="space-y-2">
+                  <label className="block text-white font-semibold">
+                    Reveal Time
+                  </label>
                   <Input
-                    type="number"
-                    min={0}
-                    value={outcomeDays}
-                    onChange={(e) => setOutcomeDays(Number(e.target.value))}
-                    placeholder="Days"
+                    type="datetime-local"
+                    value={revealTime}
+                    onChange={(e) => setRevealTime(e.target.value)}
                     className="bg-[#170A2C] border-gray-700 text-white"
+                    min={new Date().toISOString().slice(0, 16)}
                   />
-                  <Input
-                    type="number"
-                    min={0}
-                    value={outcomeHours}
-                    onChange={(e) => setOutcomeHours(Number(e.target.value))}
-                    placeholder="Hours"
-                    className="bg-[#170A2C] border-gray-700 text-white"
-                  />
-                  <Input
-                    type="number"
-                    min={0}
-                    value={outcomeMinutes}
-                    onChange={(e) => setOutcomeMinutes(Number(e.target.value))}
-                    placeholder="Minutes"
-                    className="bg-[#170A2C] border-gray-700 text-white"
-                  />
+                  {revealTime && (
+                    <p className="text-xs text-gray-400">
+                      {moment(revealTime).format("MMMM Do YYYY, h:mm A")} (
+                      {moment(revealTime).fromNow()})
+                      {gameTime &&
+                        new Date(revealTime) <= new Date(gameTime) && (
+                          <span className="text-red-400 block">
+                            ⚠ Must be after game time
+                          </span>
+                        )}
+                    </p>
+                  )}
                 </div>
-              </div>
-              <div className="mb-4">
-                <label className="block text-white font-semibold mb-2">
-                  Buffer Time
-                </label>
-                <div className="flex gap-2">
+
+                <div className="space-y-2">
+                  <label className="block text-white font-semibold">
+                    Outcome Time
+                  </label>
                   <Input
-                    type="number"
-                    min={0}
-                    value={bufferDays}
-                    onChange={(e) => setBufferDays(Number(e.target.value))}
-                    placeholder="Days"
+                    type="datetime-local"
+                    value={outcomeTime}
+                    onChange={(e) => setOutcomeTime(e.target.value)}
                     className="bg-[#170A2C] border-gray-700 text-white"
+                    min={new Date().toISOString().slice(0, 16)}
                   />
-                  <Input
-                    type="number"
-                    min={0}
-                    value={bufferHours}
-                    onChange={(e) => setBufferHours(Number(e.target.value))}
-                    placeholder="Hours"
-                    className="bg-[#170A2C] border-gray-700 text-white"
-                  />
-                  <Input
-                    type="number"
-                    min={0}
-                    value={bufferMinutes}
-                    onChange={(e) => setBufferMinutes(Number(e.target.value))}
-                    placeholder="Minutes"
-                    className="bg-[#170A2C] border-gray-700 text-white"
-                  />
+                  {outcomeTime && (
+                    <p className="text-xs text-gray-400">
+                      {moment(outcomeTime).format("MMMM Do YYYY, h:mm A")} (
+                      {moment(outcomeTime).fromNow()})
+                      {revealTime &&
+                        new Date(outcomeTime) <= new Date(revealTime) && (
+                          <span className="text-red-400 block">
+                            ⚠ Must be after reveal time
+                          </span>
+                        )}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -869,13 +821,11 @@ export default function CreateARVTargetPage() {
                               {img.subcategoryName}
                             </p>
                           </div>
-
                           {isMainImage && (
                             <div className="absolute top-2 left-2 bg-purple-500 text-white text-xs font-bold px-2 py-1 rounded-full">
                               Image {mainImageIndex + 1}
                             </div>
                           )}
-
                           {isControlImage && (
                             <div className="absolute top-2 left-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full">
                               Control
@@ -891,7 +841,6 @@ export default function CreateARVTargetPage() {
                     <h3 className="text-lg font-medium text-white border-b border-gray-700 pb-2">
                       Selected Images
                     </h3>
-
                     <div className="grid md:grid-cols-3 gap-6">
                       {images.map((image, index) => (
                         <div key={index} className="space-y-3">
@@ -918,7 +867,6 @@ export default function CreateARVTargetPage() {
                               </span>
                             )}
                           </div>
-
                           {image.url ? (
                             <div className="relative border border-gray-700 rounded-md overflow-hidden bg-[#170A2C]/30">
                               <Image
@@ -936,7 +884,6 @@ export default function CreateARVTargetPage() {
                               </p>
                             </div>
                           )}
-
                           <Textarea
                             placeholder={`Write image-${index + 1} description`}
                             className="bg-[#170A2C] border-gray-700 text-white h-24"
@@ -971,7 +918,6 @@ export default function CreateARVTargetPage() {
                           </span>
                         )}
                       </div>
-
                       {controlImage ? (
                         <div className="relative border border-gray-700 rounded-md overflow-hidden bg-[#170A2C]/30">
                           <Image
@@ -1001,6 +947,7 @@ export default function CreateARVTargetPage() {
                 className="btn h-[59px]"
                 onClick={handleSubmit}
                 type="button"
+                disabled={!!timeOrderError}
               >
                 Create Target
               </Button>
@@ -1011,9 +958,9 @@ export default function CreateARVTargetPage() {
 
       {/* Interactive Modal */}
       {showModal && pendingImage && (
-        <div className="absolute  bg-black/70 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200 top-0 bottom-0 left-0 right-0">
+        <div className="absolute bg-black/70 flex items-center justify-center z-50 p-4 animate-in fade-in duration-200 top-0 bottom-0 left-0 right-0">
           <div
-            className="bg-[#170A2C] border border-gray-700 rounded-lg max-w-md w-full ] overflow-auto shadow-xl animate-in zoom-in-90 duration-300"
+            className="bg-[#170A2C] border border-gray-700 rounded-lg max-w-md w-full overflow-auto shadow-xl animate-in zoom-in-90 duration-300"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-4 border-b border-gray-700 flex justify-between items-center">
@@ -1028,7 +975,6 @@ export default function CreateARVTargetPage() {
                 <X className="h-5 w-5" />
               </button>
             </div>
-
             <div className="p-4">
               <div className="aspect-video relative rounded-md overflow-hidden mb-4">
                 <Image
@@ -1039,11 +985,9 @@ export default function CreateARVTargetPage() {
                   className="w-full h-full object-contain bg-black/30"
                 />
               </div>
-
               <p className="text-white mb-6">
                 How would you like to use this image?
               </p>
-
               <div className="grid grid-cols-2 gap-4">
                 <div
                   onClick={() => handleModalSelection(true)}
@@ -1056,7 +1000,6 @@ export default function CreateARVTargetPage() {
                     Use as main image for the target
                   </p>
                 </div>
-
                 <div
                   onClick={() => handleModalSelection(false)}
                   className="border-2 border-yellow-500 rounded-lg p-4 text-center cursor-pointer hover:bg-yellow-500/20 transition-colors"
@@ -1068,7 +1011,6 @@ export default function CreateARVTargetPage() {
                 </div>
               </div>
             </div>
-
             <div className="p-4 border-t border-gray-700 flex justify-end gap-2">
               <Button
                 variant="outline"
