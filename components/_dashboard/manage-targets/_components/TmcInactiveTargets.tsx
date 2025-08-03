@@ -14,7 +14,7 @@ import { toast } from "sonner";
 
 const TmcInactiveTargets = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [resetLoading, setResetLoading] = useState(false);
+  // const [resetLoading, setResetLoading] = useState(false);
   const queryClient = useQueryClient();
 
   const { data, isLoading, isError, error } = useQuery<TMCTargetsResponse>({
@@ -171,35 +171,35 @@ const TmcInactiveTargets = () => {
   };
 
   //! Handler for Reset Queue button
-  const handleResetQueue = async () => {
-    setResetLoading(true);
-    try {
-      const resetRes = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/reset-queue`,
-        { method: "PATCH" }
-      );
-      const resetData = await resetRes.json();
-      if (!resetData?.status)
-        throw new Error(resetData?.message || "Failed to reset queue");
+  // const handleResetQueue = async () => {
+  //   setResetLoading(true);
+  //   try {
+  //     // const resetRes = await fetch(
+  //     //   `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/reset-queue`,
+  //     //   { method: "PATCH" }
+  //     // );
+  //     // const resetData = await resetRes.json();
+  //     // if (!resetData?.status)
+  //     //   throw new Error(resetData?.message || "Failed to reset queue");
 
-      const stopRes = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/stop-queue`,
-        { method: "PATCH" }
-      );
-      const stopData = await stopRes.json();
-      if (!stopData?.status)
-        throw new Error(stopData?.message || "Failed to stop queue");
+  //     const stopRes = await fetch(
+  //       `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/stop-queue`,
+  //       { method: "PATCH" }
+  //     );
+  //     const stopData = await stopRes.json();
+  //     if (!stopData?.status)
+  //       throw new Error(stopData?.message || "Failed to stop queue");
 
-      toast.success("Queue reset successfully!");
-      queryClient.invalidateQueries({
-        queryKey: ["all-un-queued-tmc-targets"],
-      });
-    } catch (err: any) {
-      toast.error(err.message || "Error resetting queue");
-    } finally {
-      setResetLoading(false);
-    }
-  };
+  //     toast.success("Queue reset successfully!");
+  //     queryClient.invalidateQueries({
+  //       queryKey: ["all-un-queued-tmc-targets"],
+  //     });
+  //   } catch (err: any) {
+  //     toast.error(err.message || "Error resetting queue");
+  //   } finally {
+  //     setResetLoading(false);
+  //   }
+  // };
 
   return (
     <div>
@@ -211,13 +211,13 @@ const TmcInactiveTargets = () => {
               Inactive Targets
             </h2>
             <div className="flex gap-4">
-              <button
+              {/* <button
                 className="btn-outline text-base font-semibold text-white leading-[120%] py-[20px] px-[87px] rounded-tr-[24px] rounded-bl-[24px] disabled:opacity-60"
                 onClick={handleResetQueue}
                 disabled={resetLoading}
               >
                 {resetLoading ? "Resetting..." : "Reset Queue"}
-              </button>
+              </button> */}
               <Link href="/manage-targets/tmc-queue">
                 <button className="bg-gradient-to-r from-[#8F37FF] to-[#2D17FF] text-base font-semibold text-white leading-[120%] py-[12px] px-[47px] rounded-tr-[24px] rounded-bl-[24px] ">
                   See Queue

@@ -4,17 +4,16 @@ import ErrorContainer from "@/components/shared/ErrorContainer/ErrorContainer";
 import TableSkeleton from "@/components/shared/TableSkeleton/TableSkeleton";
 import { ARVActiveTargetResponse } from "@/components/types/ManageActiveTarget";
 import { ARVTargetsResponse } from "@/components/types/TargetsQueueLists";
+import { Badge } from "@/components/ui/badge";
 import FivosPagination from "@/components/ui/FivosPagination";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { ChevronRight } from "lucide-react";
 import moment from "moment";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-import { toast } from "react-toastify";
 
 const ArvTargetsQueueLists = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const queryClient = useQueryClient();
 
   // all-queued-arv-targets api
   const { data, isLoading, isError, error } = useQuery<ARVTargetsResponse>({
@@ -75,24 +74,24 @@ const ArvTargetsQueueLists = () => {
   // });
 
   // Check for exceeded buffer times when component loads
-  useEffect(() => {
-    if (arvActiveTarget?.data) {
-      const bufferTime = moment(arvActiveTarget.data.bufferTime);
-      const now = moment();
+  // useEffect(() => {
+  //   if (arvActiveTarget?.data) {
+  //     const bufferTime = moment(arvActiveTarget.data.bufferTime);
+  //     const now = moment();
 
-      if (now.isSameOrAfter(bufferTime)) {
-        console.log(
-          "Found active game with exceeded buffer time, processing..."
-        );
-        // 1. Mark current target as complete
-        // arvMakeComplete();
-        // 2. Mark current target as inactive
-        // updateArvTargetMakeInActive();
-        // 3. Start the next game if available
-        // handleARVMakeActive();
-      }
-    }
-  }, [arvActiveTarget?.data?.bufferTime]);
+  //     if (now.isSameOrAfter(bufferTime)) {
+  //       console.log(
+  //         "Found active game with exceeded buffer time, processing..."
+  //       );
+  //       // 1. Mark current target as complete
+  //       // arvMakeComplete();
+  //       // 2. Mark current target as inactive
+  //       // updateArvTargetMakeInActive();
+  //       // 3. Start the next game if available
+  //       // handleARVMakeActive();
+  //     }
+  //   }
+  // }, [arvActiveTarget?.data?.bufferTime]);
 
   const now = moment();
   const isBufferTime = now.isSameOrAfter(arvActiveTarget?.data?.bufferTime);
@@ -121,63 +120,63 @@ const ArvTargetsQueueLists = () => {
     // return () => clearInterval(interval);
   }, [isBufferTime]);
 
-  const handleARVMakeActive = async () => {
-    try {
-      // First check if there's any active or partially active game
-      // const activeGameCheck = await fetch(
-      //   `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/get-activeARVTarget`
-      // ).then((res) => res.json());
+  // const handleARVMakeActive = async () => {
+  //   try {
+  //     // First check if there's any active or partially active game
+  //     // const activeGameCheck = await fetch(
+  //     //   `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/get-activeARVTarget`
+  //     // ).then((res) => res.json());
 
-      // If there's an active or partially active game, show error
-      // if (activeGameCheck?.data === null) {
-      //   toast.error(
-      //     "There's already an active game. Please wait for it to complete."
-      //   );
-      //   return;
-      // }
+  //     // If there's an active or partially active game, show error
+  //     // if (activeGameCheck?.data === null) {
+  //     //   toast.error(
+  //     //     "There's already an active game. Please wait for it to complete."
+  //     //   );
+  //     //   return;
+  //     // }
 
-      // If no active game, proceed with starting next game
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/update-startNextGame`,
-        { method: "PATCH" }
-      );
-      const data = await res.json();
+  //     // If no active game, proceed with starting next game
+  //     const res = await fetch(
+  //       `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/update-startNextGame`,
+  //       { method: "PATCH" }
+  //     );
+  //     const data = await res.json();
 
-      if (!data?.status) {
-        toast.error(data?.message || "Something went wrong");
-        return;
-      }
+  //     if (!data?.status) {
+  //       toast.error(data?.message || "Something went wrong");
+  //       return;
+  //     }
 
-      toast.success(data?.message || "ARV Target is active now");
-      queryClient.invalidateQueries({ queryKey: ["all-queued-arv-targets"] });
-      queryClient.invalidateQueries({ queryKey: ["arvActiveTargets"] });
-    } catch (error) {
-      console.error("Error activating next game:", error);
-      toast.error("Failed to activate next game");
-    }
-  };
+  //     toast.success(data?.message || "ARV Target is active now");
+  //     queryClient.invalidateQueries({ queryKey: ["all-queued-arv-targets"] });
+  //     queryClient.invalidateQueries({ queryKey: ["arvActiveTargets"] });
+  //   } catch (error) {
+  //     console.error("Error activating next game:", error);
+  //     toast.error("Failed to activate next game");
+  //   }
+  // };
 
   // remove-arv-from-queue api
-  const { mutate } = useMutation({
-    mutationKey: ["remove-arv-from-queue"],
-    mutationFn: (id: string) =>
-      fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/update-ARVTarget-removeFromQueue/${id}`,
-        { method: "PATCH" }
-      ).then((res) => res.json()),
-    onSuccess: (data) => {
-      if (!data?.status) {
-        toast.error(data?.message || "Something went wrong");
-        return;
-      }
-      toast.success(data?.message || "Removed from queue successfully");
-      queryClient.invalidateQueries({ queryKey: ["all-queued-arv-targets"] });
-    },
-  });
+  // const { mutate } = useMutation({
+  //   mutationKey: ["remove-arv-from-queue"],
+  //   mutationFn: (id: string) =>
+  //     fetch(
+  //       `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/update-ARVTarget-removeFromQueue/${id}`,
+  //       { method: "PATCH" }
+  //     ).then((res) => res.json()),
+  //   onSuccess: (data) => {
+  //     if (!data?.status) {
+  //       toast.error(data?.message || "Something went wrong");
+  //       return;
+  //     }
+  //     toast.success(data?.message || "Removed from queue successfully");
+  //     queryClient.invalidateQueries({ queryKey: ["all-queued-arv-targets"] });
+  //   },
+  // });
 
-  const handleArvRemoveFromQueue = (id: string) => {
-    mutate(id);
-  };
+  // const handleArvRemoveFromQueue = (id: string) => {
+  //   mutate(id);
+  // };
 
   let content;
   if (isLoading) {
@@ -200,7 +199,7 @@ const ArvTargetsQueueLists = () => {
   } else if (data && data?.data && data?.data?.length === 0) {
     content = (
       <div className="w-full flex gap-2 items-center justify-center py-10 font-bold text-[20px] text-[#b2b2b2]">
-        No ARV Target available in queue, please add ARV Target to queue!
+        No active ARV Target available, please create a new ARV Target.
       </div>
     );
   } else if (data && data?.data && data?.data?.length > 0) {
@@ -222,40 +221,59 @@ const ArvTargetsQueueLists = () => {
           {data.data.map((target, index) => (
             <ul
               key={index}
-              className="bg-white/10 shadow-[0px_20px_166.2px_4px_#580EB726] my-4 border border-[#C5C5C5] rounded-[12px] p-5 grid grid-cols-6"
+              className="bg-white/10  shadow-[0px_20px_166.2px_4px_#580EB726] my-4 border border-[#C5C5C5] rounded-[12px] p-5 grid grid-cols-6"
             >
               <li className="flex items-center justify-center text-white font-medium">
                 {target.code}
               </li>
+
               <li className="flex items-center justify-center text-white font-medium">
+                {target.eventName}
+              </li>
+
+              {/* <li className="flex items-center justify-center text-white font-medium">
                 <p className="text-center text-sm">
                   {target.eventDescription || "No description available"}
                 </p>
+              </li> */}
+              <li className="flex flex-col items-center justify-center text-white font-medium">
+                {/* <span>{target.revealDuration}</span> */}
+                <span>{moment(target.revealTime).format("HH:mm:ss")}</span>
               </li>
               <li className="flex flex-col items-center justify-center text-white font-medium">
-                <span>{target.revealDuration}</span>
-                {/* <span>{moment(target.revealTime).format("HH:mm:ss")}</span> */}
+                {/* <span>{target.revealDuration}</span> */}
+                <span>{moment(target.gameTime).format("HH:mm:ss")}</span>
               </li>
               <li className="flex flex-col items-center justify-center text-white font-medium">
-                <span>{target.revealDuration}</span>
-                {/* <span>{moment(target.gameTime).format("HH:mm:ss")}</span> */}
+                {/* <span>{target.revealDuration}</span> */}
+                <Badge className="bg-gradient">{target.status}</Badge>
               </li>
-              <li className="flex items-center justify-center">
+              {/* <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+                {target.resultImage !== "" ||
+                  (target.status === "inactive" && (
+                    <Button className="">
+                      <Link href={`/manage-targets/set-outcome/${target._id}`}>
+                        set outcome
+                      </Link>{" "}
+                    </Button>
+                  ))}
+              </li> */}
+              {/* <li className="flex items-center justify-center">
                 <button
                   onClick={() => handleARVMakeActive()}
                   className="text-xs font-semibold text-white py-[6px] px-[29px] rounded-[4px] bg-[#3C9682]"
                 >
                   Active
                 </button>
-              </li>
-              <li className="flex items-center justify-center">
+              </li> */}
+              {/* <li className="flex items-center justify-center">
                 <button
                   onClick={() => handleArvRemoveFromQueue(target._id)}
                   className="text-xs font-semibold text-white py-[6px] px-[10px] rounded-[4px] bg-[#D74727]"
                 >
                   Remove from queue
                 </button>
-              </li>
+              </li> */}
             </ul>
           ))}
         </div>
@@ -266,37 +284,44 @@ const ArvTargetsQueueLists = () => {
   return (
     <div>
       <div className="bg-[#c4a0ff17] p-6 rounded-lg">
-        <div className="w-full flex items-center justify-end pb-5">
-          <Link href="/manage-targets">
+        <div className="w-full flex items-center justify-between pb-5">
+          <h3 className="rounded-t-[20px] text-[24px] lg:text-[28px] text-white font-semibold p-5 mb-[30px]">
+            Inactive ARV Targets
+          </h3>
+          <Link href="/manage-targets/all-arv-targets">
             <button className="flex items-center gap-3 bg-gradient-to-r from-[#8F37FF] to-[#2D17FF] text-base font-semibold text-white py-[15px] px-[40px] rounded-tr-[24px] rounded-bl-[24px] ">
-              <ChevronLeft /> Manage Targets
+              All Targets <ChevronRight />
             </button>
           </Link>
-        </div>
-        <div>
-          <h3 className="bg-gradient-to-r from-[#8F37FF] to-[#2D17FF] rounded-t-[20px] text-[24px] lg:text-[28px] text-white font-semibold p-5 mb-[30px]">
-            ARV Targets Queue Lists
-          </h3>
         </div>
         <ul className="bg-white py-[20px] grid grid-cols-6">
           <li className="flex justify-center text-[#444444] font-medium">
             Code
           </li>
           <li className="flex justify-center text-[#444444] font-medium">
-            Description
+            Event Name
           </li>
+          {/* <li className="flex justify-center text-[#444444] font-medium">
+            Description
+          </li> */}
           <li className="flex justify-center text-[#444444] font-medium">
             Reveal Time
           </li>
           <li className="flex justify-center text-[#444444] font-medium">
             Game Time
-          </li>
+          </li>{" "}
           <li className="flex justify-center text-[#444444] font-medium">
+            Status
+          </li>
+          {/* <li className="flex justify-center text-[#444444] font-medium">
+            Outcome
+          </li> */}
+          {/* <li className="flex justify-center text-[#444444] font-medium">
             Make Active
-          </li>
-          <li className="flex justify-center text-[#444444] font-medium">
+          </li> */}
+          {/* <li className="flex justify-center text-[#444444] font-medium">
             Remove From Queue
-          </li>
+          </li> */}
         </ul>
         {content}
         {data && data?.pagination?.totalPages > 1 && (

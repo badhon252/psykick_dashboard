@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 interface CountdownTimerProps {
-  endTime: Date;
+  endTime: Date | string; // Now accepts both Date objects and ISO strings
   onComplete?: () => void;
   showSetOutcomeButton?: boolean;
   targetId?: string;
@@ -27,10 +27,41 @@ export function CountdownTimer({
     seconds: 0,
   });
   const [isCompleted, setIsCompleted] = useState(false);
+  const [parsedEndTime, setParsedEndTime] = useState<Date | null>(null);
+
+  // Parse the endTime prop into a Date object
+  useEffect(() => {
+    try {
+      let date: Date;
+
+      if (endTime instanceof Date) {
+        // If it's already a Date object, use it directly
+        date = endTime;
+      } else if (typeof endTime === "string") {
+        // If it's a string, parse it as ISO format
+        date = new Date(endTime);
+
+        // Check if the parsed date is valid
+        if (isNaN(date.getTime())) {
+          console.error("Invalid date string provided:", endTime);
+          return;
+        }
+      } else {
+        console.error("Invalid endTime type provided:", typeof endTime);
+        return;
+      }
+
+      setParsedEndTime(date);
+    } catch (error) {
+      console.error("Error parsing endTime:", error);
+    }
+  }, [endTime]);
 
   useEffect(() => {
+    if (!parsedEndTime) return;
+
     const calculateTimeLeft = () => {
-      const difference = endTime.getTime() - new Date().getTime();
+      const difference = parsedEndTime.getTime() - new Date().getTime();
 
       if (difference <= 0) {
         setTimeLeft({ hours: 0, minutes: 0, seconds: 0 });
@@ -52,11 +83,20 @@ export function CountdownTimer({
     const timer = setInterval(calculateTimeLeft, 1000);
 
     return () => clearInterval(timer);
-  }, [endTime, onComplete]);
+  }, [parsedEndTime, onComplete]);
 
   const handleSetOutcome = () => {
     router.push(`/manage-targets/set-outcome?id=${targetId}`);
   };
+
+  // Don't render anything if we haven't parsed the endTime yet
+  if (!parsedEndTime) {
+    return (
+      <div className="bg-[#170a2c2e] p-3 rounded-md text-center">
+        <p className="text-xs text-white">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#170a2c2e] p-3 rounded-md text-center">

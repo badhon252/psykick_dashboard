@@ -6,6 +6,7 @@ import { ARVActiveTargetResponse } from "@/components/types/ManageActiveTarget";
 import { Button } from "@/components/ui/button";
 // import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
+import moment from "moment";
 // import moment from "moment";
 import Link from "next/link";
 // import Link from "next/link";
@@ -54,8 +55,8 @@ const ArvActiveTarget = () => {
         <div>
           {data?.data && (
             <div className="rounded-lg p-4 bg-white/10 min-w-[756px]">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 rounded-xl">
-                <div>
+              <div className="flex justify-between md:items-center gap-4 rounded-xl w-full">
+                <div className="w-[800px]">
                   <p className="text-[#ECECEC] text-[20px] 3xl:text-[24px] font-medium leading-[120%]">
                     Event Name: {data.data.eventName}
                   </p>
@@ -64,9 +65,9 @@ const ArvActiveTarget = () => {
                   </p>
                   <p className="text-[#ECECEC] text-[20px] 3xl:text-[24px] font-medium leading-[120%] py-4">
                     Reveal Time:{" "}
-                    {/* {moment(String(data.data.outcomeTime)).format(
+                    {moment(String(data.data.outcomeTime)).format(
                       "YYYY / MM / DD"
-                    )} */}
+                    )}
                   </p>
                 </div>
                 <div className="p-3 rounded-md text-center bg-white/20">
@@ -74,22 +75,15 @@ const ArvActiveTarget = () => {
                     Hurry up! Time ends in:
                   </p>
 
-                  <CountdownTimer
-                    endTime={
-                      new Date(
-                        new Date(data.data.gameTime).getTime() +
-                          (data.data.outcomeDuration +
-                            data.data.revealDuration) *
-                            60 *
-                            1000
-                      )
-                    }
-                  />
+                  <CountdownTimer endTime={data.data.outcomeTime} />
                 </div>
                 <div className="w-full flex items-center justify-end">
                   {data.data.revealDuration > 0 && (
                     <Link href={`/manage-targets/set-outcome/${data.data._id}`}>
-                      <Button className="text-xs font-semibold leading-[120%] bg-[#8F37FF] hover:bg-[#9333EA] text-white mt-4 py-3 px-6 rounded-1">
+                      <Button
+                        disabled={data.data.status !== "expired"}
+                        className="text-xs font-semibold leading-[120%] bg-[#8F37FF] hover:bg-[#9333EA] text-white mt-4 py-3 px-6 rounded-1"
+                      >
                         Set Outcome
                       </Button>
                     </Link>

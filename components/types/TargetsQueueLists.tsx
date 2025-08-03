@@ -35,6 +35,7 @@ export type TMCTargetsListResponse = {
 // ARV target queue lists data type
 
 export interface ARVTarget {
+  status: string;
   gameDuration: any;
   revealDuration: any;
   image1: {

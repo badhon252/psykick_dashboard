@@ -1,8 +1,8 @@
 "use client";
 import TmcInactiveTargets from "./_components/TmcInactiveTargets";
-import ArvInactiveTargets from "./_components/ArvInactiveTargets";
 import TmcActiveTarget from "./_components/TmcActiveTarget";
 import ArvActiveTarget from "./_components/ArvActiveTarget";
+import ArvTargetsQueueLists from "./_components/ArvTargetsQueueLists";
 
 export default function ManageTargetsPage() {
   return (
@@ -10,7 +10,7 @@ export default function ManageTargetsPage() {
       <main className="flex-1 p-6 space-y-6">
         {/* TMC Targets Section */}
         <div>
-          <div className="bg-[#8F37FF] text-white p-3 rounded-t-md font-medium text-[28px]">
+          <div className="bg-gradient text-white p-3 rounded-t-md font-medium text-[28px]">
             TMC Targets
           </div>
 
@@ -26,7 +26,7 @@ export default function ManageTargetsPage() {
 
         {/* ARV Targets Section */}
         <div>
-          <div className="bg-[#8F37FF] text-white p-3 rounded-t-md font-medium text-[28px]">
+          <div className="bg-gradient text-white p-3 rounded-t-md font-medium text-[28px]">
             ARV Targets
           </div>
 
@@ -37,7 +37,8 @@ export default function ManageTargetsPage() {
           </div>
 
           {/* arv inactive targets  */}
-          <ArvInactiveTargets />
+          {/* <ArvInactiveTargets /> */}
+          <ArvTargetsQueueLists />
         </div>
       </main>
     </div>

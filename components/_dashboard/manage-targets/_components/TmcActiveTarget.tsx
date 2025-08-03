@@ -138,16 +138,18 @@ const TmcActiveTarget = () => {
         </h2>
 
         <div>
-          {data?.data && (
+          {data?.data === null ? (
+            <p className="text-white">No active targets at the moment.</p>
+          ) : (
             <div className="rounded-lg p-4 bg-white/10 w-[577px]">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 rounded-xl">
                 <div>
                   <p className="text-[#ECECEC] text-[20px] 3xl:text-[24px] font-medium leading-[120%]">
-                    Code: {data.data.code}
+                    Code: {data?.data?.code}
                   </p>
                   <p className="text-[#ECECEC] text-[20px] 3xl:text-[24px] font-medium leading-[120%] py-4">
                     Reveal Time:{" "}
-                    {moment(data.data.revealTime).format("YYYY / MM / DD")}
+                    {moment(data?.data?.revealTime).format("YYYY / MM / DD")}
                   </p>
 
                   <Button
@@ -166,12 +168,15 @@ const TmcActiveTarget = () => {
 
                   <CountdownTimer
                     endTime={
-                      new Date(
-                        new Date(data.data.startTime).getTime() +
-                          (data.data.gameDuration + data.data.revealDuration) *
-                            60 *
-                            1000
-                      )
+                      data?.data?.startTime
+                        ? new Date(
+                            new Date(data.data.startTime).getTime() +
+                              (data.data.gameDuration +
+                                data.data.revealDuration) *
+                                60 *
+                                1000
+                          )
+                        : new Date() // fallback to current date if startTime is undefined
                     }
                   />
                 </div>

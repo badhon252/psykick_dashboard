@@ -13,16 +13,17 @@ import Link from "next/link";
 import React, { useState } from "react";
 import { toast } from "react-toastify";
 import StatusBadge from "./status-badge";
+import { ArrowLeftIcon } from "lucide-react";
 
 const ArvInactiveTargets = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  const [resetLoading, setResetLoading] = useState(false);
+  // const [resetLoading, setResetLoading] = useState(false);
   // const queryClient = useQueryClient();
   const { data, isLoading, isError, error } = useQuery<ARVTargetResponse>({
     queryKey: ["all-un-queued-arv-targets", currentPage],
     queryFn: () =>
       fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/get-allUnQueuedARVTargets?page=${currentPage}&limit=5&sort=-createdAt`
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/get-ARVTargetWithNullResultImage?page=${currentPage}&limit=5&sort=-createdAt`
       ).then((res) => res.json()),
   });
 
@@ -95,7 +96,7 @@ const ArvInactiveTargets = () => {
       <div className="w-full flex gap-2 items-center justify-center py-10 font-bold text-[20px] text-[#b2b2b2]">
         No ARV Target available, please
         <Link
-          href={"/create-tmc-target"}
+          href={"/create-arv-target"}
           className="underline hover:text-[#8F37FF]"
         >
           add ARV Target!
@@ -240,53 +241,54 @@ const ArvInactiveTargets = () => {
   };
 
   // Handler for Reset Queue button
-  const handleResetQueue = async () => {
-    setResetLoading(true);
-    try {
-      const stopRes = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/stop-queue`,
-        { method: "PATCH" }
-      );
-      const stopData = await stopRes.json();
-      if (!stopData?.status)
-        throw new Error(stopData?.message || "Failed to stop queue");
+  // const handleResetQueue = async () => {
+  //   setResetLoading(true);
+  //   try {
+  //     const stopRes = await fetch(
+  //       `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/stop-queue`,
+  //       { method: "PATCH" }
+  //     );
+  //     const stopData = await stopRes.json();
+  //     if (!stopData?.status)
+  //       throw new Error(stopData?.message || "Failed to stop queue");
 
-      const resetRes = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/reset-queue`,
-        { method: "POST" }
-      );
-      const resetData = await resetRes.json();
-      if (!resetData?.status)
-        throw new Error(resetData?.message || "Failed to reset queue");
+  //     const resetRes = await fetch(
+  //       `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/reset-queue`,
+  //       { method: "POST" }
+  //     );
+  //     const resetData = await resetRes.json();
+  //     if (!resetData?.status)
+  //       throw new Error(resetData?.message || "Failed to reset queue");
 
-      toast.success("Queue reset successfully!");
-      // queryClient.invalidateQueries({ queryKey: ["all-un-queued-arv-targets"] });
-    } catch (err: any) {
-      toast.error(err.message || "Error resetting queue");
-    } finally {
-      setResetLoading(false);
-    }
-  };
+  //     toast.success("Queue reset successfully!");
+  //     // queryClient.invalidateQueries({ queryKey: ["all-un-queued-arv-targets"] });
+  //   } catch (err: any) {
+  //     toast.error(err.message || "Error resetting queue");
+  //   } finally {
+  //     setResetLoading(false);
+  //   }
+  // };
+
   return (
     <div>
       <div className="bg-[#c4a0ff17] p-6 rounded-lg">
         {/* Inactive Targets */}
         <div>
           <div className="w-full flex items-center justify-between pb-[14px] md:pb-[20px] lg:pb-[25px] xl:pb-[30px]">
-            <h2 className="text-[24px] xl:text-[28px] font-semibold leading-[120%]text-white">
+            {/* <h2 className="text-[24px] xl:text-[28px] font-semibold leading-[120%]text-white">
               Inactive Targets
-            </h2>
+            </h2> */}
             <div className="flex gap-4">
-              <button
+              {/* <button
                 className="btn-outline text-base font-semibold text-white leading-[120%] py-[20px] px-[87px] rounded-tr-[24px] rounded-bl-[24px] disabled:opacity-60"
                 onClick={handleResetQueue}
                 disabled={resetLoading}
               >
                 {resetLoading ? "Resetting..." : "Reset Queue"}
-              </button>
-              <Link href="/manage-targets/arv-queue">
-                <button className="bg-gradient text-base font-semibold text-white leading-[120%] py-[12px] px-[47px] rounded-tr-[24px] rounded-bl-[24px] ">
-                  See Queue
+              </button> */}
+              <Link href="/manage-targets" className="">
+                <button className="flex items-center gap-3 bg-gradient text-base font-semibold text-white leading-[120%] py-[12px] px-[47px] rounded-tr-[24px] rounded-bl-[24px] ">
+                  <ArrowLeftIcon /> Manage Targets
                 </button>
               </Link>
             </div>
