@@ -227,7 +227,7 @@ const TmcTargetsQueueLists = () => {
               <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
                 <button
                   className={`text-xs font-semibold text-white leading-[120%] py-[6px] px-[29px] rounded-[4px] bg-[#3C9682] ${
-                    tmcActiveTarget?.data?._id !== target._id
+                    tmcActiveTarget?.data !== null
                       ? "opacity-50 cursor-not-allowed"
                       : ""
                   }`}
