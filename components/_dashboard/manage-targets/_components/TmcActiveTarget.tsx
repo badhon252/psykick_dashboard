@@ -148,7 +148,7 @@ const TmcActiveTarget = () => {
                     Code: {data?.data?.code}
                   </p>
                   <p className="text-[#ECECEC] text-[20px] 3xl:text-[24px] font-medium leading-[120%] py-4">
-                    Reveal Time:{" "}
+                    Buffer Time:{" "}
                     {moment(data?.data?.revealTime).format("YYYY / MM / DD")}
                   </p>
 
@@ -172,7 +172,8 @@ const TmcActiveTarget = () => {
                         ? new Date(
                             new Date(data.data.startTime).getTime() +
                               (data.data.gameDuration +
-                                data.data.revealDuration) *
+                                data.data.revealDuration +
+                                data.data.bufferDuration) *
                                 60 *
                                 1000
                           )
