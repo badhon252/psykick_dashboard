@@ -109,7 +109,7 @@ const TmcInactiveTargets = () => {
                   {target.code}
                 </li>
                 <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-                  <button className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px] bg-[#2A6C2D]">
+                  <button className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px] bg-gradient">
                     {target.status}
                   </button>
                 </li>
@@ -132,7 +132,12 @@ const TmcInactiveTargets = () => {
                 <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
                   <button
                     onClick={() => handleTmcAddToQueue(target._id)}
-                    className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px] bg-[#D74727]"
+                    className={`text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px] bg-[#D74727] ${
+                      target.status !== "inactive"
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
+                    }`}
+                    disabled={target.status !== "inactive" ? true : false}
                   >
                     Add to
                   </button>

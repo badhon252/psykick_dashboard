@@ -7,7 +7,7 @@ import { ARVTargetsResponse } from "@/components/types/TargetsQueueLists";
 import { Badge } from "@/components/ui/badge";
 import FivosPagination from "@/components/ui/FivosPagination";
 import { useQuery } from "@tanstack/react-query";
-import { ChevronRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import moment from "moment";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
@@ -290,7 +290,7 @@ const ArvTargetsQueueLists = () => {
           </h3>
           <Link href="/manage-targets/all-arv-targets">
             <button className="flex items-center gap-3 bg-gradient-to-r from-[#8F37FF] to-[#2D17FF] text-base font-semibold text-white py-[15px] px-[40px] rounded-tr-[24px] rounded-bl-[24px] ">
-              All Targets <ChevronRight />
+              Set Outcomes <ArrowRight />
             </button>
           </Link>
         </div>
