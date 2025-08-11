@@ -35,7 +35,7 @@ export default function RootLayout({
           <Header />
           <main className="flex-1 p-4">{children}</main>
           <ToastContainer position="top-right" autoClose={3000} />
-          <Toaster position="top-right" />
+          <Toaster position="bottom-right" />
         </div>
       </div>
     </ProtectedRoute>

@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { X } from "lucide-react";
@@ -118,7 +118,48 @@ export default function CreateARVTargetPage() {
   const getDefaultDateTime = (hoursOffset = 1): string => {
     const now = new Date();
     now.setHours(now.getHours() + hoursOffset);
-    return now.toISOString().slice(0, 16); // Format: YYYY-MM-DDTHH:MM
+
+    // Format for datetime-local input (YYYY-MM-DDTHH:MM)
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  };
+
+  // Helper to convert local datetime to proper format for backend
+  const convertToProperFormat = (localDateTimeString: string): string => {
+    if (!localDateTimeString) return "";
+
+    // Create a Date object from the local datetime string
+    // This will be in the user's local timezone
+    const localDate = new Date(localDateTimeString);
+
+    // Option 1: If you want to send the exact local time to backend
+    // Format: YYYY-MM-DDTHH:MM:SS (local time)
+    const year = localDate.getFullYear();
+    const month = String(localDate.getMonth() + 1).padStart(2, "0");
+    const day = String(localDate.getDate()).padStart(2, "0");
+    const hours = String(localDate.getHours()).padStart(2, "0");
+    const minutes = String(localDate.getMinutes()).padStart(2, "0");
+    const seconds = String(localDate.getSeconds()).padStart(2, "0");
+
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+
+    // Option 2: If your backend expects UTC, uncomment this instead:
+    // return localDate.toISOString();
+
+    // Option 3: If your backend needs timezone info, uncomment this:
+    /*
+    const timezoneOffset = -localDate.getTimezoneOffset();
+    const offsetHours = Math.floor(Math.abs(timezoneOffset) / 60);
+    const offsetMinutes = Math.abs(timezoneOffset) % 60;
+    const offsetSign = timezoneOffset >= 0 ? '+' : '-';
+    
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMinutes).padStart(2, '0')}`;
+    */
   };
 
   // Helper to validate time order
@@ -270,18 +311,31 @@ export default function CreateARVTargetPage() {
       await Promise.all(updatePromises);
       console.log("All image statuses updated successfully");
 
-      // Step 4: Create the game payload (send ISO datetime strings)
+      // Step 4: Create the game payload with properly formatted timestamps
       const payload = {
         eventName,
         eventDescription,
-        gameTime: gameTime, // ISO string
-        revealTime: revealTime, // ISO string
-        outcomeTime: outcomeTime, // ISO string
+        gameTime: convertToProperFormat(gameTime),
+        revealTime: convertToProperFormat(revealTime),
+        outcomeTime: convertToProperFormat(outcomeTime),
         controlImage,
         image1: { url: images[0].url, description: images[0].description },
         image2: { url: images[1].url, description: images[1].description },
         image3: { url: images[2].url, description: images[2].description },
       };
+
+      // Debug: Log the timestamps being sent
+      console.log("Original datetime-local values:", {
+        gameTime,
+        revealTime,
+        outcomeTime,
+      });
+
+      console.log("Converted timestamps for backend:", {
+        gameTime: payload.gameTime,
+        revealTime: payload.revealTime,
+        outcomeTime: payload.outcomeTime,
+      });
 
       // Step 5: Create the ARV Target
       console.log("Creating ARV Target...");
@@ -534,10 +588,10 @@ export default function CreateARVTargetPage() {
     <div className="flex flex-col min-h-screen relative">
       <main className="flex-1 p-6 space-y-6">
         <Card className="bg-[#170A2C]/50 border-0">
-          <CardHeader>
+          {/* <CardHeader>
             <CardTitle className="text-white">Create ARV Target</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
+          </CardHeader> */}
+          <CardContent className="space-y-6 pt-6">
             {/* Event Name */}
             <div className="space-y-2">
               <label className="text-sm text-white">Event Name:</label>

@@ -221,7 +221,7 @@ const ArvTargetsQueueLists = () => {
           {data.data.map((target, index) => (
             <ul
               key={index}
-              className="bg-white/10  shadow-[0px_20px_166.2px_4px_#580EB726] my-4 border border-[#C5C5C5] rounded-[12px] p-5 grid grid-cols-6"
+              className="bg-white/10  shadow-[0px_20px_166.2px_4px_#580EB726] my-4 border border-[#C5C5C5] rounded-[12px] p-5 grid grid-cols-5"
             >
               <li className="flex items-center justify-center text-white font-medium">
                 {target.code}
@@ -294,7 +294,7 @@ const ArvTargetsQueueLists = () => {
             </button>
           </Link>
         </div>
-        <ul className="bg-white py-[20px] grid grid-cols-6">
+        <ul className="bg-white py-[20px] grid grid-cols-5">
           <li className="flex justify-center text-[#444444] font-medium">
             Code
           </li>

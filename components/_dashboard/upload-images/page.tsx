@@ -4,7 +4,7 @@ import AddCategoryForm from "./_components/AddCategoryForm";
 
 const UploadImageAllComponents = () => {
   return (
-    <div className="pb-[522px]">
+    <div className="">
       <UploadImageForm />
       <AddCategoryForm />
     </div>

@@ -7,11 +7,10 @@ import TableSkeleton from "@/components/shared/TableSkeleton/TableSkeleton";
 import { ARVTargetResponse } from "@/components/types/ManageTarget";
 import { Button } from "@/components/ui/button";
 import FivosPagination from "@/components/ui/FivosPagination";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 // import moment from "moment";
 import Link from "next/link";
 import React, { useState } from "react";
-import { toast } from "react-toastify";
 import StatusBadge from "./status-badge";
 import { ArrowLeftIcon } from "lucide-react";
 
@@ -187,27 +186,11 @@ const ArvInactiveTargets = () => {
                 </div>
               </li>
               <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-                {target.resultImage !== "" || target.status === "inactive" ? (
-                  <button
-                    // disabled={getTargetStatus(target).text !== "Pending"}
-                    onClick={() => handleArvAddToQueue(target?._id)}
-                    style={{
-                      backgroundColor:
-                        target.status !== "inactive" ? "#766f803b" : "#8F37FF",
-                      cursor:
-                        target.status === "expired" ? "not-allowed" : "pointer",
-                    }}
-                    className="text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px] bg-[#370bf8] hover:bg-[#9333EA]"
-                  >
-                    Add to Queue
-                  </button>
-                ) : (
-                  <Button>
-                    <Link href={`/manage-targets/set-outcome/${target._id}`}>
-                      set outcome
-                    </Link>{" "}
-                  </Button>
-                )}
+                <Button>
+                  <Link href={`/manage-targets/set-outcome/${target._id}`}>
+                    set outcome
+                  </Link>
+                </Button>
               </li>
             </ul>
           ))}
@@ -216,29 +199,29 @@ const ArvInactiveTargets = () => {
     }
   }
 
-  const { mutate } = useMutation({
-    mutationKey: ["add-arv-to-queue"],
-    mutationFn: (id: string) =>
-      fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/update-ARVTarget-addToQueue/${id}`,
-        { method: "PATCH" }
-      ).then((res) => res.json()),
+  // const { mutate } = useMutation({
+  //   mutationKey: ["add-arv-to-queue"],
+  //   mutationFn: (id: string) =>
+  //     fetch(
+  //       `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/update-ARVTarget-addToQueue/${id}`,
+  //       { method: "PATCH" }
+  //     ).then((res) => res.json()),
 
-    onSuccess: (data) => {
-      if (!data?.status) {
-        toast.error(data?.message || "Something went wrong");
-        return;
-      }
-      toast.success(data?.message || "Added to queue successfully");
-      // queryClient.invalidateQueries({
-      //   queryKey: ["all-un-queued-arv-targets"],
-      // });
-    },
-  });
+  //   onSuccess: (data) => {
+  //     if (!data?.status) {
+  //       toast.error(data?.message || "Something went wrong");
+  //       return;
+  //     }
+  //     toast.success(data?.message || "Added to queue successfully");
+  //     // queryClient.invalidateQueries({
+  //     //   queryKey: ["all-un-queued-arv-targets"],
+  //     // });
+  //   },
+  // });
 
-  const handleArvAddToQueue = (id: string) => {
-    mutate(id);
-  };
+  // const handleArvAddToQueue = (id: string) => {
+  //   mutate(id);
+  // };
 
   // Handler for Reset Queue button
   // const handleResetQueue = async () => {
