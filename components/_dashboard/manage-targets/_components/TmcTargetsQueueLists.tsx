@@ -11,7 +11,8 @@ import { ChevronLeft } from "lucide-react";
 import moment from "moment";
 import Link from "next/link";
 import React, { useEffect } from "react";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
+// import { toast } from "react-toastify";
 
 const TmcTargetsQueueLists = () => {
   const [currentPage, setCurrentPage] = React.useState(1);
@@ -40,7 +41,7 @@ const TmcTargetsQueueLists = () => {
 
   // console.log("tmcActiveTarget", tmcActiveTarget?.data?.bufferTime);
 
-  // update-TMC Target-make Complete api
+  // update-TMC Target-make Complete api with optimized error handling
   const { mutate: tmcMakeComplete } = useMutation({
     mutationKey: ["update-TMCTarget-makeComplete"],
     mutationFn: () =>
@@ -50,62 +51,55 @@ const TmcTargetsQueueLists = () => {
       ).then((res) => res.json()),
     onSuccess: (data) => {
       if (!data?.status) {
-        toast.error(data?.message || "Something went wrong");
+        console.error("TMC Target make complete failed:", data?.message);
+        toast.error(data?.message || "Failed to complete target");
         return;
       }
-      toast.success(data?.message);
-      queryClient.invalidateQueries({ queryKey: ["all-queued-tmc-targets"] });
-      queryClient.invalidateQueries({ queryKey: ["tmcActiveTargets"] });
+      queryClient.invalidateQueries({
+        queryKey: ["all-queued-tmc-targets", "tmcActiveTargets"],
+      });
+    },
+    onError: (error) => {
+      console.error("TMC Target make complete error:", error);
+      toast.error("Failed to complete target");
     },
   });
 
-  // Check for exceeded buffer times when component loads
-  useEffect(() => {
-    if (tmcActiveTarget?.data) {
-      // const bufferTime = moment(tmcActiveTarget.data.bufferTime);
-      // const now = moment();
-
-      if (tmcActiveTarget?.data?.bufferDuration === 0) {
-        console.log(
-          "Found active TMC game with exceeded buffer time, processing..."
-        );
-        // 1. Mark current target as complete
-        tmcMakeComplete();
-        // 2. Mark current target as inactive
-        updateTmcTargetMakeInActive();
-        // 3. Start the next game if available
-        // handleTMCMakeActive();
-      }
-    }
-  }, [tmcActiveTarget?.data?.bufferTime]);
-
-  const now = moment();
-  const isBufferTime = now.isSameOrAfter(tmcActiveTarget?.data?.bufferTime);
-
-  // 🔁 Check bufferTime every 5 seconds and trigger makeComplete
+  // Check buffer time and handle game state transitions
   useEffect(() => {
     if (!tmcActiveTarget?.data?.bufferTime || !tmcActiveTarget?.data?._id)
       return;
 
     const bufferTime = moment(tmcActiveTarget.data.bufferTime);
-    console.log("Buffer Time:", bufferTime.toISOString());
+    // const now = moment();
+    // const isBufferTimeExceeded = now.isSameOrAfter(bufferTime);
+
+    // Handle initial state when buffer duration is 0
+    if (tmcActiveTarget?.data?.bufferDuration === 0) {
+      tmcMakeComplete();
+      updateTmcTargetMakeInActive();
+      return;
+    }
+
+    // Set up interval for checking buffer time
     const interval = setInterval(() => {
-      const now = moment();
-      if (now.isSameOrAfter(bufferTime)) {
+      const currentTime = moment();
+      if (currentTime.isSameOrAfter(bufferTime)) {
         clearInterval(interval);
-        // First mark the target as complete
         tmcMakeComplete();
-        // Then mark it as inactive
         updateTmcTargetMakeInActive();
-        // Finally start the next game if available
-        // handleTMCMakeActive();
       }
     }, 5000);
 
+    // Clean up interval on unmount or when dependencies change
     return () => clearInterval(interval);
-  }, [isBufferTime, tmcActiveTarget?.data?._id]);
+  }, [
+    tmcActiveTarget?.data?.bufferTime,
+    tmcActiveTarget?.data?._id,
+    tmcActiveTarget?.data?.bufferDuration,
+  ]);
 
-  // update tmc target make in active api
+  // update tmc target make in active api with optimized error handling
   const { mutate: updateTmcTargetMakeInActive } = useMutation({
     mutationKey: ["update-TMCTarget-makeInactive"],
     mutationFn: () =>
@@ -115,55 +109,42 @@ const TmcTargetsQueueLists = () => {
       ).then((res) => res.json()),
     onSuccess: (data) => {
       if (!data?.status) {
-        toast.error(data?.message || "Something went wrong");
+        console.error("TMC Target make inactive failed:", data?.message);
+        toast.error(data?.message || "Failed to make target inactive");
         return;
       }
-      toast.success(data?.message);
       queryClient.invalidateQueries({ queryKey: ["all-queued-tmc-targets"] });
       queryClient.invalidateQueries({ queryKey: ["tmcActiveTargets"] });
     },
+    onError: (error) => {
+      console.error("TMC Target make inactive error:", error);
+      toast.error("Failed to update target status");
+    },
   });
 
-  // 🔁 Check bufferTime every 5 seconds and trigger makeComplete
-  useEffect(() => {
-    if (!tmcActiveTarget?.data?.bufferTime || !tmcActiveTarget?.data?._id)
-      return;
-
-    const bufferTime = moment(tmcActiveTarget.data.bufferTime);
-    console.log("Buffer Time:", bufferTime.toISOString());
-    const interval = setInterval(() => {
-      const now = moment();
-      if (now.isSameOrAfter(bufferTime)) {
-        clearInterval(interval);
-        updateTmcTargetMakeInActive();
+  // update TMC Start Next Game with mutation for better error handling
+  const { mutate: handleTMCMakeActive } = useMutation({
+    mutationFn: () =>
+      fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/TMCTarget/update-startNextGame`,
+        { method: "PATCH" }
+      ).then((res) => res.json()),
+    onSuccess: (data) => {
+      if (!data?.status) {
+        console.error("TMC Target make active failed:", data?.message);
+        toast.error(data?.message || "Failed to activate target");
+        return;
       }
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [5000]);
-
-  // update TMC Start Next Game
-  const handleTMCMakeActive = () => {
-    // {{baseURL}}/TMCTarget/update-startNextGame
-    fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/TMCTarget/update-startNextGame`,
-      {
-        method: "PATCH",
-      }
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        if (!data?.status) {
-          toast.error(data?.message || "Something went wrong");
-          return;
-        }
-        toast.success(data?.message || "TMC Target is active now");
-        queryClient.invalidateQueries({ queryKey: ["all-queued-tmc-targets"] });
-        queryClient.invalidateQueries({ queryKey: ["tmcActiveTargets"] });
+      toast.success("TMC Target is now active");
+      queryClient.invalidateQueries({
+        queryKey: ["all-queued-tmc-targets", "tmcActiveTargets"],
       });
-
-    console.log(tmcActiveTarget);
-  };
+    },
+    onError: (error) => {
+      console.error("TMC Target make active error:", error);
+      toast.error("Failed to activate target");
+    },
+  });
 
   let content;
   if (isLoading) {
