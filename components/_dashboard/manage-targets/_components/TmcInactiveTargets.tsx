@@ -6,6 +6,7 @@ import TableSkeleton from "@/components/shared/TableSkeleton/TableSkeleton";
 import { TMCTargetsResponse } from "@/components/types/ManageTarget";
 import FivosPagination from "@/components/ui/FivosPagination";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Trash2 } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
 import { toast } from "sonner";
@@ -103,7 +104,7 @@ const TmcInactiveTargets = () => {
             .map((target, index) => (
               <ul
                 key={index}
-                className="bg-white/10 shadow-[0px_20px_166.2px_4px_#580EB726] my-4 border border-[#C5C5C5] rounded-[12px] p-5 grid grid-cols-4"
+                className="bg-white/10 shadow-[0px_20px_166.2px_4px_#580EB726] my-4 border border-[#C5C5C5] rounded-[12px] p-5 grid grid-cols-5"
               >
                 <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
                   {target.code}
@@ -114,19 +115,8 @@ const TmcInactiveTargets = () => {
                   </button>
                 </li>
                 <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-                  {" "}
                   <div className="w-full flex flex-col items-center justify-center">
                     {target.revealDuration} minutes
-                    {/* <CountdownTimer
-                      endTime={
-                        new Date(
-                          new Date(target.startTime).getTime() +
-                            (target.gameDuration + target.revealDuration) *
-                              60 *
-                              1000
-                        )
-                      }
-                    /> */}
                   </div>
                 </li>
                 <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
@@ -142,6 +132,19 @@ const TmcInactiveTargets = () => {
                     Add to
                   </button>
                 </li>
+                <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+                  <button
+                    onClick={() => handleTmcDelete(target._id)}
+                    // className={`text-xs font-semibold text-white leading-[120%] py-[6px] px-[22px] rounded-[4px] bg-[#D74727] ${
+                    //   target.status !== "inactive"
+                    //     ? "opacity-50 cursor-not-allowed"
+                    //     : ""
+                    // }`}
+                    // disabled={target.status !== "inactive" ? true : false}
+                  >
+                    <Trash2 className="w-6 h-6 text-red-500 hover:text-red-600" />
+                  </button>
+                </li>
               </ul>
             ))}
         </div>
@@ -150,7 +153,7 @@ const TmcInactiveTargets = () => {
   }
 
   // update part tmc quote
-  const { mutate } = useMutation({
+  const { mutate: addToQueue } = useMutation({
     mutationKey: ["add-to-tmc-queue"],
     mutationFn: (id: string) =>
       fetch(
@@ -172,7 +175,33 @@ const TmcInactiveTargets = () => {
   });
 
   const handleTmcAddToQueue = (id: string) => {
-    mutate(id);
+    addToQueue(id);
+  };
+
+  //! delete part tmc quote
+  const { mutate: deleteTmc } = useMutation({
+    mutationKey: ["delete-tmc-target"],
+    mutationFn: (id: string) =>
+      fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/TMCTarget/delete-TMC/${id}`,
+        {
+          method: "PATCH",
+        }
+      ).then((res) => res.json()),
+    onSuccess: (data) => {
+      if (!data?.status) {
+        toast.error(data?.message || "Something went wrong");
+        return;
+      }
+      toast.success(data?.message || "Added to queue successfully");
+      queryClient.invalidateQueries({
+        queryKey: ["all-un-queued-tmc-targets"],
+      });
+    },
+  });
+  //! Handler for Add to Delete button
+  const handleTmcDelete = (id: string) => {
+    deleteTmc(id);
   };
 
   //! Handler for Reset Queue button
@@ -231,7 +260,7 @@ const TmcInactiveTargets = () => {
             </div>
           </div>
           <div>
-            <ul className="bg-[#ECECEC] py-[20px] grid grid-cols-4">
+            <ul className="bg-[#ECECEC] py-[20px] grid grid-cols-5">
               <li className="w-full flex items-center justify-center text-base font-medium text-[#444444] leading-[120%]">
                 Code
               </li>
@@ -243,6 +272,9 @@ const TmcInactiveTargets = () => {
               </li>
               <li className="w-full flex items-center justify-center text-base font-medium text-[#444444] leading-[120%]">
                 Add to Queue
+              </li>{" "}
+              <li className="w-full flex items-center justify-center text-base font-medium text-[#444444] leading-[120%]">
+                Action
               </li>
             </ul>
           </div>
