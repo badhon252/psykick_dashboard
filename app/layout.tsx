@@ -1,8 +1,8 @@
-
 import AppProvider from "@/provider/AppProvider";
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
+import { Toaster } from "sonner";
 // import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
 export const metadata: Metadata = {
@@ -20,13 +20,14 @@ export default function RootLayout({
       <body className="bg-[#36007B] text-white dashboard-body">
         {/* <ProtectedRoute> */}
         <AuthProvider>
-        <div className="backdrop-blur-sm bg-[#371B77]/40 dashboard-shadow">
-          <main className="">
-           <AppProvider>
-            {children}
-            </AppProvider> 
-          </main>
-        </div>
+          <div className="backdrop-blur-sm bg-[#371B77]/40 dashboard-shadow">
+            <main className="">
+              <AppProvider>
+                {children}
+                <Toaster position="bottom-right" />
+              </AppProvider>
+            </main>
+          </div>
         </AuthProvider>
         {/* </ProtectedRoute> */}
       </body>

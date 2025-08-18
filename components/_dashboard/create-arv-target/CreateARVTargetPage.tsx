@@ -356,8 +356,20 @@ export default function CreateARVTargetPage() {
         toast.success(
           "ARV Target created successfully! All image statuses have been updated."
         );
-        // Optionally reset the form or redirect
-        // resetForm();
+        // Reset all form fields
+        setEventName("");
+        setEventDescription("");
+        setControlImage("");
+        setGameTime(getDefaultDateTime(1));
+        setRevealTime(getDefaultDateTime(2));
+        setOutcomeTime(getDefaultDateTime(3));
+        setImages([
+          { id: 1, description: "", url: "" },
+          { id: 2, description: "", url: "" },
+          { id: 3, description: "", url: "" },
+        ]);
+        setSelectedCategory("");
+        setSelectedSubcategory("");
       } else {
         // If game creation fails after image updates, you might want to revert image statuses
         console.error("Game creation failed:", data.message);
@@ -955,7 +967,7 @@ export default function CreateARVTargetPage() {
 
                     <div className="space-y-3 mt-6">
                       <div className="flex items-center gap-2">
-                        <div className="bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                        <div className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
                           Control Image
                         </div>
                         {controlImage ? (
@@ -973,13 +985,13 @@ export default function CreateARVTargetPage() {
                         )}
                       </div>
                       {controlImage ? (
-                        <div className="relative border border-gray-700 rounded-md overflow-hidden bg-[#170A2C]/30">
+                        <div className="relative border border-gray-700 rounded-md overflow-hidden bg-[#170A2C]/30 flex items-center justify-center p-8">
                           <Image
-                            width={300}
-                            height={300}
+                            width={500}
+                            height={500}
                             src={controlImage || "/placeholder.svg"}
                             alt="Selected control image"
-                            className="w-full h-[500px] object-cover"
+                            className="w-[500px] h-auto object-contain border-red-500 border-4"
                           />
                         </div>
                       ) : (

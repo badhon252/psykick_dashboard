@@ -264,6 +264,22 @@ export default function CreateTMCTargetPage() {
       toast.success(
         "TMC Target created successfully! All image statuses have been updated."
       );
+      // Reset all form fields
+      setSelectedTargetImage(null);
+      setSelectedControlImages([]);
+      setSelectedCategory("");
+      setSelectedSubcategory("");
+      // Reset time settings
+      setSelectedDays(0);
+      setSelectedHours(0);
+      setSelectedMinutes(0);
+      setRevealHours(0);
+      setRevealMinutes(0);
+      setBufferHours(0);
+      setBufferMinutes(0);
+      // Reset view states
+      setShowMoreTargets(false);
+      setShowMoreControls(false);
     },
     onError: (error: Error) => {
       toast.error(error.message || "Something went wrong!");

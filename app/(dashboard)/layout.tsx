@@ -4,8 +4,6 @@ import { AdminDashboardTabsList } from "@/data/data";
 import type { Metadata } from "next";
 import "../globals.css";
 
-import { Toaster } from "@/components/ui/sonner";
-
 import "react-toastify/dist/ReactToastify.css";
 import { ToastContainer } from "react-toastify";
 import ProtectedRoute from "@/components/common/ProtectedRouts";
@@ -35,7 +33,6 @@ export default function RootLayout({
           <Header />
           <main className="flex-1 p-4">{children}</main>
           <ToastContainer position="top-right" autoClose={3000} />
-          <Toaster position="bottom-right" />
         </div>
       </div>
     </ProtectedRoute>
