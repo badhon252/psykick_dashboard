@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 
 interface ARVTarget {
   revealDuration: string;
@@ -87,7 +88,7 @@ export default function SetOutcomePage() {
       );
       const result = await response.json();
       if (result.status) {
-        alert("Outcome set successfully");
+        toast.success("Outcome set successfully");
         router.push("/manage-targets");
       } else {
         alert(result.message || "Failed to set outcome");
