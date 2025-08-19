@@ -20,7 +20,7 @@ interface ARVTarget {
   image1: { url: string; description: string };
   image2: { url: string; description: string };
   image3: { url: string; description: string };
-  controlImage: string;
+  // controlImage: string;
 }
 
 interface APIResponse {
@@ -131,7 +131,7 @@ export default function SetOutcomePage() {
             <div className="space-y-4">
               <div>
                 <p className="text-gray-400">Reveal Time & Date</p>
-                <p className="text-white">{filteredTarget.revealDuration}</p>
+                <p className="text-white">{filteredTarget.revealTime}</p>
               </div>
               <div>
                 <p className="text-gray-400">Outcome time</p>
@@ -150,7 +150,7 @@ export default function SetOutcomePage() {
               filteredTarget.image1,
               filteredTarget.image2,
               filteredTarget.image3,
-              filteredTarget.controlImage,
+              // filteredTarget.controlImage,
             ]?.map((image, index) => (
               <div
                 key={index}
@@ -175,8 +175,8 @@ export default function SetOutcomePage() {
                     className="object-cover rounded-lg"
                   />
                 </div>
-                <p className="text-white text-sm">
-                  {/* {typeof image === "string" ? "" : image.description} */}
+                <p className="text-white text-center text-sm">
+                  {typeof image === "string" ? "" : image.description}
                 </p>
               </div>
             ))}
@@ -186,9 +186,9 @@ export default function SetOutcomePage() {
         {selectedImage && (
           <div className="bg-white/5 backdrop-blur-sm rounded-lg p-6">
             <h2 className="text-2xl font-semibold text-white mb-6">
-              Selected Outcome
+              Selected Outcome Image
             </h2>
-            <div className="max-w-[300px] mx-auto border-4 border-[red] rounded-lg ">
+            <div className="max-w-[300px] mx-auto border-2 border-[red] rounded-lg ">
               <div className="aspect-square relative">
                 <Image
                   src={selectedImage || "/placeholder.svg"}
