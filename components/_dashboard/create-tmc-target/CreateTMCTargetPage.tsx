@@ -859,8 +859,11 @@ export default function CreateTMCTargetPage() {
                 onClick={handleCreateTarget}
                 className="bg-[#8F37FF] text-white hover:bg-[#8F37FF]/80"
                 size="lg"
+                disabled={createTMCTargetMutation.isPending}
               >
-                Create Target
+                {createTMCTargetMutation.isPending
+                  ? "Creating ..."
+                  : "Create Target"}
               </Button>
             </div>
           </CardContent>

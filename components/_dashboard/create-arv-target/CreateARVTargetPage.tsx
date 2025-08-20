@@ -217,7 +217,8 @@ export default function CreateARVTargetPage() {
   }, [selectedCategory]);
 
   const handleSubmit = async () => {
-    if (!token) return alert("User not authenticated! Please log in again.");
+    if (!token)
+      return toast.warning("User not authenticated! Please log in again.");
 
     // Validate required fields
     if (!eventName) return alert("Event name is required");
@@ -1015,7 +1016,11 @@ export default function CreateARVTargetPage() {
                 type="button"
                 disabled={!!timeOrderError}
               >
-                Create Target
+                {isLoading ? (
+                  <span className="animate-pulse">Creating...</span>
+                ) : (
+                  "Create ARV Target"
+                )}
               </Button>
             </div>
           </CardContent>
