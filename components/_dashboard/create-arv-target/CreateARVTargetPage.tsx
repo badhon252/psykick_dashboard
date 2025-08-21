@@ -134,11 +134,14 @@ export default function CreateARVTargetPage() {
     if (!localDateTimeString) return "";
 
     // Create a Date object from the local datetime string
-    // This will be in the user's local timezone
     const localDate = new Date(localDateTimeString);
 
-    // Option 1: If you want to send the exact local time to backend
-    // Format: YYYY-MM-DDTHH:MM:SS (local time)
+    // Convert to ISO string with timezone offset
+    const timezoneOffset = -localDate.getTimezoneOffset();
+    const offsetHours = Math.floor(Math.abs(timezoneOffset) / 60);
+    const offsetMinutes = Math.abs(timezoneOffset) % 60;
+    const offsetSign = timezoneOffset >= 0 ? "+" : "-";
+
     const year = localDate.getFullYear();
     const month = String(localDate.getMonth() + 1).padStart(2, "0");
     const day = String(localDate.getDate()).padStart(2, "0");
@@ -146,20 +149,10 @@ export default function CreateARVTargetPage() {
     const minutes = String(localDate.getMinutes()).padStart(2, "0");
     const seconds = String(localDate.getSeconds()).padStart(2, "0");
 
-    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
-
-    // Option 2: If your backend expects UTC, uncomment this instead:
-    // return localDate.toISOString();
-
-    // Option 3: If your backend needs timezone info, uncomment this:
-    /*
-    const timezoneOffset = -localDate.getTimezoneOffset();
-    const offsetHours = Math.floor(Math.abs(timezoneOffset) / 60);
-    const offsetMinutes = Math.abs(timezoneOffset) % 60;
-    const offsetSign = timezoneOffset >= 0 ? '+' : '-';
-    
-    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${offsetSign}${String(offsetHours).padStart(2, '0')}:${String(offsetMinutes).padStart(2, '0')}`;
-    */
+    // Return ISO string with timezone offset
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${offsetSign}${String(
+      offsetHours
+    ).padStart(2, "0")}:${String(offsetMinutes).padStart(2, "0")}`;
   };
 
   // Helper to validate time order

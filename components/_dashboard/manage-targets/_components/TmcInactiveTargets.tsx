@@ -185,7 +185,7 @@ const TmcInactiveTargets = () => {
       fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/TMCTarget/delete-TMC/${id}`,
         {
-          method: "PATCH",
+          method: "DELETE",
         }
       ).then((res) => res.json()),
     onSuccess: (data) => {
