@@ -8,7 +8,7 @@ import { ARVTargetResponse } from "@/components/types/ManageTarget";
 import { Button } from "@/components/ui/button";
 import FivosPagination from "@/components/ui/FivosPagination";
 import { useQuery } from "@tanstack/react-query";
-// import moment from "moment";
+import moment from "moment";
 import Link from "next/link";
 import React, { useState } from "react";
 import StatusBadge from "./status-badge";
@@ -155,38 +155,20 @@ const ArvInactiveTargets = () => {
                         : new Date()
                     }
                   /> */}
-                  {target.revealDuration} minutes
+                  {moment(target.revealDuration).format("HH:mm:ss")}
                 </div>
               </li>
               <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
                 <div className="w-full flex flex-col items-center justify-center">
-                  {/* <span>
-                    {target.revealTime
-                      ? moment(target.revealTime).format("YYYY-MM-DD")
-                      : "N/A"}
-                  </span>
-                  <span>
-                    {target.revealTime
-                      ? moment(target.revealTime).format("HH:mm:ss")
-                      : ""}
-                  </span> */}
-                  {/* <CountdownTimer
-                    endTime={
-                      target.outcomeTime
-                        ? new Date(target.outcomeTime)
-                        : new Date()
-                    }
-                    onComplete={() => {
-                      queryClient.invalidateQueries({
-                        queryKey: ["all-un-queued-tmc-targets"],
-                      });
-                    }}
-                  /> */}
-                  {target.outcomeDuration} minutes
+                  {moment(target.outcomeDuration).format("HH:mm:ss")}
                 </div>
               </li>
               <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
-                <Button>
+                <Button
+                  disabled={
+                    target.status === "inactive" || target.status === "active"
+                  }
+                >
                   <Link href={`/manage-targets/set-outcome/${target._id}`}>
                     set outcome
                   </Link>
