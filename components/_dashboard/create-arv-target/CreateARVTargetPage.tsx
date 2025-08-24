@@ -112,6 +112,8 @@ export default function CreateARVTargetPage() {
   const [revealTime, setRevealTime] = useState("");
   const [outcomeTime, setOutcomeTime] = useState("");
 
+  const [isCreating, setIsCreating] = useState(false);
+
   const [timeOrderError, setTimeOrderError] = useState<string | null>(null);
 
   // Helper to get default datetime-local value (current time + offset)
@@ -330,6 +332,7 @@ export default function CreateARVTargetPage() {
         revealTime: payload.revealTime,
         outcomeTime: payload.outcomeTime,
       });
+      setIsCreating(true);
 
       // Step 5: Create the ARV Target
       console.log("Creating ARV Target...");
@@ -364,6 +367,7 @@ export default function CreateARVTargetPage() {
         ]);
         setSelectedCategory("");
         setSelectedSubcategory("");
+        setIsCreating(false)
       } else {
         // If game creation fails after image updates, you might want to revert image statuses
         console.error("Game creation failed:", data.message);
@@ -1007,9 +1011,9 @@ export default function CreateARVTargetPage() {
                 className="btn h-[59px]"
                 onClick={handleSubmit}
                 type="button"
-                disabled={!!timeOrderError}
+                disabled={!!timeOrderError || isCreating}
               >
-                {isLoading ? (
+                {isCreating ? (
                   <span className="animate-pulse">Creating...</span>
                 ) : (
                   "Create ARV Target"
