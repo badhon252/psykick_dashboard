@@ -959,7 +959,7 @@ export default function CreateARVTargetPage() {
                       ))}
                     </div>
 
-                    <div className="space-y-3 mt-6">
+                    {/* <div className="space-y-3 mt-6">
                       <div className="flex items-center gap-2">
                         <div className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
                           Control Image
@@ -995,7 +995,7 @@ export default function CreateARVTargetPage() {
                           </p>
                         </div>
                       )}
-                    </div>
+                    </div> */}
                   </div>
                 </>
               )}
