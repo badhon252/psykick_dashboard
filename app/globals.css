@@ -189,3 +189,9 @@
     rgb(0, 0, 0) 1.74541px -2.43999px 0px, rgb(0, 0, 0) 2.44769px -1.73459px 0px,
     rgb(0, 0, 0) 2.88051px -0.838247px 0px;
 }
+/* 
+input {
+  background: rgba(128, 128, 128, 0.5) !important;
+  border: 1px solid hsl(var(--border));
+  color: hsl(var(--foreground));
+} */

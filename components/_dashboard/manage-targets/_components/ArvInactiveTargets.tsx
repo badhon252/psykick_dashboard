@@ -1,23 +1,27 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-// import { CountdownTimer } from "@/components/countdown-timer";
 import ErrorContainer from "@/components/shared/ErrorContainer/ErrorContainer";
-// import NotFound from "@/components/shared/NotFound/NotFound";
 import TableSkeleton from "@/components/shared/TableSkeleton/TableSkeleton";
 import { ARVTargetResponse } from "@/components/types/ManageTarget";
 import { Button } from "@/components/ui/button";
 import FivosPagination from "@/components/ui/FivosPagination";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import moment from "moment";
 import Link from "next/link";
 import React, { useState } from "react";
+import {
+  DialogHeader,
+  DialogFooter,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { X } from "lucide-react";
 import StatusBadge from "./status-badge";
-import { ArrowLeftIcon } from "lucide-react";
+import { ArrowLeftIcon, Edit, Trash } from "lucide-react";
 
 const ArvInactiveTargets = () => {
   const [currentPage, setCurrentPage] = useState(1);
-  // const [resetLoading, setResetLoading] = useState(false);
-  // const queryClient = useQueryClient();
   const { data, isLoading, isError, error } = useQuery<ARVTargetResponse>({
     queryKey: ["all-un-queued-arv-targets", currentPage],
     queryFn: () =>
@@ -26,51 +30,36 @@ const ArvInactiveTargets = () => {
       ).then((res) => res.json()),
   });
 
+  const queryClient = useQueryClient();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [toDeleteTarget, setToDeleteTarget] = useState<{
+    id: string;
+    name?: string;
+  } | null>(null);
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/delete-ARVTarget/${id}`,
+        {
+          method: "DELETE",
+        }
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.message || "Failed to delete");
+      return data;
+    },
+    onSuccess: () => {
+      // invalidate the list for current page so UI refreshes
+      queryClient.invalidateQueries({
+        queryKey: ["all-un-queued-arv-targets", currentPage],
+      });
+    },
+    onSettled: () => setDeletingId(null),
+  });
+
   console.log(data?.data);
-
-  // type TargetStatus = {
-  //   text: string;
-  //   bgColor: string;
-  // };
-
-  // const getTargetStatus = (target: {
-  //   isCompleted: boolean;
-  //   isQueued: boolean;
-  //   revealTime: string | null;
-  // }): TargetStatus => {
-  //   const now = moment();
-  //   const revealTime = target.revealTime ? moment(target.revealTime) : null;
-
-  //   // Expired - Targets that have been revealed, and the outcome has been set
-  //   if (target.isCompleted && revealTime && revealTime.isBefore(now)) {
-  //     return {
-  //       text: "Expired",
-  //       bgColor: "#666666", // Gray
-  //     };
-  //   }
-
-  //   // Revealed - Targets that have been revealed but the outcome has not been set
-  //   if (!target.isCompleted && revealTime && revealTime.isBefore(now)) {
-  //     return {
-  //       text: "Revealed",
-  //       bgColor: "#E6B32A", // Yellow/Orange
-  //     };
-  //   }
-
-  //   // Queued - Targets that are created and have been added to the queue
-  //   if (target.isQueued) {
-  //     return {
-  //       text: "Queued",
-  //       bgColor: "#2A6C2D", // Green
-  //     };
-  //   }
-
-  //   // Pending – Targets that are created but not yet used or queued
-  //   return {
-  //     text: "Pending",
-  //     bgColor: "#D74727", // Red
-  //   };
-  // };
 
   let content;
   if (isLoading) {
@@ -99,16 +88,10 @@ const ArvInactiveTargets = () => {
           className="underline hover:text-[#8F37FF]"
         >
           add ARV Target!
-        </Link>{" "}
-        {/* <NotFound message="Oops! No data available. Modify your filters or check your internet connection." /> */}
+        </Link>
       </div>
     );
   } else if (data && data?.data && data?.data?.length > 0) {
-    // const currentTime = moment();
-    // const activeTargets = data.data.filter((target) =>
-    // moment(target.gameTime).isAfter(currentTime)
-    // );
-    //? Set it false to show inactive targets
     if (false) {
       content = (
         <div className="w-full flex gap-2 items-center justify-center py-10 font-bold text-[20px] text-[#b2b2b2]">
@@ -127,7 +110,7 @@ const ArvInactiveTargets = () => {
           {[...data.data].map((target, index) => (
             <ul
               key={index}
-              className="bg-white/10 shadow-[0px 20px 166.2px 4px #580EB726] my-4 border border-[#C5C5C5] rounded-[12px] p-5 grid grid-cols-6"
+              className="bg-white/10 shadow-[0px 20px 166.2px 4px #580EB726] my-4 border border-[#C5C5C5] rounded-[12px] p-5 grid grid-cols-7 gap-2"
             >
               <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
                 {target.eventName}
@@ -138,23 +121,6 @@ const ArvInactiveTargets = () => {
               <StatusBadge key={target._id} status={target.status as any} />
               <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
                 <div className="w-full flex flex-col items-center justify-center">
-                  {/* <span>
-                    {target.revealTime
-                      ? moment(target.revealTime).format("YYYY-MM-DD")
-                      : "N/A"}
-                  </span>
-                  <span>
-                    {target.revealTime
-                      ? moment(target.revealTime).format("HH:mm:ss")
-                      : ""}
-                  </span> */}
-                  {/* <CountdownTimer
-                    endTime={
-                      target.revealTime
-                        ? new Date(target.revealTime)
-                        : new Date()
-                    }
-                  /> */}
                   {moment(target.revealDuration).format("HH:mm:ss")}
                 </div>
               </li>
@@ -170,9 +136,110 @@ const ArvInactiveTargets = () => {
                   }
                 >
                   <Link href={`/manage-targets/set-outcome/${target._id}`}>
-                    set outcome
+                    Set Outcome
                   </Link>
                 </Button>
+              </li>
+              <li className="w-full flex items-center justify-center text-base font-medium text-white leading-[120%]">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center gap-2"
+                  disabled={
+                    target.status === "active" ||
+                    target.status === "revealed" ||
+                    target.isCompleted
+                  }
+                >
+                  <Link
+                    href={`/manage-targets/update-arv/${target.code}`}
+                    className="flex items-center gap-2"
+                  >
+                    <Edit className="w-4 h-4" />
+                    Edit
+                  </Link>
+                </Button>
+
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="flex items-center gap-2"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (target.status === "active") return;
+                      setToDeleteTarget({
+                        id: target._id,
+                        name: target.eventName,
+                      });
+                      setConfirmOpen(true);
+                    }}
+                    disabled={
+                      target.status === "active" || deletingId === target._id
+                    }
+                  >
+                    <div className="flex items-center gap-2">
+                      <Trash className="w-4 h-4" />
+                      {deletingId === target._id ? "Deleting..." : "Delete"}
+                    </div>
+                  </Button>
+
+                  <DialogPrimitive.Root
+                    open={confirmOpen}
+                    onOpenChange={setConfirmOpen}
+                  >
+                    <DialogPrimitive.Portal>
+                      <DialogPrimitive.Overlay className="fixed inset-0 z-50 backdrop-blur-md bg-transparent data-[state=open]:animate-in data-[state=closed]:animate-out" />
+
+                      <DialogPrimitive.Content className="fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 border bg-black/70 p-6 shadow-lg sm:rounded-lg dashboard-shadow">
+                        <DialogHeader className="flex flex-col items-center justify-center">
+                          <DialogTitle className="text-white font-semibold text-xl">
+                            Confirm delete
+                          </DialogTitle>
+                          <DialogDescription className="text-center text-white/80 py-4">
+                            Are you sure you want to delete{" "}
+                            <span className="font-semibold">
+                              {toDeleteTarget?.name}
+                            </span>
+                            ? This action cannot be undone.
+                          </DialogDescription>
+                        </DialogHeader>
+
+                        <DialogFooter>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              onClick={() => {
+                                setConfirmOpen(false);
+                                setToDeleteTarget(null);
+                              }}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              onClick={() => {
+                                if (!toDeleteTarget) return;
+                                setDeletingId(toDeleteTarget.id);
+                                deleteMutation.mutate(toDeleteTarget.id);
+                                setConfirmOpen(false);
+                              }}
+                              disabled={deletingId === toDeleteTarget?.id}
+                            >
+                              {deletingId === toDeleteTarget?.id
+                                ? "Deleting..."
+                                : "Confirm"}
+                            </Button>
+                          </div>
+                        </DialogFooter>
+
+                        <DialogPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100">
+                          <X className="h-4 w-4 text-white" />
+                          <span className="sr-only">Close</span>
+                        </DialogPrimitive.Close>
+                      </DialogPrimitive.Content>
+                    </DialogPrimitive.Portal>
+                  </DialogPrimitive.Root>
+                </>
               </li>
             </ul>
           ))}
@@ -181,84 +248,20 @@ const ArvInactiveTargets = () => {
     }
   }
 
-  // const { mutate } = useMutation({
-  //   mutationKey: ["add-arv-to-queue"],
-  //   mutationFn: (id: string) =>
-  //     fetch(
-  //       `${process.env.NEXT_PUBLIC_BACKEND_URL}/ARVTarget/update-ARVTarget-addToQueue/${id}`,
-  //       { method: "PATCH" }
-  //     ).then((res) => res.json()),
-
-  //   onSuccess: (data) => {
-  //     if (!data?.status) {
-  //       toast.error(data?.message || "Something went wrong");
-  //       return;
-  //     }
-  //     toast.success(data?.message || "Added to queue successfully");
-  //     // queryClient.invalidateQueries({
-  //     //   queryKey: ["all-un-queued-arv-targets"],
-  //     // });
-  //   },
-  // });
-
-  // const handleArvAddToQueue = (id: string) => {
-  //   mutate(id);
-  // };
-
-  // Handler for Reset Queue button
-  // const handleResetQueue = async () => {
-  //   setResetLoading(true);
-  //   try {
-  //     const stopRes = await fetch(
-  //       `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/stop-queue`,
-  //       { method: "PATCH" }
-  //     );
-  //     const stopData = await stopRes.json();
-  //     if (!stopData?.status)
-  //       throw new Error(stopData?.message || "Failed to stop queue");
-
-  //     const resetRes = await fetch(
-  //       `${process.env.NEXT_PUBLIC_BACKEND_URL}/admin/reset-queue`,
-  //       { method: "POST" }
-  //     );
-  //     const resetData = await resetRes.json();
-  //     if (!resetData?.status)
-  //       throw new Error(resetData?.message || "Failed to reset queue");
-
-  //     toast.success("Queue reset successfully!");
-  //     // queryClient.invalidateQueries({ queryKey: ["all-un-queued-arv-targets"] });
-  //   } catch (err: any) {
-  //     toast.error(err.message || "Error resetting queue");
-  //   } finally {
-  //     setResetLoading(false);
-  //   }
-  // };
-
   return (
     <div>
       <div className="bg-[#c4a0ff17] p-6 rounded-lg">
-        {/* Inactive Targets */}
         <div>
           <div className="w-full flex items-center justify-between pb-[14px] md:pb-[20px] lg:pb-[25px] xl:pb-[30px]">
-            {/* <h2 className="text-[24px] xl:text-[28px] font-semibold leading-[120%]text-white">
-              Inactive Targets
-            </h2> */}
             <div className="flex gap-4">
-              {/* <button
-                className="btn-outline text-base font-semibold text-white leading-[120%] py-[20px] px-[87px] rounded-tr-[24px] rounded-bl-[24px] disabled:opacity-60"
-                onClick={handleResetQueue}
-                disabled={resetLoading}
-              >
-                {resetLoading ? "Resetting..." : "Reset Queue"}
-              </button> */}
               <Link href="/manage-targets" className="">
-                <button className="flex items-center gap-3 bg-gradient text-base font-semibold text-white leading-[120%] py-[12px] px-[47px] rounded-tr-[24px] rounded-bl-[24px] ">
+                <button className="flex items-center gap-3 bg-gradient text-base font-semibold text-white leading-[120%] py-[12px] px-[47px] rounded-tr-[24px] rounded-bl-[24px]">
                   <ArrowLeftIcon /> Manage Targets
                 </button>
               </Link>
             </div>
           </div>
-          <ul className="bg-[#ECECEC] py-[20px] grid grid-cols-6">
+          <ul className="bg-[#ECECEC] py-[20px] grid grid-cols-7 gap-2">
             <li className="w-full flex items-center justify-center text-base font-medium text-[#444444] leading-[120%]">
               Event Name
             </li>
@@ -275,7 +278,10 @@ const ArvInactiveTargets = () => {
               Outcome Time
             </li>
             <li className="w-full flex items-center justify-center text-base font-medium text-[#444444] leading-[120%]">
-              Action
+              Set Outcome
+            </li>
+            <li className="w-full flex items-center justify-center text-base font-medium text-[#444444] leading-[120%]">
+              Actions
             </li>
           </ul>
         </div>
