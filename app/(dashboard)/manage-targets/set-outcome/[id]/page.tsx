@@ -20,7 +20,7 @@ interface ARVTarget {
   image1: { url: string; description: string };
   image2: { url: string; description: string };
   image3: { url: string; description: string };
-  // controlImage: string;
+  controlImage: string;
 }
 
 interface APIResponse {
@@ -150,7 +150,10 @@ export default function SetOutcomePage() {
               filteredTarget.image1,
               filteredTarget.image2,
               filteredTarget.image3,
-              // filteredTarget.controlImage,
+              {
+                url: filteredTarget.controlImage,
+                description: "Control Image",
+              },
             ]?.map((image, index) => (
               <div
                 key={index}

@@ -408,6 +408,7 @@ export default function CreateTMCTargetPage() {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
+            body: JSON.stringify({ status: "used" }),
           }
         );
         if (!response.ok) {
@@ -616,10 +617,8 @@ export default function CreateTMCTargetPage() {
                       />
                       <Badge className="absolute text-[11px] -bottom-2 border border-black bg-gradient text-white rounded-full">
                         {image.usedAt
-                          ? `${image?.status} ${moment(
-                              image?.usedAt
-                            ).fromNow()}`
-                          : `${image?.status}`}
+                          ? `used ${moment(image?.usedAt).fromNow()}`
+                          : "unused"}
                       </Badge>
                       {selectedTargetImage === image.imageId && (
                         <div className="absolute top-2 left-2 bg-[#8F37FF] text-white rounded-full w-6 h-6 flex items-center justify-center">
@@ -698,10 +697,8 @@ export default function CreateTMCTargetPage() {
                       />
                       <Badge className="absolute text-[11px] -top-2 -right-2 border border-black bg-gradient text-white">
                         {image.usedAt
-                          ? `${image?.status} ${moment(
-                              image?.usedAt
-                            ).fromNow()}`
-                          : `${image?.status}`}
+                          ? `used ${moment(image?.usedAt).fromNow()}`
+                          : "unused"}
                       </Badge>
                       {selectedControlImages.includes(image.imageId) && (
                         <div className="absolute top-2 left-2 bg-[#8F37FF] text-white rounded-full w-6 h-6 flex items-center justify-center">

@@ -253,7 +253,8 @@ const ArvInactiveTargets = () => {
       <div className="bg-[#c4a0ff17] p-6 rounded-lg">
         <div>
           <div className="w-full flex items-center justify-between pb-[14px] md:pb-[20px] lg:pb-[25px] xl:pb-[30px]">
-            <div className="flex gap-4">
+            <div className="flex gap-4 justify-between items-center w-full">
+              <h2 className="text-2xl font-black">Set Outcome Targets</h2>
               <Link href="/manage-targets" className="">
                 <button className="flex items-center gap-3 bg-gradient text-base font-semibold text-white leading-[120%] py-[12px] px-[47px] rounded-tr-[24px] rounded-bl-[24px]">
                   <ArrowLeftIcon /> Manage Targets
