@@ -42,7 +42,7 @@ export default function LoginForm() {
           Log In
         </h1>
         <p className="mb-6 text-center text-sm text-gray-300">
-          Continue to register as a customer or vendor.
+          Log in to your Psykick Club account to continue your journey.
         </p>
 
         <h2 className="mb-4 text-xl font-semibold text-white">
