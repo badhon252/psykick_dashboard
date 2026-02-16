@@ -367,7 +367,7 @@ export default function CreateARVTargetPage() {
         ]);
         setSelectedCategory("");
         setSelectedSubcategory("");
-        setIsCreating(false)
+        setIsCreating(false);
       } else {
         // If game creation fails after image updates, you might want to revert image statuses
         console.error("Game creation failed:", data.message);
